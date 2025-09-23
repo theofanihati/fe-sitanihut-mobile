@@ -20,8 +20,6 @@ Versi mobile (Android) dari platform **Sitanihut**, dibangun dengan **Kotlin** d
 
 ## 📦 Instalasi
 
-Pastikan Anda sudah menginstal **Node.js** (disarankan versi 18 ke atas).
-
 ### Langkah-Langkah Instalasi
 
 1. Clone repo:
