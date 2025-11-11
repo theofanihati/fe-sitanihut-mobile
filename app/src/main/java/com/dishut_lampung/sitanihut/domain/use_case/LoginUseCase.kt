@@ -7,7 +7,14 @@ class LoginUseCase(
     private val authRepository: AuthRepository
 ) {
     suspend operator fun invoke(email: String, password: String): AuthResult {
-        // belum diimplementasi, biar test gagal dulu (fase RED)
-        return AuthResult.Error("Belum diimplementasi")
+        if (email.isBlank()) {
+            return AuthResult.Error("Email tidak boleh kosong")
+        }
+
+        if (password.isBlank()) {
+            return AuthResult.Error("Password tidak boleh kosong")
+        }
+
+        return authRepository.login(email, password)
     }
 }
