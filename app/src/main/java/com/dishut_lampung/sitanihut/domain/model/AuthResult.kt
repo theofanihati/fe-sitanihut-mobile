@@ -1,6 +1,6 @@
 package com.dishut_lampung.sitanihut.domain.model
 
-sealed class AuthResult {
-    data class Success(val user: User) : AuthResult()
-    data class Error(val message: String) : AuthResult()
+sealed class AuthResult<T> {
+    data class Success<T>(val data: T) : AuthResult<T>()
+    data class Error<T>(val message: String) : AuthResult<T>()
 }

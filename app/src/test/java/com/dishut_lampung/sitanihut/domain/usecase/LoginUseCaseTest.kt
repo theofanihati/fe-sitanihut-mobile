@@ -26,7 +26,7 @@ class LoginUseCaseTest {
         val email = "petani@example.com"
         val password = "petani123#"
         val expectedUser = User(id = "user-123", name = "Petani 1", token = "xyz-token", role = "petani", email = "petani@example.com")
-        val expectedResult = AuthResult.Success(expectedUser)
+        val expectedResult = AuthResult.Success(data = expectedUser)
 
         coEvery { mockAuthRepository.login(email, password) } returns expectedResult
 
@@ -40,7 +40,7 @@ class LoginUseCaseTest {
     fun `invoke with correct email and wrong password should return error result`() = runTest {
         val email = "petani@example.com"
         val wrongPassword = "passwordsalah"
-        val expectedErrorResult = AuthResult.Error("Email dan Password tidak cocok")
+        val expectedErrorResult = AuthResult.Error<User>(message = "Email dan Password tidak cocok")
         coEvery { mockAuthRepository.login(email, wrongPassword) } returns expectedErrorResult
 
         val actualResult = loginUseCase(email, wrongPassword)
@@ -53,7 +53,7 @@ class LoginUseCaseTest {
     fun `invoke with wrong email should return error result`() = runTest {
         val wrongEmail = "salah@sitanihut.com"
         val password = "petani123#"
-        val expectedErrorResult = AuthResult.Error("Email dan Password tidak cocok")
+        val expectedErrorResult = AuthResult.Error<User>(message = "Email dan Password tidak cocok")
         coEvery { mockAuthRepository.login(wrongEmail, password) } returns expectedErrorResult
 
         val actualResult = loginUseCase(wrongEmail, password)
@@ -66,7 +66,7 @@ class LoginUseCaseTest {
     fun `invoke with empty email should return error result`() = runTest {
         val emptyEmail = ""
         val password = "petani123#"
-        val expectedErrorResult = AuthResult.Error("Email tidak boleh kosong")
+        val expectedErrorResult = AuthResult.Error<User>(message ="Email tidak boleh kosong")
         // repository mengembalikan error tanpa ke server
         coEvery { mockAuthRepository.login(emptyEmail, password) } returns expectedErrorResult
 
@@ -80,7 +80,7 @@ class LoginUseCaseTest {
     fun `invoke with empty password should return error result`() = runTest {
         val email = "petani@example.com"
         val emptyPassword = ""
-        val expectedErrorResult = AuthResult.Error("Password tidak boleh kosong")
+        val expectedErrorResult = AuthResult.Error<User>(message = "Password tidak boleh kosong")
         coEvery { mockAuthRepository.login(email, emptyPassword) } returns expectedErrorResult
 
         val actualResult = loginUseCase("test@sitanihut.com", "")
@@ -94,7 +94,7 @@ class LoginUseCaseTest {
         val email = "petani@example.com"
         val newPassword = "passwordBaruYangKuat"
         val expectedUser = User(id = "user-123", name = "Petani 1", token = "xyz-token", role = "petani", email = "petani@example.com")
-        val expectedResult = AuthResult.Success(expectedUser)
+        val expectedResult = AuthResult.Success(data = expectedUser)
         coEvery { mockAuthRepository.login(email, newPassword) } returns expectedResult
 
         val actualResult = loginUseCase(email, newPassword)
@@ -107,7 +107,7 @@ class LoginUseCaseTest {
     fun `invoke with OLD password after change should return error result`() = runTest {
         val email = "petani@example.com"
         val oldPassword = "password123#"
-        val expectedErrorResult = AuthResult.Error("Email dan Password tidak cocok")
+        val expectedErrorResult = AuthResult.Error<User>(message = "Email dan Password tidak cocok")
         coEvery { mockAuthRepository.login(email, oldPassword) } returns expectedErrorResult
 
         val actualResult = loginUseCase(email, oldPassword)
