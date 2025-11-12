@@ -16,18 +16,67 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
 
     override suspend fun login(email: String, password: String): AuthResult<User> {
-        TODO("Not yet implemented")
+        return try {
+            val request = AuthDto.LoginRequest(email, password)
+            val response = apiService.login(request)
+
+            val token = response.data.token
+            userPreferences.saveAuthToken(token)
+
+            AuthResult.Success(
+                data = User(
+                    id = response.data.id,
+                    name = response.data.name,
+                    token = response.data.token,
+                    role = response.data.role,
+                    email = response.data.email
+                )
+            )
+        } catch (e: HttpException) {
+            val errorMessage = when (e.code()) {
+                400 -> "Email dan password harus diisi."
+                401 -> "Email atau password salah."
+                403 -> "Akses ditolak. Silakan login kembali."
+                404 -> "Endpoint tidak ditemukan."
+                500 -> "Terdapat gangguan server."
+                else -> "Terjadi kesalahan pada server. Kode: ${e.code()}"
+            }
+            AuthResult.Error(errorMessage)
+        } catch (e: IOException) {
+            AuthResult.Error("Tidak ada koneksi internet. Silakan periksa jaringan Anda.")
+        } catch (e: Exception) {
+            AuthResult.Error(e.message ?: "Terjadi kesalahan yang tidak diketahui.")
+        }
     }
 
     override suspend fun requestPasswordReset(email: String): AuthResult<Unit> {
-        TODO("Not yet implemented")
-    }
-    override suspend fun logout() {
-        TODO("Not yet implemented")
+        return try {
+            val request = AuthDto.ForgotPasswordRequest(email)
+            apiService.requestPasswordReset(request)
 
+            AuthResult.Success(Unit)
+        } catch (e: HttpException) {
+            val errorMessage = when (e.code()) {
+                400 -> "Email harus diisi."
+                401 -> "Email salah."
+                403 -> "Akses ditolak. Silakan login kembali."
+                404 -> "Email tidak ditemukan."
+                500 -> "Terdapat gangguan server."
+                else -> "Gagal mengirim permintaan. Kode: ${e.code()}"
+            }
+            AuthResult.Error(errorMessage)
+        } catch (e: IOException) {
+            AuthResult.Error("Tidak ada koneksi internet. Silakan periksa jaringan Anda.")
+        } catch (e: Exception) {
+            AuthResult.Error(e.message ?: "Terjadi kesalahan yang tidak diketahui.")
+        }
+    }
+
+    override suspend fun logout() {
+        userPreferences.clearAuthToken()
     }
 
     override suspend fun isLoggedIn(): Boolean {
-        TODO("Not yet implemented")
+        return userPreferences.getAuthToken() != null
     }
 }
