@@ -21,5 +21,74 @@ class LoginViewModel @Inject constructor(
     private val validateEmailUseCase: ValidateEmailUseCase,
 ) : ViewModel() {
 
-    // TODO BELUUMMM
+    var loginState by mutableStateOf(LoginState())
+        private set
+
+    private val _eventFlow = MutableSharedFlow<UiEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
+
+    fun onEvent(event: LoginEvent) {
+        when (event) {
+            is LoginEvent.OnEmailChange -> {
+                loginState = loginState.copy(
+                    email = event.email,
+                    emailError = null,
+                    generalError = null
+                )
+            }
+            is LoginEvent.OnPasswordChange -> {
+                loginState = loginState.copy(
+                    password = event.password,
+                    passwordError = null,
+                    generalError = null
+                )
+            }
+            is LoginEvent.OnLoginClick -> {
+                submitData()
+            }
+            is LoginEvent.OnForgotPasswordClick -> {
+                viewModelScope.launch {
+                    _eventFlow.emit(UiEvent.NavigateToForgotPassword)
+                }
+            }
+            is LoginEvent.OnTogglePasswordVisibility -> {
+                loginState = loginState.copy(
+                    isPasswordVisible = !loginState.isPasswordVisible
+                )
+            }
+            else -> {}
+        }
+    }
+
+    private fun submitData() {
+        val emailResult = validateEmailUseCase(loginState.email)
+        val isPasswordEmpty = loginState.password.isBlank()
+
+        val hasError = !emailResult.successful || isPasswordEmpty
+
+        if (hasError) {
+            loginState = loginState.copy(
+                emailError = emailResult.errorMessage,
+                passwordError = if (isPasswordEmpty) "Password tidak boleh kosong" else null
+            )
+            return
+        }
+        login()
+    }
+
+    private fun login() {
+        viewModelScope.launch {
+            loginState = loginState.copy(isLoading = true)
+            val result = loginUseCase(loginState.email, loginState.password)
+            when (result) {
+                is AuthResult.Success -> {
+                    loginState = loginState.copy(isLoading = false)
+                    _eventFlow.emit(UiEvent.LoginSuccess)
+                }
+                is AuthResult.Error -> {
+                    loginState = loginState.copy(isLoading = false, generalError = result.message)
+                }
+            }
+        }
+    }
 }
