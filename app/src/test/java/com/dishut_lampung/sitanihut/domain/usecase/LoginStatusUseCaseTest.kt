@@ -1,7 +1,7 @@
 package com.dishut_lampung.sitanihut.domain.usecase
 
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
-import com.dishut_lampung.sitanihut.domain.use_case.LoginStatusUseCase
+import com.dishut_lampung.sitanihut.domain.use_case.auth.LoginStatusUseCase
 import io.mockk.mockk
 import io.mockk.coEvery
 import kotlinx.coroutines.test.runTest

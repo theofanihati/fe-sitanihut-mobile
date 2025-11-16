@@ -3,7 +3,7 @@ package com.dishut_lampung.sitanihut.domain.usecase
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.model.User
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
-import com.dishut_lampung.sitanihut.domain.use_case.LoginUseCase
+import com.dishut_lampung.sitanihut.domain.use_case.auth.LoginUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest

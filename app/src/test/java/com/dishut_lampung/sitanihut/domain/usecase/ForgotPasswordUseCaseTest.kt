@@ -2,7 +2,7 @@ package com.dishut_lampung.sitanihut.domain.usecase
 
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
-import com.dishut_lampung.sitanihut.domain.use_case.ForgotPasswordUseCase
+import com.dishut_lampung.sitanihut.domain.use_case.auth.ForgotPasswordUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

@@ -1,7 +1,7 @@
 package com.dishut_lampung.sitanihut.domain.usecase
 
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
-import com.dishut_lampung.sitanihut.domain.use_case.LogoutUseCase
+import com.dishut_lampung.sitanihut.domain.use_case.auth.LogoutUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

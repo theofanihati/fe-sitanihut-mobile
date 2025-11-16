@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut
+package com.dishut_lampung.sitanihut.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

@@ -4,10 +4,12 @@ import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.remote.AuthApiService
 import com.dishut_lampung.sitanihut.data.repository.AuthRepositoryImpl
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
-import com.dishut_lampung.sitanihut.domain.use_case.ForgotPasswordUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.LoginStatusUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.LoginUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.LogoutUseCase
+import com.dishut_lampung.sitanihut.domain.use_case.auth.ForgotPasswordUseCase
+import com.dishut_lampung.sitanihut.domain.use_case.auth.LoginStatusUseCase
+import com.dishut_lampung.sitanihut.domain.use_case.auth.LoginUseCase
+import com.dishut_lampung.sitanihut.domain.use_case.auth.LogoutUseCase
+import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidateEmailUseCase
+import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidatePasswordUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -57,8 +59,17 @@ object AppModule{
     }
     @Provides
     @Singleton
-    fun provideCheckLoginStatusUseCase(repository: AuthRepository): LoginStatusUseCase {
+    fun provideLoginStatusUseCase(repository: AuthRepository): LoginStatusUseCase {
         return LoginStatusUseCase(repository)
     }
-
+    @Provides
+    @Singleton
+    fun provideValidateEmailUseCase(): ValidateEmailUseCase {
+        return ValidateEmailUseCase()
+    }
+    @Provides
+    @Singleton
+    fun provideValidatePasswordUseCase(): ValidatePasswordUseCase {
+        return ValidatePasswordUseCase()
+    }
 }

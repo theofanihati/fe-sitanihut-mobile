@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.domain.use_case
+package com.dishut_lampung.sitanihut.domain.use_case.auth
 
 import java.util.regex.Pattern
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
