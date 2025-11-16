@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Sitanihut</string>
+    <string name="logo">Logo</string>
+    <string name="auth_image_1">Auth Image 1</string>
 </resources>
