@@ -30,16 +30,24 @@ class LoginViewModel @Inject constructor(
     fun onEvent(event: LoginEvent) {
         when (event) {
             is LoginEvent.OnEmailChange -> {
+                val emailResult = validateEmailUseCase(event.email)
                 loginState = loginState.copy(
                     email = event.email,
-                    emailError = null,
+                    emailError = emailResult.errorMessage,
                     generalError = null
                 )
             }
             is LoginEvent.OnPasswordChange -> {
+                val isPasswordEmpty = event.password.isBlank()
+                val passwordErrorMsg = if (isPasswordEmpty) {
+                    "Password tidak boleh kosong"
+                } else {
+                    null
+                }
+
                 loginState = loginState.copy(
                     password = event.password,
-                    passwordError = null,
+                    passwordError = passwordErrorMsg,
                     generalError = null
                 )
             }
