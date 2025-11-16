@@ -82,7 +82,12 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // turbine
     testImplementation("app.cash.turbine:turbine:1.0.0")
+
+    // splash screen broohh
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     // Dagger - Hilt
     implementation("com.google.dagger:hilt-android:2.48")

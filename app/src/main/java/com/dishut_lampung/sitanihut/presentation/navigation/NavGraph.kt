@@ -11,15 +11,10 @@ import com.dishut_lampung.sitanihut.presentation.SplashScreen
 fun NavGraph(
     navController : NavHostController,
     modifier : Modifier,
-    startDestination : String = Screen.SplashScreen.route
+    startDestination : String = "auth"
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
-        composable("splash-screen") {
-            SplashScreen(
-                onNavigateToMain = { navController.navigate("home") }
-            )
-        }
-//        composable(
+//                composable(
 //            route = Screen.Home.route,
 ////      ! Uncomment kalo dibutuhin
 ////      enterTransition = {
@@ -38,5 +33,17 @@ fun NavGraph(
             modifier = modifier,
             navController = navController
         )
+//        petaniNavGraph(
+//            modifier = modifier,
+//            navController = navController
+//        )
+//        penyuluhNavGraph(
+//            modifier = modifier,
+//            navController = navController
+//        )
+//        kkphNavGraph(
+//            modifier = modifier,
+//            navController = navController
+//        )
     }
 }

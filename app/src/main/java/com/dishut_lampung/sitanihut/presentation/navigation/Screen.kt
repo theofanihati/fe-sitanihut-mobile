@@ -3,7 +3,6 @@ package com.dishut_lampung.sitanihut.presentation.navigation
 sealed class Screen(val route: String) {
 
     data object Home : Screen("home_screen")
-    object SplashScreen : Screen("splash-screen")
     data object Profile : Screen("profile_screen")
 
     sealed class Auth(route : String) : Screen(route) {
