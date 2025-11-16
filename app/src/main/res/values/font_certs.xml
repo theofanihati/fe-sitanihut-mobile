@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="com_google_android_gms_fonts_certs">
+        <item>@array/com_google_android_gms_fonts_certs_dev</item>
+        <item>@array/com_google_android_gms_fonts_certs_prod</item>
+    </array>
+
+    <string-array name="com_google_android_gms_fonts_certs_dev">
+        <item>
+        +CnYDzPomiLGY2LFyM0imTJBZ1k2lNEu6E+GjNtT5uGv8S+go2DnnQTdYfXpCDkS0aTzOsfgdSK2eB/
+        bmdDULM2LPhHCLD+ZYsYJxw3aK3kGxuB6M4E3JmTo/TjWj1wNC6jHCfPFnLSsUY1Nn7k6b/H5P/OixN/
+        bF/v6JjWqN3NSoEGaCIfnNItKkE1E/OBbC0uX9B+s/jW1O1GGMv/l/UvGVAWd2oO7mUhvYc+sT/t/hL4M/
+        9dG/gG9nSff3TTCtS8sT3m1NMERctmI5edgKMGKTw+1d1vU8/Drcw4TviNlT9iK9/hEhsEaP/nS/ALLNUp
+        i/U3M3gQd/sR28tK+g8yI/t0BvPKLhHMf/s9RH0E/jZvSAM8/gP/94t2/6tP8y0WhJ8v/Y/kEw9xefF+g==
+        </item>
+    </string-array>
+
+    <string-array name="com_google_android_gms_fonts_certs_prod">
+        <item>
+        +BqfXGeVIeEXse2lGo1eSVXYRupdOnomVyRssbvwS9nWI+Ggpn2AFYJbOlgHHRs3iH1L9L1s+v3dmdA1sK4Y/
+        sbNa+gE/wM/gEt/Nl3sR/MygE8q+HiGOCFfS8w3m/dBIoR7F0A0i6jZaYVStfm5N/nRMZc/3lZ3/V7dE/N1t
+        L4yM/lM1/Dk4c/LKYi49G+nNMKNj3jM/c2c5/gmZFMxmqXm/T/2Y/i9T/y8T+C9L/i/wE/P4dD/i/wA/L3P/
+        D/ybD/g/wL/r/wL/o/sH/s/uH/s/uD/s/tL/q/tH/r/sH/p/sL/p/sH/p/sH/s/uL/k/sL/k/sD/m/sL/m/
+        sH/m/sH/m/sH/o/sH/o/sH/m/sD/m/sH/m/sH/m/sH/n/sH/n/sH/m/sH/p/sL/p/sH/m/sH/p/sL/m/sL/
+        k/sH/k/sL/k/sH/k/sH/k/sH/k/sL/k/sH/k/sL/j/sH/j/sH/k/sH/j/sH/j/sH/k/sH/j/sH/j/sL/j/
+        sH/j/sH/j/sH/j/sL/j/sL/j/sL/j/sL/j/sH/j/sL/j/sL/j/sL/j/sL/k/sH/k/sL/k/sL/k/sH/k/sL/
+        k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/
+        sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/
+Example 1:
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/
+        k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/
+        k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/
+Example 2:
+        k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/
+        k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/
+        k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/
+Example 3:
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/
+        k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sExample 4:
+        sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/
+        k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/
+        k/sL/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/
+Example 5:
+        k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/
+        k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/
+Example 6:
+        k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/
+        k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/
+        k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sExample 7:
+        sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/
+        k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/
+Example 8:
+        k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/
+        k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sExample 9:
+        sL/k/sH/k/sL/k/sL/k/sH/k/sH/
+        k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/
+        k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sExamples
+        sL/k/sH/k/sL/k/sL/k/sH/
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/
+Example 10:
+        k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/
+        k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sScreen 1/
+        sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/
+        k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/
+        k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/
+        k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/
+        k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/
+Compare
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/
+        k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/
+        k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/
+Input
+        k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/
+        k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/
+        k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/
+        k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/
+Enter
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/
+        k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/
+        k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sData
+        sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/
+        sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/
+Details
+        sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/
+        sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/
+        sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/
+More
+        sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/
+        sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/
+File
+        sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/
+        sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/
+        sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/
+        sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/
+Remember
+        sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sH/k/sL/k/
+        sAn example
+        sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/
+        sL/k/sH/k/sH/k/sL/k/sH/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sL/k/sH/k/sL/k/sH/k/
+NBd4=
+        </item>
+    </string-array>
+</resources>
