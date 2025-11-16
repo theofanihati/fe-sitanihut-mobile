@@ -14,7 +14,7 @@
         android:theme="@style/Theme.Sitanihut"
         tools:targetApi="31">
         <activity
-            android:name="com.dishut_lampung.sitanihut.presentation.screens.MainActivity"
+            android:name="com.dishut_lampung.sitanihut.presentation.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.Sitanihut">
