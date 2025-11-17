@@ -111,38 +111,32 @@ fun LoginScreen(
     onEvent: (LoginEvent) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    Scaffold { paddingValues ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-
-            Spacer(Modifier.height(52.dp))
-            TopSection()
-            Spacer(Modifier.height(24.dp))
-            BottomSection(
-                onEmailChange = { email -> onEvent(LoginEvent.OnEmailChange(email)) },
-                onPasswordChange = { password -> onEvent(LoginEvent.OnPasswordChange(password)) },
-                onLoginClick = { onEvent(LoginEvent.OnLoginClick) },
-                onNavigateToForgotPassword = { onEvent(LoginEvent.OnForgotPasswordClick) },
-                onTogglePasswordVisibility = { onEvent(LoginEvent.OnTogglePasswordVisibility) }, // <-- Bug diperbaiki
-                onNavigateBack = onNavigateBack,
-                state = state
-            )
-            Spacer(Modifier.height(16.dp))
-        }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        Spacer(Modifier.height(52.dp))
+        TopSection()
+        Spacer(Modifier.height(24.dp))
+        BottomSection(
+            onEmailChange = { email -> onEvent(LoginEvent.OnEmailChange(email)) },
+            onPasswordChange = { password -> onEvent(LoginEvent.OnPasswordChange(password)) },
+            onLoginClick = { onEvent(LoginEvent.OnLoginClick) },
+            onNavigateToForgotPassword = { onEvent(LoginEvent.OnForgotPasswordClick) },
+            onTogglePasswordVisibility = { onEvent(LoginEvent.OnTogglePasswordVisibility) }, // <-- Bug diperbaiki
+            onNavigateBack = onNavigateBack,
+            state = state
+        )
+        Spacer(Modifier.height(16.dp))
     }
 }
 
 @Composable
-fun TopSection(
-
-){
+fun TopSection(){
     CenteredLogo()
     Spacer(Modifier.height(16.dp))
 

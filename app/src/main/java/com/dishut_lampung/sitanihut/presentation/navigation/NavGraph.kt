@@ -5,15 +5,25 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.dishut_lampung.sitanihut.presentation.LandingPageRoute
 import com.dishut_lampung.sitanihut.presentation.SplashScreen
 
 @Composable
 fun NavGraph(
     navController : NavHostController,
     modifier : Modifier,
-    startDestination : String = "auth"
+    startDestination : String = "landing_screen"
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
+        composable("landing_screen") {
+            LandingPageRoute(
+                onNavigateToLogin = {
+                    navController.navigate("auth") {
+                        popUpTo("landing_screen") { inclusive = true }
+                    }
+                }
+            )
+        }
 //                composable(
 //            route = Screen.Home.route,
 ////      ! Uncomment kalo dibutuhin

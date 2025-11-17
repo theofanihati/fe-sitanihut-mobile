@@ -26,16 +26,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SitanihutTheme {
-                val navController = rememberNavController()
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    containerColor = MaterialTheme.colorScheme.background
-                ) {paddingValues ->
-                    NavGraph(
-                        navController = navController,
-                        modifier = Modifier.padding(paddingValues)
-                    )
-                }
+                MainScreen()
             }
         }
     }

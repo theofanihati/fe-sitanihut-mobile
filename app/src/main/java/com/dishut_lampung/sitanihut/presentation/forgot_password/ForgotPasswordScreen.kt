@@ -111,35 +111,29 @@ fun ForgotPasswordScreen(
     onEvent: (ForgotPasswordEvent) -> Unit,
     onNavigateBack: () -> Unit
 ) {
-
-    Scaffold { paddingValues ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-
-            Spacer(Modifier.height(52.dp))
-            TopSection()
-            Spacer(Modifier.height(24.dp))
-            BottomSection(
-                onEmailChange = { email -> onEvent(ForgotPasswordEvent.OnEmailChange(email)) },
-                onSubmitClick = { onEvent(ForgotPasswordEvent.OnSubmitClick) },
-                onNavigateBack = onNavigateBack,
-                state = state
-            )
-            Spacer(Modifier.height(16.dp))
-        }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        Spacer(Modifier.height(52.dp))
+        TopSection()
+        Spacer(Modifier.height(24.dp))
+        BottomSection(
+            onEmailChange = { email -> onEvent(ForgotPasswordEvent.OnEmailChange(email)) },
+            onSubmitClick = { onEvent(ForgotPasswordEvent.OnSubmitClick) },
+            onNavigateBack = onNavigateBack,
+            state = state
+        )
+        Spacer(Modifier.height(16.dp))
     }
 }
 
 @Composable
-fun TopSection(
-){
+fun TopSection(){
     CenteredLogo()
     Spacer(Modifier.height(16.dp))
 
