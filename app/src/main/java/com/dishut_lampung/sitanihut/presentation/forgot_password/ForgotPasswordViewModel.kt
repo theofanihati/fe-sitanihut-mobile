@@ -29,14 +29,48 @@ class ForgotPasswordViewModel @Inject constructor(
     fun onEvent(event: ForgotPasswordEvent) {
         when (event) {
             is ForgotPasswordEvent.OnEmailChange -> {
-                // TODO BLMMM
+                val emailResult = validateEmailUseCase(event.email)
+                forgotPasswordState = forgotPasswordState.copy(
+                    email = event.email,
+                    emailError = emailResult.errorMessage,
+                    generalError = null
+                )
             }
-
             is ForgotPasswordEvent.OnSubmitClick -> {
-                // TODO BELUUUMMM BEBBB
+                submitData()
             }
-
             else -> {}
+        }
+    }
+
+    private fun submitData() {
+        val emailResult = validateEmailUseCase(forgotPasswordState.email)
+        val hasError = !emailResult.successful
+        if (hasError) {
+            forgotPasswordState = forgotPasswordState.copy(
+                emailError = emailResult.errorMessage,
+            )
+            return
+        }
+        submit()
+    }
+
+    private fun submit(){
+        viewModelScope.launch {
+            forgotPasswordState = forgotPasswordState.copy(isLoading = true)
+            val result = forgotPasswordUseCase(forgotPasswordState.email)
+            when (result) {
+                is AuthResult.Success -> {
+                    forgotPasswordState = forgotPasswordState.copy(isLoading = false)
+                    _eventFlow.emit(ForgotPasswordUiEvent.SubmitSuccess)
+                }
+                is AuthResult.Error -> {
+                    forgotPasswordState = forgotPasswordState.copy(
+                        isLoading = false,
+                        generalError = result.message
+                    )
+                }
+            }
         }
     }
 }
