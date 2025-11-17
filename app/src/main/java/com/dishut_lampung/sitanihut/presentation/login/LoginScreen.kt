@@ -2,6 +2,7 @@ package com.dishut_lampung.sitanihut.presentation.login
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +34,8 @@ import androidx.navigation.NavHostController
 import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.presentation.components.CenteredAuthImage
 import com.dishut_lampung.sitanihut.presentation.components.CenteredLogo
+import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
+import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
 import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomOutlinedTextField
 import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
 
@@ -75,8 +78,7 @@ fun LoginRoute(
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->
             when (event) {
-                is UiEvent.LoginSuccess -> {
-                    Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
+                is UiEvent.NavigateToHome -> {
                     navController.navigate("home_screen") {
                         popUpTo("login_screen") { inclusive = true }
                     }
@@ -85,12 +87,6 @@ fun LoginRoute(
                     navController.navigate("forgot_password_screen")
                 }
             }
-        }
-    }
-
-    LaunchedEffect(key1 = state.generalError) {
-        state.generalError?.let { error ->
-            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -106,26 +102,50 @@ fun LoginScreen(
     state: LoginState,
     onEvent: (LoginEvent) -> Unit,
 ) {
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
     ) {
-        Spacer(Modifier.height(52.dp))
-        TopSection()
-        Spacer(Modifier.height(24.dp))
-        BottomSection(
-            onEmailChange = { email -> onEvent(LoginEvent.OnEmailChange(email)) },
-            onPasswordChange = { password -> onEvent(LoginEvent.OnPasswordChange(password)) },
-            onLoginClick = { onEvent(LoginEvent.OnLoginClick) },
-            onNavigateToForgotPassword = { onEvent(LoginEvent.OnForgotPasswordClick) },
-            onTogglePasswordVisibility = { onEvent(LoginEvent.OnTogglePasswordVisibility) },
-            state = state
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            Spacer(Modifier.height(52.dp))
+            TopSection()
+            Spacer(Modifier.height(24.dp))
+            BottomSection(
+                onEmailChange = { email -> onEvent(LoginEvent.OnEmailChange(email)) },
+                onPasswordChange = { password -> onEvent(LoginEvent.OnPasswordChange(password)) },
+                onLoginClick = { onEvent(LoginEvent.OnLoginClick) },
+                onNavigateToForgotPassword = { onEvent(LoginEvent.OnForgotPasswordClick) },
+                onTogglePasswordVisibility = { onEvent(LoginEvent.OnTogglePasswordVisibility) },
+                state = state
+            )
+            Spacer(Modifier.height(16.dp))
+        }
+        AnimatedMessage(
+            isVisible = state.generalError != null,
+            message = state.generalError ?: "",
+            messageType = MessageType.Error,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp),
+            onDismiss = { onEvent(LoginEvent.OnDismissError) },
         )
-        Spacer(Modifier.height(16.dp))
+        AnimatedMessage(
+            isVisible = state.successMessage != null,
+            message = state.successMessage ?: "",
+            messageType = MessageType.Success,
+            onDismiss = { onEvent(LoginEvent.OnDismissSuccessMessage) },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 16.dp)
+        )
     }
 }
 

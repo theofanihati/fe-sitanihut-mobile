@@ -2,6 +2,7 @@ package com.dishut_lampung.sitanihut.presentation.forgot_password
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,7 +35,10 @@ import androidx.navigation.NavHostController
 import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.presentation.components.CenteredAuthImage
 import com.dishut_lampung.sitanihut.presentation.components.CenteredLogo
+import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
+import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
 import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomOutlinedTextField
+import com.dishut_lampung.sitanihut.presentation.login.LoginEvent
 import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
 
 @Preview(showBackground = true)
@@ -77,8 +81,7 @@ fun ForgotPasswordRoute(
         viewModel.eventFlow.collect { event ->
             when (event) {
                 is ForgotPasswordUiEvent.SubmitSuccess -> {
-                    Toast.makeText(context, "Email berhasil dikirim!", Toast.LENGTH_SHORT).show()
-                    navController.navigate("login_screen") {
+                   navController.navigate("login_screen") {
                         popUpTo("forgot_password_screen") { inclusive = true }
                     }
                 }
@@ -86,12 +89,6 @@ fun ForgotPasswordRoute(
                     navController.navigate("login_screen")
                 }
             }
-        }
-    }
-
-    LaunchedEffect(key1 = state.generalError) {
-        state.generalError?.let { error ->
-            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -111,24 +108,48 @@ fun ForgotPasswordScreen(
     onEvent: (ForgotPasswordEvent) -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
     ) {
-        Spacer(Modifier.height(52.dp))
-        TopSection()
-        Spacer(Modifier.height(24.dp))
-        BottomSection(
-            onEmailChange = { email -> onEvent(ForgotPasswordEvent.OnEmailChange(email)) },
-            onSubmitClick = { onEvent(ForgotPasswordEvent.OnSubmitClick) },
-            onNavigateBack = onNavigateBack,
-            state = state
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            Spacer(Modifier.height(52.dp))
+            TopSection()
+            Spacer(Modifier.height(24.dp))
+            BottomSection(
+                onEmailChange = { email -> onEvent(ForgotPasswordEvent.OnEmailChange(email)) },
+                onSubmitClick = { onEvent(ForgotPasswordEvent.OnSubmitClick) },
+                onNavigateBack = onNavigateBack,
+                state = state
+            )
+            Spacer(Modifier.height(16.dp))
+        }
+        AnimatedMessage(
+            isVisible = state.generalError != null,
+            message = state.generalError ?: "",
+            messageType = MessageType.Error,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp),
+            onDismiss = { onEvent(ForgotPasswordEvent.OnDismissError) },
         )
-        Spacer(Modifier.height(16.dp))
+        AnimatedMessage(
+            isVisible = state.successMessage != null,
+            message = state.successMessage ?: "",
+            messageType = MessageType.Success,
+            onDismiss = { onEvent(ForgotPasswordEvent.OnDismissSuccessMessage) },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 16.dp)
+        )
     }
 }
 

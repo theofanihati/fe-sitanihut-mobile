@@ -5,6 +5,8 @@ import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.use_case.auth.ForgotPasswordUseCase
 import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidateEmailUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ValidationResult
+import com.dishut_lampung.sitanihut.presentation.login.LoginEvent
+import com.dishut_lampung.sitanihut.presentation.login.UiEvent
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import io.mockk.coEvery
 import io.mockk.every
@@ -62,19 +64,29 @@ class ForgotPasswordViewModelTest {
     }
 
     @Test
-    fun `onEvent OnSubmitClick with valid data and data submission success, should emit SubmitSuccess event`() = runTest {
+    fun `onEvent OnSubmitClick with valid data and data submission success, should update successMessage`() = runTest {
         val email = "valid@email.com"
 
         every { validateEmailUseCase(email) } returns ValidationResult(true)
         coEvery { forgotPasswordUseCase(email) } returns AuthResult.Success(Unit)
 
         viewModel.onEvent(ForgotPasswordEvent.OnEmailChange(email))
+        viewModel.onEvent(ForgotPasswordEvent.OnSubmitClick)
 
-        viewModel.eventFlow.test {
-            viewModel.onEvent(ForgotPasswordEvent.OnSubmitClick)
-            val event = awaitItem()
-            assertTrue(event is ForgotPasswordUiEvent.SubmitSuccess)
-            expectNoEvents()
+        assertEquals("email telah dikirim", viewModel.forgotPasswordState.successMessage)
+        assertEquals(false, viewModel.forgotPasswordState.isLoading)
+    }
+
+    @Test
+    fun `onEvent OnDismissSuccessMessage, should emit SubmitSuccess event`() {
+        runTest {
+            viewModel.eventFlow.test {
+                viewModel.onEvent(ForgotPasswordEvent.OnDismissSuccessMessage)
+
+                val event = awaitItem()
+                assertTrue(event is ForgotPasswordUiEvent.SubmitSuccess)
+                expectNoEvents()
+            }
         }
     }
 

@@ -7,6 +7,7 @@ import com.dishut_lampung.sitanihut.data.remote.dto.AuthDto
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.model.User
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
+import com.google.gson.Gson
 import java.io.IOException
 import javax.inject.Inject
 
@@ -33,13 +34,19 @@ class AuthRepositoryImpl @Inject constructor(
                 )
             )
         } catch (e: HttpException) {
-            val errorMessage = when (e.code()) {
-                400 -> "Email dan password harus diisi."
-                401 -> "Email atau password salah."
-                403 -> "Akses ditolak. Silakan login kembali."
-                404 -> "Endpoint tidak ditemukan."
-                500 -> "Terdapat gangguan server."
-                else -> "Terjadi kesalahan pada server. Kode: ${e.code()}"
+            val errorBody = e.response()?.errorBody()?.string()
+            val errorMessage = try {
+                val errorResponse = Gson().fromJson(errorBody, AuthDto.ErrorResponse::class.java)
+                errorResponse.message ?: "Terjadi kesalahan (pesan tidak ada)"
+            } catch (jsonError: Exception) {
+                when (e.code()) {
+                    400 -> "Email dan password harus diisi."
+                    401 -> "Email atau password salah."
+                    403 -> "Akses ditolak. Silakan login kembali."
+                    404 -> "Endpoint tidak ditemukan."
+                    500 -> "Terdapat gangguan server."
+                    else -> "Terjadi kesalahan pada server. Kode: ${e.code()}"
+                }
             }
             AuthResult.Error(errorMessage)
         } catch (e: IOException) {
@@ -56,13 +63,31 @@ class AuthRepositoryImpl @Inject constructor(
 
             AuthResult.Success(Unit)
         } catch (e: HttpException) {
-            val errorMessage = when (e.code()) {
-                400 -> "Email harus diisi."
-                401 -> "Email salah."
-                403 -> "Akses ditolak. Silakan login kembali."
-                404 -> "Email tidak ditemukan."
-                500 -> "Terdapat gangguan server."
-                else -> "Gagal mengirim permintaan. Kode: ${e.code()}"
+            val errorBody = e.response()?.errorBody()?.string()
+            val errorMessage = try {
+                val errorResponse = Gson().fromJson(errorBody, AuthDto.ErrorResponse::class.java)
+                val responseFailed = "failed"
+                if(errorResponse.message != responseFailed){
+                    errorResponse.message ?: "Terjadi kesalahan (pesan tidak ada)"
+                } else{
+                    when (e.code()) {
+                        400 -> "Email harus diisi."
+                        401 -> "Email salah."
+                        403 -> "Akses ditolak. Silakan login kembali."
+                        404 -> "Email tidak ditemukan."
+                        500 -> "Terdapat gangguan server."
+                        else -> errorBody ?: "Terjadi kesalahan pada server. Kode: ${e.code()}"
+                    }
+                }
+            } catch (jsonError: Exception) {
+                when (e.code()) {
+                    400 -> "Email harus diisi."
+                    401 -> "Email salah."
+                    403 -> "Akses ditolak. Silakan login kembali."
+                    404 -> "Email tidak ditemukan."
+                    500 -> "Terdapat gangguan server."
+                    else -> errorBody ?: "Terjadi kesalahan pada server. Kode: ${e.code()}"
+                }
             }
             AuthResult.Error(errorMessage)
         } catch (e: IOException) {

@@ -7,7 +7,8 @@ data class LoginState(
     val passwordError: String? = null,
     val isPasswordVisible: Boolean = false,
     val isLoading: Boolean = false,
-    val generalError: String? = null
+    val generalError: String? = null,
+    val successMessage: String? = null
 )
 
 sealed class LoginEvent {
@@ -16,4 +17,6 @@ sealed class LoginEvent {
     object OnLoginClick : LoginEvent()
     object OnForgotPasswordClick : LoginEvent()
     object OnTogglePasswordVisibility : LoginEvent()
+    object OnDismissError : LoginEvent()
+    object OnDismissSuccessMessage : LoginEvent()
 }

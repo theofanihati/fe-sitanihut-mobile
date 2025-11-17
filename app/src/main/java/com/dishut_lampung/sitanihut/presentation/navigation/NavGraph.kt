@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.dishut_lampung.sitanihut.presentation.home_page.HomePageScreen
 import com.dishut_lampung.sitanihut.presentation.landing_page.LandingPageRoute
 
 @Composable
@@ -26,20 +27,11 @@ fun NavGraph(
                 }
             )
         }
-//                composable(
-//            route = Screen.Home.route,
-////      ! Uncomment kalo dibutuhin
-////      enterTransition = {
-////        slideInHorizontally(
-////          initialOffsetX = { it },
-////          animationSpec = tween(700)
-////        )
-////      }
-//        ) {
-//            LandingPageScreen(
-//                modifier = modifier,
-//            )
-//        }
+        composable(route = Screen.Home.route) {
+            HomePageScreen(
+                modifier = modifier,
+            )
+        }
 
         authNavGraph(
             modifier = modifier,

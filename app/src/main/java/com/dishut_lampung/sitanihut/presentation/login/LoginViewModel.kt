@@ -64,6 +64,15 @@ class LoginViewModel @Inject constructor(
                     isPasswordVisible = !loginState.isPasswordVisible
                 )
             }
+            is LoginEvent.OnDismissError -> {
+                loginState = loginState.copy(generalError = null)
+            }
+            is LoginEvent.OnDismissSuccessMessage -> {
+                loginState = loginState.copy(successMessage = null)
+                viewModelScope.launch {
+                    _eventFlow.emit(UiEvent.NavigateToHome)
+                }
+            }
             else -> {}
         }
     }
@@ -90,11 +99,17 @@ class LoginViewModel @Inject constructor(
             val result = loginUseCase(loginState.email, loginState.password)
             when (result) {
                 is AuthResult.Success -> {
-                    loginState = loginState.copy(isLoading = false)
-                    _eventFlow.emit(UiEvent.LoginSuccess)
+                    loginState = loginState.copy(
+                        isLoading = false,
+                        successMessage = "Login Berhasil!"
+                    )
+//                    _eventFlow.emit(UiEvent.NavigateToHome)
                 }
                 is AuthResult.Error -> {
-                    loginState = loginState.copy(isLoading = false, generalError = result.message)
+                    loginState = loginState.copy(
+                        isLoading = false,
+                        generalError = result.message
+                    )
                 }
             }
         }

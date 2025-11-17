@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.use_case.auth.ForgotPasswordUseCase
 import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidateEmailUseCase
+import com.dishut_lampung.sitanihut.presentation.login.LoginEvent
+import com.dishut_lampung.sitanihut.presentation.login.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -39,6 +41,15 @@ class ForgotPasswordViewModel @Inject constructor(
             is ForgotPasswordEvent.OnSubmitClick -> {
                 submitData()
             }
+            is ForgotPasswordEvent.OnDismissError -> {
+                forgotPasswordState = forgotPasswordState.copy(generalError = null)
+            }
+            is ForgotPasswordEvent.OnDismissSuccessMessage -> {
+                forgotPasswordState = forgotPasswordState.copy(successMessage = null)
+                viewModelScope.launch {
+                    _eventFlow.emit(ForgotPasswordUiEvent.SubmitSuccess)
+                }
+            }
             else -> {}
         }
     }
@@ -61,8 +72,11 @@ class ForgotPasswordViewModel @Inject constructor(
             val result = forgotPasswordUseCase(forgotPasswordState.email)
             when (result) {
                 is AuthResult.Success -> {
-                    forgotPasswordState = forgotPasswordState.copy(isLoading = false)
-                    _eventFlow.emit(ForgotPasswordUiEvent.SubmitSuccess)
+                    forgotPasswordState = forgotPasswordState.copy(
+                        isLoading = false,
+                        successMessage = "email telah dikirim"
+                    )
+
                 }
                 is AuthResult.Error -> {
                     forgotPasswordState = forgotPasswordState.copy(

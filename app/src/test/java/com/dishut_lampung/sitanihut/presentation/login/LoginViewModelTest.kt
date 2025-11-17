@@ -44,6 +44,7 @@ class LoginViewModelTest {
     @Test
     fun `onEvent OnEmailChange, state should be updated with new email`() {
         val newEmail = "test@example.com"
+        every { validateEmailUseCase(newEmail) } returns ValidationResult(successful = true)
         viewModel.onEvent(LoginEvent.OnEmailChange(newEmail))
 
         assertEquals(newEmail, viewModel.loginState.email)
@@ -73,23 +74,20 @@ class LoginViewModelTest {
     }
 
     @Test
-    fun `onEvent OnLoginClick with valid data and login success, should emit LoginSuccess event`() = runTest {
+    fun `onEvent OnLoginClick with valid data and login success, should update successMessage`() = runTest {
         val email = "valid@email.com"
         val password = "validpassword"
 
         every { validateEmailUseCase(email) } returns ValidationResult(true)
 
-        coEvery { loginUseCase(email, password) } returns AuthResult.Success(mockk()) // Kita tidak peduli data User-nya
+        coEvery { loginUseCase(email, password) } returns AuthResult.Success(mockk())
 
         viewModel.onEvent(LoginEvent.OnEmailChange(email))
         viewModel.onEvent(LoginEvent.OnPasswordChange(password))
+        viewModel.onEvent(LoginEvent.OnLoginClick)
 
-        viewModel.eventFlow.test {
-            viewModel.onEvent(LoginEvent.OnLoginClick)
-            val event = awaitItem()
-            assertTrue(event is UiEvent.LoginSuccess)
-            expectNoEvents()
-        }
+        assertEquals("Login Berhasil!", viewModel.loginState.successMessage)
+        assertEquals(false, viewModel.loginState.isLoading)
     }
 
     @Test
@@ -131,5 +129,18 @@ class LoginViewModelTest {
 
         viewModel.onEvent(LoginEvent.OnTogglePasswordVisibility)
         assertFalse(viewModel.loginState.isPasswordVisible)
+    }
+
+    @Test
+    fun `onEvent OnDismissSuccessMessage, should emit NavigateToHome event`() {
+        runTest {
+            viewModel.eventFlow.test {
+                viewModel.onEvent(LoginEvent.OnDismissSuccessMessage)
+
+                val event = awaitItem()
+                assertTrue(event is UiEvent.NavigateToHome)
+                expectNoEvents()
+            }
+        }
     }
 }
