@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,10 +28,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,11 +43,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dishut_lampung.sitanihut.presentation.components.CenteredAuthImage
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 
 data class LandingPage(
     val title: String,
     val subtitle: String,
-    @DrawableRes val imageResId: Int = R.drawable.auth_image_1,
+    @DrawableRes val imageResId: Int = R.drawable.onboarding_img1,
     @StringRes val contentDescriptionResId: Int = R.string.auth_image_1
 )
 
@@ -50,19 +62,19 @@ val landingPages = listOf(
     LandingPage(
         title = "Selamat datang di SITANIHUT Lampung",
         subtitle = "Silahkan masuk dengan akun yang terdaftar",
-        imageResId = R.drawable.auth_image_3,
-        contentDescriptionResId = R.string.auth_image_3
+        imageResId = R.drawable.onboarding_img1,
+        contentDescriptionResId = R.string.auth_image_1
     ),
     LandingPage(
         title = "Ajukan Laporanmu!",
         subtitle = "Yuk ajukan pelaporan hasil pertanian dan Nilai Transaksi Ekonomi yang didapatkan",
-        imageResId = R.drawable.auth_image_4,
+        imageResId = R.drawable.onboarding_img2,
         contentDescriptionResId = R.string.auth_image_4
     ),
     LandingPage(
         title = "Pantau Status Ajuanmu",
         subtitle = "Laporan akan diperiksa, cek berkala status pengajuan laporan anda, anda tetap bisa melakukan perubahan laporan yang ditolak dan mengajukannya kembali",
-        imageResId = R.drawable.auth_image_5,
+        imageResId = R.drawable.onboarding_img3,
         contentDescriptionResId = R.string.auth_image_5
     )
 )
@@ -98,28 +110,26 @@ fun LandingPageScreen(
 ) {
     val pagerState = rememberPagerState { landingPages.size }
 
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.primary),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
+    ) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.weight(1f)
+            ) { pageIndex ->
+            OnboardingPageItem(page = landingPages[pageIndex])
+        }
+
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            Spacer(Modifier.height(20.dp))
-
-            LogoHeader(
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(52.dp))
-
-            HorizontalPager(
-                state = pagerState,
-            ) { pageIndex ->
-                OnboardingPageItem(page = landingPages[pageIndex])
-            }
-
             DotsIndicator(
                 pageCount = landingPages.size,
                 currentPage = pagerState.currentPage
@@ -132,70 +142,56 @@ fun LandingPageScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                shape = MaterialTheme.shapes.extraLarge
+                shape = MaterialTheme.shapes.extraLarge,
+                colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.secondary)
             ) {
                 Text(
                     text = "Masuk",
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                 )
             }
 
             Spacer(Modifier.height(48.dp))
         }
-}
-
-@Composable
-private fun LogoHeader(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier.padding(vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.logo_sitanihut),
-            contentDescription = stringResource(id = R.string.logo),
-            modifier = Modifier.height(52.dp)
-        )
-
-        Spacer(Modifier.width(8.dp))
-
-        Text(
-            text = "Sitanihut",
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold
-            ),
-            color = MaterialTheme.colorScheme.onSurface
-        )
     }
 }
 
 @Composable
 fun OnboardingPageItem(page: LandingPage) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top,
+        modifier = Modifier.fillMaxHeight()
     ) {
-        CenteredAuthImage(
-            imageResId = page.imageResId,
-            contentDescriptionResId = page.contentDescriptionResId
+        Image(
+            painter = painterResource(id = page.imageResId),
+            contentDescription = page.title,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
         )
 
-        Spacer(Modifier.height(48.dp))
+        Spacer(Modifier.height(20.dp))
 
         Text(
             text = page.title,
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center
+            color = MaterialTheme.colorScheme.surface,
+            textAlign = TextAlign.End,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
         )
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(8.dp))
 
         Text(
             text = page.subtitle,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            textAlign = TextAlign.End,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
         )
     }
 }
@@ -212,8 +208,11 @@ fun DotsIndicator(
     ) {
         repeat(pageCount) { index ->
             val isSelected = (index == currentPage)
-            val color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
-
+            val color = if (isSelected) {
+                MaterialTheme.colorScheme.onPrimaryContainer
+            } else {
+                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f)
+            }
             Box(
                 modifier = Modifier
                     .size(if (isSelected) 16.dp else 8.dp, 8.dp)
@@ -223,3 +222,4 @@ fun DotsIndicator(
         }
     }
 }
+
