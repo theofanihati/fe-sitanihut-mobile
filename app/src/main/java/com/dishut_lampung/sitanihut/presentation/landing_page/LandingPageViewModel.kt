@@ -12,6 +12,8 @@ class LandingPageViewModel @Inject constructor(
     private val userPreferences: UserPreferences
 ) : ViewModel() {
     fun setOnboardingCompleted() {
-        //TODO BLMMMM
+        viewModelScope.launch {
+            userPreferences.setOnboardingCompleted()
+        }
     }
 }

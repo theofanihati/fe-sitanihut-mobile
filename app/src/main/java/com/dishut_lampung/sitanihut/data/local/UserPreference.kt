@@ -3,11 +3,14 @@ package com.dishut_lampung.sitanihut.data.local
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,6 +22,7 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
 
     companion object {
         val AUTH_TOKEN = stringPreferencesKey("auth_token")
+        val HAS_SEEN_ONBOARDING = booleanPreferencesKey("has_seen_onboarding")
     }
 
     suspend fun saveAuthToken(token: String) {
@@ -35,6 +39,18 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
     suspend fun clearAuthToken() {
         dataStore.edit { preferences ->
             preferences.remove(AUTH_TOKEN)
+        }
+    }
+
+    val hasSeenOnboarding: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            // Kembalikan 'false' jika key-nya belum ada
+            preferences[HAS_SEEN_ONBOARDING] ?: false
+        }
+
+    suspend fun setOnboardingCompleted() {
+        dataStore.edit { preferences ->
+            preferences[HAS_SEEN_ONBOARDING] = true
         }
     }
 }
