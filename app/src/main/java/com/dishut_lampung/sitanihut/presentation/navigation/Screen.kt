@@ -2,6 +2,7 @@ package com.dishut_lampung.sitanihut.presentation.navigation
 
 sealed class Screen(val route: String) {
 
+    data object LandingPage : Screen("landing_screen")
     data object Home : Screen("home_screen")
     data object Profile : Screen("profile_screen")
 

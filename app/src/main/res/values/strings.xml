@@ -3,4 +3,8 @@
     <string name="logo">Logo</string>
     <string name="auth_image_1">Auth Image 1</string>
     <string name="auth_image_2">Auth Image 2</string>
+    <string name="auth_image_3">Auth Image 3</string>
+    <string name="auth_image_4">Auth Image 4</string>
+    <string name="auth_image_5">Auth Image 5</string>
+    <string name="auth_image_6">Auth Image 6</string>
 </resources>
