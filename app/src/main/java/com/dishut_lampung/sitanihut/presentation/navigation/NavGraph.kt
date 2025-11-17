@@ -5,8 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.dishut_lampung.sitanihut.presentation.LandingPageRoute
-import com.dishut_lampung.sitanihut.presentation.SplashScreen
+import com.dishut_lampung.sitanihut.presentation.landing_page.LandingPageRoute
 
 @Composable
 fun NavGraph(
@@ -14,7 +13,10 @@ fun NavGraph(
     modifier : Modifier,
     startDestination : String = "landing_screen"
 ) {
-    NavHost(navController = navController, startDestination = startDestination) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination
+    ) {
         composable("landing_screen") {
             LandingPageRoute(
                 onNavigateToLogin = {

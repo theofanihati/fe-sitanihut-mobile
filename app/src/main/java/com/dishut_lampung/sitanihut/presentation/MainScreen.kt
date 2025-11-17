@@ -15,13 +15,14 @@ import androidx.navigation.compose.rememberNavController
 import com.dishut_lampung.sitanihut.presentation.components.topbar.DetailTopBar
 import com.dishut_lampung.sitanihut.presentation.components.topbar.HomeTopBar
 import com.dishut_lampung.sitanihut.presentation.navigation.NavGraph
-import com.dishut_lampung.sitanihut.presentation.navigation.Screen
 import com.dishut_lampung.sitanihut.presentation.scaffold.TopBarTheme
 import com.dishut_lampung.sitanihut.presentation.scaffold.scaffoldConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    startDestination: String
+) {
     val navController: NavHostController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -69,7 +70,7 @@ fun MainScreen() {
         NavGraph(
             navController = navController,
             modifier = Modifier.padding(paddingValues),
-            startDestination = Screen.LandingPage.route
+            startDestination = startDestination,
         )
     }
 }
