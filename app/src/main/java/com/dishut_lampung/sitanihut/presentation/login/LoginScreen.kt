@@ -60,7 +60,6 @@ fun LoginScreenErrorPreview() {
                 isLoading = true,
                 ),
             onEvent = {},
-            onNavigateBack = {}
         )
     }
 }
@@ -98,9 +97,6 @@ fun LoginRoute(
     LoginScreen(
         state = state,
         onEvent = viewModel::onEvent,
-        onNavigateBack = {
-            navController.popBackStack()
-        }
     )
 }
 
@@ -109,7 +105,6 @@ fun LoginScreen(
     modifier : Modifier = Modifier,
     state: LoginState,
     onEvent: (LoginEvent) -> Unit,
-    onNavigateBack: () -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -127,8 +122,7 @@ fun LoginScreen(
             onPasswordChange = { password -> onEvent(LoginEvent.OnPasswordChange(password)) },
             onLoginClick = { onEvent(LoginEvent.OnLoginClick) },
             onNavigateToForgotPassword = { onEvent(LoginEvent.OnForgotPasswordClick) },
-            onTogglePasswordVisibility = { onEvent(LoginEvent.OnTogglePasswordVisibility) }, // <-- Bug diperbaiki
-            onNavigateBack = onNavigateBack,
+            onTogglePasswordVisibility = { onEvent(LoginEvent.OnTogglePasswordVisibility) },
             state = state
         )
         Spacer(Modifier.height(16.dp))
@@ -173,7 +167,6 @@ fun BottomSection(
     onLoginClick : () -> Unit,
     onNavigateToForgotPassword : () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
-    onNavigateBack: () -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -240,19 +233,6 @@ fun BottomSection(
                     style = MaterialTheme.typography.labelLarge
                 )
             }
-        }
-
-        TextButton(
-            onClick = onNavigateBack,
-            colors = ButtonDefaults.textButtonColors(
-                contentColor = MaterialTheme.colorScheme.onSurface
-            )
-        ) {
-            Text(
-                text = "Kembali",
-                style = MaterialTheme.typography.labelLarge,
-                textDecoration = TextDecoration.Underline
-            )
         }
     }
 }
