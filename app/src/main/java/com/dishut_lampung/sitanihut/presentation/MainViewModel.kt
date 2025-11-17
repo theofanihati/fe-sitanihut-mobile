@@ -26,7 +26,18 @@ class MainViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            //TODO lum beb
+            val hasSeenOnboarding = userPreferences.hasSeenOnboarding.first()
+
+            val destination = if (hasSeenOnboarding) {
+                "auth"
+            } else {
+                Screen.LandingPage.route
+            }
+
+            _uiState.value = MainUiState(
+                isLoading = false,
+                startDestination = destination
+            )
         }
     }
 }
