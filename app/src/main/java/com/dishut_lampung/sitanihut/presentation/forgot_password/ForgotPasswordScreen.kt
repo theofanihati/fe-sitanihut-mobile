@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.login
+package com.dishut_lampung.sitanihut.presentation.forgot_password
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,54 +37,53 @@ import com.dishut_lampung.sitanihut.presentation.components.CenteredLogo
 import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomOutlinedTextField
 import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
 
-
-//@Preview(showBackground = true)
-//@Composable
-//fun LoginScreenPreview() {
-//    SitanihutTheme(dynamicColor = false) {
-//        LoginScreen(
-//            state = LoginState(email = "test@email.com"),
-//            onEvent = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
-
 @Preview(showBackground = true)
 @Composable
-fun LoginScreenErrorPreview() {
+fun ForgotPasswordScreenPreview() {
     SitanihutTheme(dynamicColor = false) {
-        LoginScreen(
-            state = LoginState(
-                email = "aaaa.kl" ,
-                emailError = "Format email tidak valid",
-                isLoading = true,
-                ),
+        ForgotPasswordScreen(
+            state = ForgotPasswordState(email = "test@email.com"),
             onEvent = {},
             onNavigateBack = {}
         )
     }
 }
 
+//@Preview(showBackground = true)
+//@Composable
+//fun ForgotPasswordScreenErrorPreview() {
+//    SitanihutTheme(dynamicColor = false) {
+//        ForgotPasswordScreen(
+//            state = ForgotPasswordState(
+//                email = "aaaa.kl" ,
+//                emailError = "Format email tidak valid",
+//                isLoading = true,
+//            ),
+//            onEvent = {},
+//            onNavigateBack = {}
+//        )
+//    }
+//}
+
 @Composable
-fun LoginRoute(
+fun ForgotPasswordRoute(
     navController: NavHostController,
-    viewModel: LoginViewModel = hiltViewModel()
+    viewModel: ForgotPasswordViewModel = hiltViewModel()
 ) {
-    val state = viewModel.loginState
+    val state = viewModel.forgotPasswordState
     val context = LocalContext.current
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->
             when (event) {
-                is UiEvent.LoginSuccess -> {
-                    Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
-                    navController.navigate("home_screen") {
-                        popUpTo("login_screen") { inclusive = true }
+                is ForgotPasswordUiEvent.SubmitSuccess -> {
+                    Toast.makeText(context, "Email berhasil dikirim!", Toast.LENGTH_SHORT).show()
+                    navController.navigate("login_screen") {
+                        popUpTo("forgot_password_screen") { inclusive = true }
                     }
                 }
-                is UiEvent.NavigateToForgotPassword -> {
-                    navController.navigate("forgot_password_screen")
+                is ForgotPasswordUiEvent.NavigateBack -> {
+                    navController.navigate("login_screen")
                 }
             }
         }
@@ -95,7 +95,7 @@ fun LoginRoute(
         }
     }
 
-    LoginScreen(
+    ForgotPasswordScreen(
         state = state,
         onEvent = viewModel::onEvent,
         onNavigateBack = {
@@ -105,12 +105,13 @@ fun LoginRoute(
 }
 
 @Composable
-fun LoginScreen(
-    modifier : Modifier = Modifier,
-    state: LoginState,
-    onEvent: (LoginEvent) -> Unit,
-    onNavigateBack: () -> Unit,
+fun ForgotPasswordScreen(
+    modifier: Modifier = Modifier,
+    state: ForgotPasswordState,
+    onEvent: (ForgotPasswordEvent) -> Unit,
+    onNavigateBack: () -> Unit
 ) {
+
     Scaffold { paddingValues ->
         Column(
             modifier = modifier
@@ -126,11 +127,8 @@ fun LoginScreen(
             TopSection()
             Spacer(Modifier.height(24.dp))
             BottomSection(
-                onEmailChange = { email -> onEvent(LoginEvent.OnEmailChange(email)) },
-                onPasswordChange = { password -> onEvent(LoginEvent.OnPasswordChange(password)) },
-                onLoginClick = { onEvent(LoginEvent.OnLoginClick) },
-                onNavigateToForgotPassword = { onEvent(LoginEvent.OnForgotPasswordClick) },
-                onTogglePasswordVisibility = { onEvent(LoginEvent.OnTogglePasswordVisibility) }, // <-- Bug diperbaiki
+                onEmailChange = { email -> onEvent(ForgotPasswordEvent.OnEmailChange(email)) },
+                onSubmitClick = { onEvent(ForgotPasswordEvent.OnSubmitClick) },
                 onNavigateBack = onNavigateBack,
                 state = state
             )
@@ -141,44 +139,35 @@ fun LoginScreen(
 
 @Composable
 fun TopSection(
-
 ){
     CenteredLogo()
     Spacer(Modifier.height(16.dp))
 
     Text(
-        text = "Selamat datang di",
+        text = "Lupa Kata Sandi",
         style = MaterialTheme.typography.headlineMedium,
         color = MaterialTheme.colorScheme.onSurface,
         fontWeight = FontWeight.Bold
     )
     Text(
-        text = "SITANIHUT Lampung",
-        style = MaterialTheme.typography.headlineLarge,
-        color = MaterialTheme.colorScheme.tertiary,
-        fontWeight = FontWeight.Bold
-    )
-    Text(
-        text = "Silahkan masuk dengan akun yang terdaftar",
+        text = "Masukkan email Anda untuk menerima notifikasi reset kata sandi",
         style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
     )
 
     Spacer(Modifier.height(24.dp))
     CenteredAuthImage(
-        imageResId = R.drawable.auth_image_1,
-        contentDescriptionResId = R.string.auth_image_1
+        imageResId = R.drawable.auth_image_2,
+        contentDescriptionResId = R.string.auth_image_2
     )
 }
 
 @Composable
 fun BottomSection(
-    state: LoginState,
+    state: ForgotPasswordState,
     onEmailChange : (String) -> Unit,
-    onPasswordChange : (String) -> Unit,
-    onLoginClick : () -> Unit,
-    onNavigateToForgotPassword : () -> Unit,
-    onTogglePasswordVisibility: () -> Unit,
+    onSubmitClick : () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     Column(
@@ -199,35 +188,8 @@ fun BottomSection(
             rounded = 40,
         )
 
-        CustomOutlinedTextField(
-            value = state.password,
-            onValueChange = { onPasswordChange(it) },
-            label = "Kata Sandi",
-            placeholder = "Masukkan kata sandi",
-            asteriskAtEnd = true,
-            isPassword = true,
-            isPasswordVisible = state.isPasswordVisible,
-            onPasswordToggleClick = onTogglePasswordVisibility,
-            error = state.passwordError,
-            modifier = Modifier.fillMaxWidth(),
-            rounded = 40,
-        )
-
-        TextButton(
-            onClick = onNavigateToForgotPassword,
-            modifier = Modifier.align(Alignment.End),
-            colors = ButtonDefaults.textButtonColors(
-                contentColor = MaterialTheme.colorScheme.onSurface
-            )
-        ) {
-            Text(
-                text = "Lupa kata sandi",
-                textDecoration = TextDecoration.Underline
-            )
-        }
-
         Button(
-            onClick = onLoginClick,
+            onClick = onSubmitClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(40.dp),
@@ -242,7 +204,7 @@ fun BottomSection(
                 )
             } else {
                 Text(
-                    text = "Masuk",
+                    text = "Kirim Verifikasi",
                     style = MaterialTheme.typography.labelLarge
                 )
             }
@@ -255,7 +217,11 @@ fun BottomSection(
             )
         ) {
             Text(
-                text = "Kembali",
+                text = "Ingat kata sandi? ",
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Text(
+                text = "Masuk",
                 style = MaterialTheme.typography.labelLarge,
                 textDecoration = TextDecoration.Underline
             )
