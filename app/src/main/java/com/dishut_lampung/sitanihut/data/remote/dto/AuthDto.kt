@@ -1,5 +1,6 @@
 package com.dishut_lampung.sitanihut.data.remote.dto
 
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 
 class AuthDto {
@@ -20,7 +21,7 @@ class AuthDto {
         val message: String,
         @SerializedName("statusCode")
         val statusCode: Int,
-        val data: LoginDataDto
+        val data: JsonElement
     )
 
     data class ForgotPasswordRequest(

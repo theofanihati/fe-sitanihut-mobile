@@ -21,18 +21,31 @@ class AuthRepositoryImpl @Inject constructor(
             val request = AuthDto.LoginRequest(email, password)
             val response = apiService.login(request)
 
-            val token = response.data.token
-            userPreferences.saveAuthToken(token)
+            if (response.statusCode == 200 && response.data.isJsonObject) {
 
-            AuthResult.Success(
-                data = User(
-                    id = response.data.id,
-                    name = response.data.name,
-                    token = response.data.token,
-                    role = response.data.role,
-                    email = response.data.email
+                val dataObject = response.data.asJsonObject
+
+                val token = dataObject.get("token").asString
+                val role = dataObject.get("role").asString.lowercase()
+                val id = dataObject.get("id").asString
+                val name = dataObject.get("name").asString
+                val emailResp = dataObject.get("email").asString
+
+                userPreferences.saveAuthToken(token)
+                userPreferences.saveUserRole(role)
+
+                AuthResult.Success(
+                    data = User(
+                        id = id,
+                        name = name,
+                        token = token,
+                        role = role,
+                        email = emailResp
+                    )
                 )
-            )
+            } else {
+                AuthResult.Error(response.message)
+            }
         } catch (e: HttpException) {
             val errorBody = e.response()?.errorBody()?.string()
             val errorMessage = try {
@@ -99,6 +112,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun logout() {
         userPreferences.clearAuthToken()
+        userPreferences.clearUserRole()
     }
 
     override suspend fun isLoggedIn(): Boolean {

@@ -2,6 +2,7 @@ package com.dishut_lampung.sitanihut.presentation.login
 
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
+import com.dishut_lampung.sitanihut.domain.model.User
 import com.dishut_lampung.sitanihut.domain.use_case.auth.LoginUseCase
 import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidateEmailUseCase
 import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidatePasswordUseCase
@@ -80,7 +81,14 @@ class LoginViewModelTest {
 
         every { validateEmailUseCase(email) } returns ValidationResult(true)
 
-        coEvery { loginUseCase(email, password) } returns AuthResult.Success(mockk())
+        val dummyUser = User(
+            id = "1",
+            name = "Test User",
+            email = email,
+            token = "token_123",
+            role = "Petani"
+        )
+        coEvery { loginUseCase(email, password) } returns AuthResult.Success(dummyUser)
 
         viewModel.onEvent(LoginEvent.OnEmailChange(email))
         viewModel.onEvent(LoginEvent.OnPasswordChange(password))

@@ -9,6 +9,7 @@ import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.use_case.auth.LoginUseCase
 import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidateEmailUseCase
 import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidatePasswordUseCase
+import com.dishut_lampung.sitanihut.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -20,6 +21,8 @@ class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val validateEmailUseCase: ValidateEmailUseCase,
 ) : ViewModel() {
+
+    private var pendingDestinationRoute: String = "home_screen_petani"
 
     var loginState by mutableStateOf(LoginState())
         private set
@@ -70,7 +73,7 @@ class LoginViewModel @Inject constructor(
             is LoginEvent.OnDismissSuccessMessage -> {
                 loginState = loginState.copy(successMessage = null)
                 viewModelScope.launch {
-                    _eventFlow.emit(UiEvent.NavigateToHome)
+                    _eventFlow.emit(UiEvent.NavigateToHome(pendingDestinationRoute))
                 }
             }
             else -> {}
@@ -96,14 +99,21 @@ class LoginViewModel @Inject constructor(
     private fun login() {
         viewModelScope.launch {
             loginState = loginState.copy(isLoading = true)
-            val result = loginUseCase(loginState.email, loginState.password)
+            val result = loginUseCase(loginState.email.trim(), loginState.password.trim())
             when (result) {
                 is AuthResult.Success -> {
+                    val role = result.data.role.lowercase()
+                    pendingDestinationRoute = when (role) {
+                        "petani" -> Screen.HomePetani.route
+                        "penyuluh" -> Screen.HomePenyuluh.route
+                        "kkph" -> Screen.HomeKkph.route
+                        else -> Screen.HomePetani.route
+                    }
+
                     loginState = loginState.copy(
                         isLoading = false,
                         successMessage = "Login Berhasil!"
                     )
-//                    _eventFlow.emit(UiEvent.NavigateToHome)
                 }
                 is AuthResult.Error -> {
                     loginState = loginState.copy(

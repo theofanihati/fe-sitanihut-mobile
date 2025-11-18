@@ -22,7 +22,9 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         )
 
         // PAKE MAIN NAV
-        Screen.Home.route -> ScaffoldConfig(
+        Screen.HomePetani.route,
+        Screen.HomePenyuluh.route,
+        Screen.HomeKkph.route, -> ScaffoldConfig(
             showMainNav = true,
             showBackNav = false,
             topBarTheme = TopBarTheme.LIGHT_BACKGROUND

@@ -23,6 +23,7 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
     companion object {
         val AUTH_TOKEN = stringPreferencesKey("auth_token")
         val HAS_SEEN_ONBOARDING = booleanPreferencesKey("has_seen_onboarding")
+        val USER_ROLE = stringPreferencesKey("user_role")
     }
 
     suspend fun saveAuthToken(token: String) {
@@ -42,9 +43,35 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
         }
     }
 
+    val authToken: Flow<String?> = dataStore.data
+        .map { preferences ->
+            preferences[AUTH_TOKEN]
+        }
+
+    val userRole: Flow<String?> = dataStore.data
+        .map { preferences ->
+            preferences[USER_ROLE]
+        }
+
+    suspend fun saveUserRole(role: String) {
+        dataStore.edit { preferences ->
+            preferences[USER_ROLE] = role
+        }
+    }
+
+    suspend fun getUserRole(): String? {
+        val preferences = dataStore.data.first()
+        return preferences[USER_ROLE]
+    }
+
+    suspend fun clearUserRole() {
+        dataStore.edit { preferences ->
+            preferences.remove(USER_ROLE)
+        }
+    }
+
     val hasSeenOnboarding: Flow<Boolean> = dataStore.data
         .map { preferences ->
-            // Kembalikan 'false' jika key-nya belum ada
             preferences[HAS_SEEN_ONBOARDING] ?: false
         }
 
