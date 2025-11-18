@@ -1,6 +1,5 @@
 package com.dishut_lampung.sitanihut.presentation.login
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +15,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -174,8 +172,8 @@ fun TopSection(){
 
     Spacer(Modifier.height(24.dp))
     CenteredAuthImage(
-        imageResId = R.drawable.auth_image_1,
-        contentDescriptionResId = R.string.auth_image_1
+        imageResId = R.drawable.auth_image_2,
+        contentDescriptionResId = R.string.auth_image_2
     )
 }
 

@@ -174,7 +174,7 @@ fun OnboardingPageItem(page: LandingPage) {
 
         Text(
             text = page.title,
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+            style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.surface,
             textAlign = TextAlign.End,
             modifier = Modifier
@@ -186,7 +186,7 @@ fun OnboardingPageItem(page: LandingPage) {
 
         Text(
             text = page.subtitle,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.surfaceVariant,
             textAlign = TextAlign.End,
             modifier = Modifier
