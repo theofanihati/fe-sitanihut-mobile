@@ -33,6 +33,7 @@ class AuthRepositoryImpl @Inject constructor(
 
                 userPreferences.saveAuthToken(token)
                 userPreferences.saveUserRole(role)
+                userPreferences.saveUserName(name)
 
                 AuthResult.Success(
                     data = User(

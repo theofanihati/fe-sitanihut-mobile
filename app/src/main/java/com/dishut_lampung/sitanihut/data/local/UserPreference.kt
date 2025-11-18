@@ -24,6 +24,7 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
         val AUTH_TOKEN = stringPreferencesKey("auth_token")
         val HAS_SEEN_ONBOARDING = booleanPreferencesKey("has_seen_onboarding")
         val USER_ROLE = stringPreferencesKey("user_role")
+        val USER_NAME = stringPreferencesKey("user_name")
     }
 
     suspend fun saveAuthToken(token: String) {
@@ -53,6 +54,11 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
             preferences[USER_ROLE]
         }
 
+    val userName: Flow<String?> = dataStore.data
+        .map { preferences ->
+            preferences[USER_NAME] ?: "Pengguna" // Default kalau kosong
+        }
+
     suspend fun saveUserRole(role: String) {
         dataStore.edit { preferences ->
             preferences[USER_ROLE] = role
@@ -67,6 +73,18 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
     suspend fun clearUserRole() {
         dataStore.edit { preferences ->
             preferences.remove(USER_ROLE)
+        }
+    }
+
+    suspend fun saveUserName(name: String) {
+        dataStore.edit { preferences ->
+            preferences[USER_NAME] = name
+        }
+    }
+
+    suspend fun clearUserName() {
+        dataStore.edit { preferences ->
+            preferences.remove(USER_NAME)
         }
     }
 

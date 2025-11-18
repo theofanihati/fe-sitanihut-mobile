@@ -50,8 +50,8 @@ fun HomeTopBar(
                 AsyncImage(
                     model = imageUrl,
                     contentDescription = "Avatar",
-                    placeholder = painterResource(id = R.drawable.logo_sitanihut),
-                    error = painterResource(id = R.drawable.logo_sitanihut),
+                    placeholder = painterResource(id = R.drawable.profile_picture),
+                    error = painterResource(id = R.drawable.profile_picture),
 
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -67,12 +67,14 @@ fun HomeTopBar(
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold
                         ),
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
+//                        color = Color.White
                     )
                     Text(
                         text = role,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.8f)
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface
+//                        color = Color.White.copy(alpha = 0.8f)
                     )
                 }
             }
