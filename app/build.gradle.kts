@@ -24,7 +24,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "BASE_URL", "\"https://sitanihut.lampungprov.go.id/api/\"")
+        }
+
         release {
+            buildConfigField ("String", "BASE_URL", "\"https://api-sipetahut.palum.id/api/\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -52,6 +57,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -117,7 +123,11 @@ dependencies {
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    // OkHttp & Logging Interceptor
     testImplementation ("com.squareup.okhttp3:mockwebserver:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // Coroutines
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
