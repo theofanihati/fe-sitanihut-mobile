@@ -6,7 +6,6 @@ import com.dishut_lampung.sitanihut.domain.model.UserProfile
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 data class FarmerHomeData(
@@ -18,7 +17,17 @@ data class FarmerHomeData(
 class GetFarmerHomeDataUseCase @Inject constructor(
     private val homeRepository: HomeRepository
 ) {
-    operator fun invoke(): Flow<FarmerHomeData> = flow {
-        //TODO belummm
+    operator fun invoke(): Flow<FarmerHomeData> {
+        return combine(
+            homeRepository.getUserProfile(),
+            homeRepository.getReportSummary(),
+            homeRepository.getLatestReports()
+        ) { profile, summary, reports ->
+            FarmerHomeData(
+                userProfile = profile,
+                summary = summary,
+                latestReports = reports
+            )
+        }
     }
 }
