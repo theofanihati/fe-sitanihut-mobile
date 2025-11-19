@@ -1,10 +1,11 @@
-package com.dishut_lampung.sitanihut.presentation.home_page.penyuluh
+package com.dishut_lampung.sitanihut.presentation.profile
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -25,16 +26,17 @@ import com.dishut_lampung.sitanihut.R
 @Preview(showBackground = true)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HomePagePenyuluhScreen(
+fun PenyuluhProfileScreen(
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         AsyncImage(
             model = R.drawable.homepage_background,
-            alignment = Alignment.TopStart,
             contentDescription = "Background",
             contentScale = ContentScale.Fit,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
         )
 
         Column(
@@ -43,14 +45,15 @@ fun HomePagePenyuluhScreen(
                 .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
         ) {
-            Spacer(Modifier.height(80.dp))
+            Spacer(Modifier.height(8.dp))
 
             Text(
-                text = "INI HOME PAGE",
+                text = "INI PROFIL PENYULUH",
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier.padding(horizontal = 16.dp),
-                color = MaterialTheme.colorScheme.surface
+                color = Color.Black
             )
         }
     }
+
 }

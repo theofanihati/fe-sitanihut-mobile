@@ -9,7 +9,6 @@ data class ScaffoldConfig(
     val topBarTheme: TopBarTheme = TopBarTheme.LIGHT_BACKGROUND
 )
 
-
 fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
     return when (currentRoute) {
 
@@ -27,14 +26,15 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         Screen.HomeKkph.route, -> ScaffoldConfig(
             showMainNav = true,
             showBackNav = false,
-            topBarTheme = TopBarTheme.LIGHT_BACKGROUND
         )
 
         // PAKE BACK NAV
-        Screen.Profile.route -> ScaffoldConfig(
+        Screen.Petani.ProfilePetani.route,
+        Screen.Penyuluh.ProfilePenyuluh.route,
+        Screen.Kkph.ProfileKkph.route-> ScaffoldConfig(
             showMainNav = false,
             showBackNav = true,
-            topBarTheme = TopBarTheme.DARK_BACKGROUND
+            topBarTheme = TopBarTheme.LIGHT_BACKGROUND
         )
         else -> ScaffoldConfig()
     }

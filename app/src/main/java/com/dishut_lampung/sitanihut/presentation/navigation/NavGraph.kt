@@ -49,17 +49,17 @@ fun NavGraph(
             modifier = modifier,
             navController = navController
         )
-//        petaniNavGraph(
-//            modifier = modifier,
-//            navController = navController
-//        )
-//        penyuluhNavGraph(
-//            modifier = modifier,
-//            navController = navController
-//        )
-//        kkphNavGraph(
-//            modifier = modifier,
-//            navController = navController
-//        )
+        petaniNavGraph(
+            modifier = modifier,
+            navController = navController
+        )
+        penyuluhNavGraph(
+            modifier = modifier,
+            navController = navController
+        )
+        kkphNavGraph(
+            modifier = modifier,
+            navController = navController
+        )
     }
 }

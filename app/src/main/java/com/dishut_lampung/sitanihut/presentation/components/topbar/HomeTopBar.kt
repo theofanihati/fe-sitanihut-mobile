@@ -1,9 +1,11 @@
 package com.dishut_lampung.sitanihut.presentation.components.topbar
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -37,7 +39,8 @@ fun HomeTopBar(
     role: String,
     imageUrl: String?,
     onLogoutClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onProfileClick: (String) -> Unit,
 ) {
     Log.d("SITANIHUT_LOG", "Nilai imageUrl yang diterima: $imageUrl")
     TopAppBar(
@@ -49,7 +52,12 @@ fun HomeTopBar(
         ),
         title = {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .clickable {
+                        onProfileClick(role)
+                    }
+                    .padding(vertical = 4.dp, horizontal = 4.dp),
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -73,13 +81,11 @@ fun HomeTopBar(
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold
                         ),
-//                        color = MaterialTheme.colorScheme.onSurface
                         color = Color.White
                     )
                     Text(
                         text = role,
                         style = MaterialTheme.typography.titleSmall,
-//                        color = MaterialTheme.colorScheme.onSurface
                         color = Color.White.copy(alpha = 0.8f)
                     )
                 }
@@ -90,7 +96,6 @@ fun HomeTopBar(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                     contentDescription = "Logout",
-//                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }

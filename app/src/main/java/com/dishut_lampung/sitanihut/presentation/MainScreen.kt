@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import com.dishut_lampung.sitanihut.presentation.components.topbar.DetailTopBar
 import com.dishut_lampung.sitanihut.presentation.components.topbar.HomeTopBar
 import com.dishut_lampung.sitanihut.presentation.navigation.NavGraph
+import com.dishut_lampung.sitanihut.presentation.navigation.Screen
 import com.dishut_lampung.sitanihut.presentation.scaffold.TopBarTheme
 import com.dishut_lampung.sitanihut.presentation.scaffold.scaffoldConfig
 
@@ -65,6 +66,15 @@ fun MainScreen(
                             navController.navigate("auth") {
                                 popUpTo(0) { inclusive = true }
                             }
+                        },
+                        onProfileClick = { role ->
+                            val destination = when (role.lowercase()) {
+                                "petani" -> Screen.Petani.ProfilePetani.route
+                                "penyuluh" -> Screen.Penyuluh.ProfilePenyuluh.route
+                                "kkph" -> Screen.Kkph.ProfileKkph.route
+                                else -> "profile/petani" // Default ke Petani jika role tidak dikenal
+                            }
+                            navController.navigate(destination)
                         }
                     )
                 }
