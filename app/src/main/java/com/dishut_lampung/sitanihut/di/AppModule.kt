@@ -1,19 +1,28 @@
 package com.dishut_lampung.sitanihut.di
 
+import android.content.Context
+import androidx.room.Room
 import com.dishut_lampung.sitanihut.BuildConfig
+import com.dishut_lampung.sitanihut.data.local.SitanihutDatabase
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
+import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.remote.AuthApiService
+import com.dishut_lampung.sitanihut.data.remote.HomeApiService
 import com.dishut_lampung.sitanihut.data.repository.AuthRepositoryImpl
+import com.dishut_lampung.sitanihut.data.repository.HomeRepositoryImpl
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
-import com.dishut_lampung.sitanihut.domain.use_case.auth.ForgotPasswordUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.auth.LoginStatusUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.auth.LoginUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.auth.LogoutUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidateEmailUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidatePasswordUseCase
+import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
+import com.dishut_lampung.sitanihut.domain.usecase.auth.ForgotPasswordUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginStatusUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.LogoutUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateEmailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidatePasswordUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.home.GetFarmerHomeDataUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -70,11 +79,46 @@ object AppModule{
 
     @Provides
     @Singleton
+    fun provideHomeApiService(retrofit: Retrofit): HomeApiService {
+        return retrofit.create(HomeApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
     fun provideAuthRepository(
         apiService: AuthApiService,
-        userPreferences: UserPreferences
+        userPreferences: UserPreferences,
+        reportDao: ReportDao
     ): AuthRepository {
-        return AuthRepositoryImpl(apiService, userPreferences)
+        return AuthRepositoryImpl(apiService, userPreferences, reportDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideHomeRepository(
+        apiService: HomeApiService,
+        userPreferences: UserPreferences,
+        reportDao: ReportDao
+    ): HomeRepository {
+        return HomeRepositoryImpl(apiService, reportDao, userPreferences)
+    }
+
+    // DATABASE
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): SitanihutDatabase {
+        return Room.databaseBuilder(
+            context,
+            SitanihutDatabase::class.java,
+            "sitanihut_database"
+        ).fallbackToDestructiveMigration() // reset db kalau ada perubahan struktur
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideReportDao(database: SitanihutDatabase): ReportDao {
+        return database.reportDao()
     }
 
     // USE CASE
@@ -107,5 +151,10 @@ object AppModule{
     @Singleton
     fun provideValidatePasswordUseCase(): ValidatePasswordUseCase {
         return ValidatePasswordUseCase()
+    }
+    @Provides
+    @Singleton
+    fun getFarmerHomeDataUseCase(repository: HomeRepository): GetFarmerHomeDataUseCase {
+        return GetFarmerHomeDataUseCase(repository)
     }
 }

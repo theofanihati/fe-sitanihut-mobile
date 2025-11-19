@@ -25,8 +25,11 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
         val HAS_SEEN_ONBOARDING = booleanPreferencesKey("has_seen_onboarding")
         val USER_ROLE = stringPreferencesKey("user_role")
         val USER_NAME = stringPreferencesKey("user_name")
+        val USER_ID = stringPreferencesKey("user_id")
+        val USER_AVATAR = stringPreferencesKey("user_avatar")
     }
 
+    // token
     suspend fun saveAuthToken(token: String) {
         dataStore.edit { preferences ->
             preferences[AUTH_TOKEN] = token
@@ -38,25 +41,15 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
         return preferences[AUTH_TOKEN]
     }
 
-    suspend fun clearAuthToken() {
-        dataStore.edit { preferences ->
-            preferences.remove(AUTH_TOKEN)
-        }
-    }
-
     val authToken: Flow<String?> = dataStore.data
         .map { preferences ->
             preferences[AUTH_TOKEN]
         }
 
+    // role
     val userRole: Flow<String?> = dataStore.data
         .map { preferences ->
             preferences[USER_ROLE]
-        }
-
-    val userName: Flow<String?> = dataStore.data
-        .map { preferences ->
-            preferences[USER_NAME] ?: "Pengguna" // Default kalau kosong
         }
 
     suspend fun saveUserRole(role: String) {
@@ -65,16 +58,11 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
         }
     }
 
-    suspend fun getUserRole(): String? {
-        val preferences = dataStore.data.first()
-        return preferences[USER_ROLE]
-    }
-
-    suspend fun clearUserRole() {
-        dataStore.edit { preferences ->
-            preferences.remove(USER_ROLE)
+    // name
+    val userName: Flow<String?> = dataStore.data
+        .map { preferences ->
+            preferences[USER_NAME] ?: "Pengguna"
         }
-    }
 
     suspend fun saveUserName(name: String) {
         dataStore.edit { preferences ->
@@ -82,9 +70,39 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
         }
     }
 
-    suspend fun clearUserName() {
+    // id
+    suspend fun saveUserId(id: String) {
+        dataStore.edit { it[USER_ID] = id }
+    }
+
+    val userId: Flow<String?> = dataStore.data.map { it[USER_ID] }
+
+    // profpic
+    suspend fun saveUserAvatar(url: String) {
+        dataStore.edit { it[USER_AVATAR] = url }
+    }
+
+    val userAvatar: Flow<String?> = dataStore.data.map { it[USER_AVATAR] }
+
+    suspend fun clearAllSession() {
         dataStore.edit { preferences ->
+            preferences.remove(AUTH_TOKEN)
+            preferences.remove(USER_ROLE)
             preferences.remove(USER_NAME)
+            preferences.remove(USER_ID)
+            preferences.remove(USER_AVATAR)
+        }
+    }
+
+    suspend fun clearAuthToken() {
+        dataStore.edit { preferences ->
+            preferences.remove(AUTH_TOKEN)
+        }
+    }
+
+    suspend fun clearUserRole() {
+        dataStore.edit { preferences ->
+            preferences.remove(USER_ROLE)
         }
     }
 
