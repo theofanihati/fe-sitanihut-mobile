@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.data.repository
 
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
+import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.remote.AuthApiService
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.google.gson.Gson
@@ -23,6 +24,7 @@ class AuthRepositoryImplTest {
     private lateinit var mockWebServer: MockWebServer
     private lateinit var apiService: AuthApiService
     private val mockUserPreferences: UserPreferences = mockk(relaxed = true)
+    private val mockReportDao: ReportDao = mockk(relaxed = true)
 
     @Before
     fun setUp() {
@@ -33,7 +35,7 @@ class AuthRepositoryImplTest {
             .build()
             .create(AuthApiService::class.java)
 
-        authRepository = AuthRepositoryImpl(apiService, mockUserPreferences)
+        authRepository = AuthRepositoryImpl(apiService, mockUserPreferences, mockReportDao)
     }
 
     @After
@@ -111,7 +113,7 @@ class AuthRepositoryImplTest {
         val result = authRepository.login("email@example.com", "password")
 
         assertTrue(result is AuthResult.Error)
-        assertEquals("Akses ditolak. Silakan login kembali.", (result as AuthResult.Error).message)
+        assertEquals("Akses ditolak.", (result as AuthResult.Error).message)
         coVerify(exactly = 0) { mockUserPreferences.saveAuthToken(any()) }
     }
     @Test
@@ -161,7 +163,7 @@ class AuthRepositoryImplTest {
     @Test
     fun `logout, should call clearAuthToken`() = runTest {
         authRepository.logout()
-        coVerify(exactly = 1) { mockUserPreferences.clearAuthToken() }
+        coVerify(exactly = 1) { mockUserPreferences.clearAllSession() }
     }
 
     // token save di datastore

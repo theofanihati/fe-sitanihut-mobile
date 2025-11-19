@@ -2,6 +2,7 @@ package com.dishut_lampung.sitanihut.data.repository
 
 import retrofit2.HttpException
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
+import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.remote.AuthApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.AuthDto
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
@@ -14,6 +15,7 @@ import javax.inject.Inject
 class AuthRepositoryImpl @Inject constructor(
     private val apiService: AuthApiService,
     private val userPreferences: UserPreferences,
+    private val reportDao: ReportDao
 ) : AuthRepository {
 
     override suspend fun login(email: String, password: String): AuthResult<User> {
@@ -34,6 +36,7 @@ class AuthRepositoryImpl @Inject constructor(
                 userPreferences.saveAuthToken(token)
                 userPreferences.saveUserRole(role)
                 userPreferences.saveUserName(name)
+                userPreferences.saveUserId(id)
 
                 AuthResult.Success(
                     data = User(
@@ -56,7 +59,7 @@ class AuthRepositoryImpl @Inject constructor(
                 when (e.code()) {
                     400 -> "Email dan password harus diisi."
                     401 -> "Email atau password salah."
-                    403 -> "Akses ditolak. Silakan login kembali."
+                    403 -> "Akses ditolak."
                     404 -> "Endpoint tidak ditemukan."
                     500 -> "Terdapat gangguan server."
                     else -> "Terjadi kesalahan pada server. Kode: ${e.code()}"
@@ -112,8 +115,8 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() {
-        userPreferences.clearAuthToken()
-        userPreferences.clearUserRole()
+        userPreferences.clearAllSession()
+        reportDao.clearAllLaporan()
     }
 
     override suspend fun isLoggedIn(): Boolean {
