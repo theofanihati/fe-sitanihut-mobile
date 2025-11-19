@@ -1,6 +1,6 @@
 package com.dishut_lampung.sitanihut.domain.usecase
 
-import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidatePasswordUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidatePasswordUseCase
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
