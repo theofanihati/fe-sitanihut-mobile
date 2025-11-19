@@ -73,14 +73,14 @@ fun HomeTopBar(
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold
                         ),
-                        color = MaterialTheme.colorScheme.onSurface
-//                        color = Color.White
+//                        color = MaterialTheme.colorScheme.onSurface
+                        color = Color.White
                     )
                     Text(
                         text = role,
                         style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-//                        color = Color.White.copy(alpha = 0.8f)
+//                        color = MaterialTheme.colorScheme.onSurface
+                        color = Color.White.copy(alpha = 0.8f)
                     )
                 }
             }
@@ -90,7 +90,7 @@ fun HomeTopBar(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                     contentDescription = "Logout",
-                    tint = MaterialTheme.colorScheme.onSurface
+//                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }

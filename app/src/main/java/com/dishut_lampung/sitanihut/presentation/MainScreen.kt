@@ -1,5 +1,6 @@
 package com.dishut_lampung.sitanihut.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +46,7 @@ fun MainScreen(
     )
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             val currentTopBarColors = if (config.topBarTheme == TopBarTheme.DARK_BACKGROUND) {
                 darkTopBarColors
@@ -77,11 +79,9 @@ fun MainScreen(
         }
     ) { paddingValues ->
         NavGraph(
-//            navController = navController,
-//            modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding()),
-//            startDestination = startDestination,
             navController = navController,
-            modifier = Modifier.padding(paddingValues),
+            modifier = Modifier
+                .padding(bottom = paddingValues.calculateBottomPadding()),
             startDestination = startDestination,
         )
     }
