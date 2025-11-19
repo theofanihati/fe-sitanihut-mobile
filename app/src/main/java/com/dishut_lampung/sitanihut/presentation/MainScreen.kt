@@ -57,7 +57,7 @@ fun MainScreen(
                     HomeTopBar(
                         nama = userProfile.name,
                         role = userProfile.role,
-                        imageUrl = null,
+                        imageUrl = userProfile.imageUrl,
                         onLogoutClick = {
                             viewModel.logout()
                             navController.navigate("auth") {
@@ -77,6 +77,9 @@ fun MainScreen(
         }
     ) { paddingValues ->
         NavGraph(
+//            navController = navController,
+//            modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding()),
+//            startDestination = startDestination,
             navController = navController,
             modifier = Modifier.padding(paddingValues),
             startDestination = startDestination,

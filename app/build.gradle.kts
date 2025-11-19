@@ -25,7 +25,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "BASE_URL", "\"https://sitanihut.lampungprov.go.id/backend/api/\"")
+            buildConfigField("String", "BASE_URL", "\"https://api-sipetahut.palum.id/api/\"")
         }
 
         release {

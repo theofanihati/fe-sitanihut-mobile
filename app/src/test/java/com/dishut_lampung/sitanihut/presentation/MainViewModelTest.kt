@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.presentation
 
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
+import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.presentation.navigation.Screen
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import io.mockk.every
@@ -20,13 +21,14 @@ class MainViewModelTest {
 
     private lateinit var userPreferences: UserPreferences
     private lateinit var viewModel: MainViewModel
+    private lateinit var homeRepository: HomeRepository
 
     @Test
     fun `init when hasSeenOnboarding is false, startDestination should be landing screen`() {
         runTest {
             userPreferences = mockk()
             every { userPreferences.hasSeenOnboarding } returns flowOf(false)
-            viewModel = MainViewModel(userPreferences)
+            viewModel = MainViewModel(userPreferences, homeRepository)
 
             val expectedDestination = Screen.LandingPage.route
             assertEquals(expectedDestination, viewModel.uiState.value.startDestination)
@@ -40,7 +42,7 @@ class MainViewModelTest {
             userPreferences = mockk()
             every { userPreferences.hasSeenOnboarding } returns flowOf(true)
 
-            viewModel = MainViewModel(userPreferences)
+            viewModel = MainViewModel(userPreferences, homeRepository)
 
             val expectedDestination = "auth"
             assertEquals(expectedDestination, viewModel.uiState.value.startDestination)

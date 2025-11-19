@@ -1,5 +1,6 @@
 package com.dishut_lampung.sitanihut.presentation.components.topbar
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,10 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.dishut_lampung.sitanihut.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,6 +39,7 @@ fun HomeTopBar(
     onLogoutClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    Log.d("SITANIHUT_LOG", "Nilai imageUrl yang diterima: $imageUrl")
     TopAppBar(
         modifier = modifier,
         colors = TopAppBarDefaults.topAppBarColors(
@@ -48,14 +52,16 @@ fun HomeTopBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AsyncImage(
-                    model = imageUrl,
-                    contentDescription = "Avatar",
-                    placeholder = painterResource(id = R.drawable.profile_picture),
-                    error = painterResource(id = R.drawable.profile_picture),
-
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Foto Profil",
+                    placeholder = painterResource(id = R.drawable.placeholder_profile_picture),
+                    error = painterResource(id = R.drawable.error_profile_picture),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(48.dp)
                         .clip(CircleShape)
                 )
 
@@ -83,7 +89,8 @@ fun HomeTopBar(
             IconButton(onClick = onLogoutClick) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                    contentDescription = "Logout"
+                    contentDescription = "Logout",
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }

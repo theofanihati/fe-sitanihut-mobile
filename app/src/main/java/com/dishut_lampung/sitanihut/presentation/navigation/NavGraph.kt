@@ -31,7 +31,7 @@ fun NavGraph(
         }
         composable(route = Screen.HomePetani.route) {
             HomePagePetaniScreen(
-                modifier = modifier,
+//                modifier = modifier,
             )
         }
         composable(route = Screen.HomePenyuluh.route) {

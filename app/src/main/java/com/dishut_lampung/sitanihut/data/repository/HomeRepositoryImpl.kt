@@ -1,5 +1,6 @@
 package com.dishut_lampung.sitanihut.data.repository
 
+import android.util.Log
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.mapper.toDomain
@@ -35,27 +36,29 @@ class HomeRepositoryImpl @Inject constructor(
         ) { name, role, avatar ->
             UserProfile(
                 name = name ?: "Pengguna",
-                role = role ?: "Petani",
+                role = role ?: "Role",
                 profilePictureUrl = avatar
             )
         }
 
         return localProfileFlow.onStart {
-            syncUserData()
+            syncUserProfile()
         }
     }
 
-    private suspend fun syncUserData() {
+    override suspend fun syncUserProfile() {
         try {
             val token = userPreferences.authToken.first()
             val userId = userPreferences.userId.first()
+            Log.d("SITANIHUT_SYNC_AUTH", "Token: $token, User ID: $userId")
+            Log.d("SITANIHUT_SYNC", "Token: $token, User ID: $userId")
 
             if (!token.isNullOrEmpty() && !userId.isNullOrEmpty()) {
                 val response = apiService.getUserDetail("Bearer $token", userId)
 
                 if (response.statusCode == 200 && response.data != null) {
                     val data = response.data
-
+                    Log.d("SITANIHUT_DATA", "API URL Avatar: ${data.profilePictureUrl}")
                     if (!data.profilePictureUrl.isNullOrEmpty()) {
                         userPreferences.saveUserAvatar(data.profilePictureUrl)
                     }

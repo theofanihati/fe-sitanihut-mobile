@@ -3,6 +3,7 @@ package com.dishut_lampung.sitanihut.presentation.login
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.model.User
+import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateEmailUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ValidationResult
@@ -27,6 +28,7 @@ class LoginViewModelTest {
 
     private lateinit var loginUseCase: LoginUseCase
     private lateinit var validateEmailUseCase: ValidateEmailUseCase
+    private lateinit var homeRepository: HomeRepository
 
     private lateinit var viewModel: LoginViewModel
 
@@ -38,6 +40,7 @@ class LoginViewModelTest {
         viewModel = LoginViewModel(
             loginUseCase,
             validateEmailUseCase,
+            homeRepository
         )
     }
 

@@ -3,6 +3,7 @@ package com.dishut_lampung.sitanihut.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
+import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,13 +12,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class UserProfileState(
     val name: String = "Pengguna",
-    val role: String = "User role"
+    val role: String = "User role",
+    val imageUrl: String? = null
 )
 
 data class MainUiState(
@@ -27,20 +30,21 @@ data class MainUiState(
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val homeRepository: HomeRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
-    val userProfileState: StateFlow<UserProfileState> = combine(
-        userPreferences.userName,
-        userPreferences.userRole
-    ) { name, role ->
-        UserProfileState(
-            name = name ?: "Pengguna",
-            role = role?.replaceFirstChar { it.uppercase() } ?: "User"
-        )
-    }.stateIn(
+    val userProfileState: StateFlow<UserProfileState> = homeRepository.getUserProfile()
+        .map { domainProfile ->
+            UserProfileState(
+                name = domainProfile.name,
+                role = domainProfile.role?.replaceFirstChar { it.uppercase() } ?: "User",
+                imageUrl = domainProfile.profilePictureUrl
+            )
+        }
+    .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = UserProfileState()

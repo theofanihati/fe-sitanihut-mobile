@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModel
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
+import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateEmailUseCase
 import com.dishut_lampung.sitanihut.presentation.navigation.Screen
@@ -19,6 +20,7 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val validateEmailUseCase: ValidateEmailUseCase,
+    private val homeRepository: HomeRepository,
 ) : ViewModel() {
 
     private var pendingDestinationRoute: String = "home_screen_petani"
@@ -101,6 +103,7 @@ class LoginViewModel @Inject constructor(
             val result = loginUseCase(loginState.email.trim(), loginState.password.trim())
             when (result) {
                 is AuthResult.Success -> {
+                    homeRepository.syncUserProfile()
                     val role = result.data.role.lowercase()
                     pendingDestinationRoute = when (role) {
                         "petani" -> Screen.HomePetani.route
