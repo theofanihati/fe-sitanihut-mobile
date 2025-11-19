@@ -74,9 +74,7 @@ class MainViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
-            userPreferences.clearAuthToken()
-            userPreferences.clearUserName()
-            userPreferences.clearUserRole()
+            userPreferences.clearAllSession()
         }
     }
 }
