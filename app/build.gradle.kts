@@ -25,11 +25,11 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "BASE_URL", "\"https://api-sipetahut.palum.id/api/\"")
+            buildConfigField("String", "BASE_URL", "\"https://sitanihut.lampungprov.go.id/backend/api/\"")
         }
 
         release {
-            buildConfigField ("String", "BASE_URL", "\"https://api-sipetahut.palum.id/api/\"")
+            buildConfigField ("String", "BASE_URL", "\"https://sitanihut.lampungprov.go.id/backend/api/\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -67,6 +67,11 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -81,6 +86,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui-text-google-fonts")
+    implementation(libs.core.ktx)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -135,4 +141,7 @@ dependencies {
     // MockK
     testImplementation("io.mockk:mockk:1.13.10")
     androidTestImplementation("io.mockk:mockk-android:1.13.10")
+
+    // robolectric: test room
+    testImplementation("org.robolectric:robolectric:4.14.1")
 }
