@@ -6,9 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModel
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
-import com.dishut_lampung.sitanihut.domain.use_case.auth.LoginUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidateEmailUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidatePasswordUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateEmailUseCase
 import com.dishut_lampung.sitanihut.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow

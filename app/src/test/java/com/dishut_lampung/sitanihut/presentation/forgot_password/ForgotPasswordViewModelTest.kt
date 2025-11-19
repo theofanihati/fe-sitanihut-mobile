@@ -2,11 +2,9 @@ package com.dishut_lampung.sitanihut.presentation.forgot_password
 
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
-import com.dishut_lampung.sitanihut.domain.use_case.auth.ForgotPasswordUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidateEmailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.ForgotPasswordUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateEmailUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ValidationResult
-import com.dishut_lampung.sitanihut.presentation.login.LoginEvent
-import com.dishut_lampung.sitanihut.presentation.login.UiEvent
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import io.mockk.coEvery
 import io.mockk.every

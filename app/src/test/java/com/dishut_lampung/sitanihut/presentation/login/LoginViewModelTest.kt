@@ -3,9 +3,8 @@ package com.dishut_lampung.sitanihut.presentation.login
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.model.User
-import com.dishut_lampung.sitanihut.domain.use_case.auth.LoginUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidateEmailUseCase
-import com.dishut_lampung.sitanihut.domain.use_case.auth.ValidatePasswordUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateEmailUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ValidationResult
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import io.mockk.coEvery

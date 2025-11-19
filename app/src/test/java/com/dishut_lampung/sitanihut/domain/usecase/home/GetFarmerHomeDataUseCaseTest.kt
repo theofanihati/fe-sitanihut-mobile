@@ -30,10 +30,10 @@ class GetFarmerHomeDataUseCaseTest {
         val expectedReports = listOf(
             Report(
                 id = "1",
-                period = "2025",
+                period = 2025,
                 monthPeriod = "Mei",
                 submissionDate = "25-05-2025",
-                totalTransaction = "Total Nilai Transaksi Ekonomi",
+                totalTransaction = 8000.0f,
                 status = ReportStatus.PENDING
             )
         )

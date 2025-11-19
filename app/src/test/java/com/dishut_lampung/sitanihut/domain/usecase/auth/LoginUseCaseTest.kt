@@ -1,9 +1,8 @@
-package com.dishut_lampung.sitanihut.domain.usecase
+package com.dishut_lampung.sitanihut.domain.usecase.auth
 
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.model.User
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
-import com.dishut_lampung.sitanihut.domain.use_case.auth.LoginUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
