@@ -12,7 +12,7 @@ data class ReportListItemDto(
     @SerializedName("bulan")
     val month: String,
     @SerializedName("nte")
-    val nte: Float,
+    val nte: Double,
     @SerializedName("status")
     val status: String,
     @SerializedName("id_user")

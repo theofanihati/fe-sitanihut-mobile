@@ -11,7 +11,7 @@ data class ReportEntity(
     val period: Int,
     val month: String,
     val date: String,
-    val nte: Float,
+    val nte: Double,
     val status: String,
     val syncStatus: String
 )

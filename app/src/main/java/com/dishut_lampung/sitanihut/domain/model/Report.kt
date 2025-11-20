@@ -5,6 +5,6 @@ data class Report(
     val period: Int,
     val monthPeriod: String,
     val submissionDate: String,
-    val totalTransaction: Float, //TODO ini float atau string, namanya mau nte bukan
+    val totalTransaction: Double,
     val status: ReportStatus
 )

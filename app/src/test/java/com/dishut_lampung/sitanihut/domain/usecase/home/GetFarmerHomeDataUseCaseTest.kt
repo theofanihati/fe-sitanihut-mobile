@@ -33,7 +33,7 @@ class GetFarmerHomeDataUseCaseTest {
                 period = 2025,
                 monthPeriod = "Mei",
                 submissionDate = "25-05-2025",
-                totalTransaction = 8000.0f,
+                totalTransaction = 8000.0,
                 status = ReportStatus.PENDING
             )
         )

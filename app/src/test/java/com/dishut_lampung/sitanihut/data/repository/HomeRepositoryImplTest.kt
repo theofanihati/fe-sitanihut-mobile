@@ -80,7 +80,7 @@ class HomeRepositoryImplTest {
             period = 2024,
             month = "agustus",
             date = "2024-08-01",
-            nte = 5000f,
+            nte = 5000.0,
             status = "menunggu",
             syncStatus = "synced"
         )
@@ -91,7 +91,7 @@ class HomeRepositoryImplTest {
             date = "2024-09-01",
             period = 2024,
             month = "september",
-            nte = 8000f,
+            nte = 8000.0,
             status = "menunggu",
             userId = "user-dummy",
             userName = "Petani Dua"
@@ -122,7 +122,7 @@ class HomeRepositoryImplTest {
                 period = 2024,
                 month = "agustus",
                 date = "2024-08-${String.format("%02d", i)}",
-                nte = 1000f,
+                nte = 1000.0,
                 status = "menunggu",
                 syncStatus = "synced"
             )
