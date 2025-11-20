@@ -32,7 +32,7 @@ class AuthDto {
         val message: String,
         @SerializedName("statusCode")
         val statusCode: Int,
-        val data: List<Any>
+        val data: JsonElement?
     )
     data class ErrorResponse(
         @SerializedName("message")
