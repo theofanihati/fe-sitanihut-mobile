@@ -6,8 +6,8 @@ import com.dishut_lampung.sitanihut.BuildConfig
 import com.dishut_lampung.sitanihut.data.local.SitanihutDatabase
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
-import com.dishut_lampung.sitanihut.data.remote.AuthApiService
-import com.dishut_lampung.sitanihut.data.remote.HomeApiService
+import com.dishut_lampung.sitanihut.data.remote.api.AuthApiService
+import com.dishut_lampung.sitanihut.data.remote.api.HomeApiService
 import com.dishut_lampung.sitanihut.data.repository.AuthRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.HomeRepositoryImpl
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository

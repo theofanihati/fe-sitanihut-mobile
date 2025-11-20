@@ -2,7 +2,7 @@ package com.dishut_lampung.sitanihut.data.repository
 
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
-import com.dishut_lampung.sitanihut.data.remote.AuthApiService
+import com.dishut_lampung.sitanihut.data.remote.api.AuthApiService
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.google.gson.Gson
 import io.mockk.coVerify

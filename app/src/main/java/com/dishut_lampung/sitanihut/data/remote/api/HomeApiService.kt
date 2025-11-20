@@ -1,7 +1,7 @@
-package com.dishut_lampung.sitanihut.data.remote
+package com.dishut_lampung.sitanihut.data.remote.api
 
-import com.dishut_lampung.sitanihut.data.remote.dto.ApiResponse
-import com.dishut_lampung.sitanihut.data.remote.dto.PaginatedData
+import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
+import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
 import okhttp3.RequestBody

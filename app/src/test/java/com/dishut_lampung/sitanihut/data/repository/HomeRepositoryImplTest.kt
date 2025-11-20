@@ -8,9 +8,9 @@ import com.dishut_lampung.sitanihut.data.local.SitanihutDatabase
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
-import com.dishut_lampung.sitanihut.data.remote.HomeApiService
-import com.dishut_lampung.sitanihut.data.remote.dto.ApiResponse
-import com.dishut_lampung.sitanihut.data.remote.dto.PaginatedData
+import com.dishut_lampung.sitanihut.data.remote.api.HomeApiService
+import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
+import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
 import com.google.gson.Gson
 import io.mockk.MockKAnnotations

@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.data.remote.dto
+package com.dishut_lampung.sitanihut.data.remote.response
 
 import com.google.gson.annotations.SerializedName
 

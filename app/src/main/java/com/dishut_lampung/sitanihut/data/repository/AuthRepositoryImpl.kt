@@ -3,7 +3,7 @@ package com.dishut_lampung.sitanihut.data.repository
 import retrofit2.HttpException
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
-import com.dishut_lampung.sitanihut.data.remote.AuthApiService
+import com.dishut_lampung.sitanihut.data.remote.api.AuthApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.AuthDto
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.model.User
