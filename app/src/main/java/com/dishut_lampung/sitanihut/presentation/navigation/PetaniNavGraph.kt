@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.dishut_lampung.sitanihut.presentation.forgot_password.ForgotPasswordRoute
+import com.dishut_lampung.sitanihut.presentation.home_page.petani.HomePagePetaniScreen
 import com.dishut_lampung.sitanihut.presentation.login.LoginRoute
 import com.dishut_lampung.sitanihut.presentation.profile.PetaniProfileScreen
 
@@ -15,7 +16,7 @@ fun NavGraphBuilder.petaniNavGraph(
 ) {
     navigation(startDestination = Screen.HomePetani.route, route = "petani") {
         composable(route = Screen.HomePetani.route) {
-            LoginRoute(navController = navController)
+            HomePagePetaniScreen(modifier = modifier)
         }
         composable(route = Screen.Petani.ProfilePetani.route){
             PetaniProfileScreen(navController = navController)
