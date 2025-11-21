@@ -10,6 +10,7 @@ interface  HomeRepository {
     fun getUserProfile(): Flow<UserProfile>
     fun getReportSummary(): Flow<ReportSummary>
     fun getLatestReports(): Flow<List<Report>>
+    fun getReportsByStatus(status: String): Flow<Resource<List<Report>>>
     suspend fun deleteReport(reportId: String): Resource<Unit>
     suspend fun submitReport(reportId: String): Resource<Unit>
     suspend fun syncUserProfile()

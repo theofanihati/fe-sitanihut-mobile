@@ -11,6 +11,6 @@ class GetVerificationHomeDataUseCase @Inject constructor(
     private val repository: HomeRepository
 ) {
     operator fun invoke(): Flow<Resource<List<Report>>> {
-        return emptyFlow()
+        return repository.getReportsByStatus("menunggu")
     }
 }
