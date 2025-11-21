@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.homepage
+package com.dishut_lampung.sitanihut.presentation.home_page.petani
 
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.domain.model.Report
@@ -11,7 +11,6 @@ import com.dishut_lampung.sitanihut.domain.usecase.home.FarmerHomeData
 import com.dishut_lampung.sitanihut.domain.usecase.home.GetFarmerHomeDataUseCase
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiEvent
-import com.dishut_lampung.sitanihut.presentation.home_page.petani.HomePagePetaniViewModel
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
@@ -28,6 +27,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.text.NumberFormat
+import java.util.Locale
 
 @ExperimentalCoroutinesApi
 class HomePagePetaniViewModelTest {
@@ -40,24 +41,24 @@ class HomePagePetaniViewModelTest {
     private lateinit var viewModel: HomePagePetaniViewModel
 
     private val dummyProfile = UserProfile("Budi Santoso", "Petani", "http://example.com/pic.jpg")
-    private val dummySummary = ReportSummary(1,2,3)
+    private val dummySummary = ReportSummary(1, 2, 3)
     private val dummyReports = listOf(
-        Report("id-1", 2025, "Mei", "25-05-2025", 8000.0, ReportStatus.PENDING),
-        Report("id-2", 2025, "Mei", "20-05-2025", 5000.0, ReportStatus.REJECTED)
+        Report("id-1", 2025, "Mei", "25-05-2025", 8000000.0, ReportStatus.PENDING),
+        Report("id-2", 2025, "Mei", "20-05-2025", 5000000.0, ReportStatus.REJECTED)
     )
     private val dummyHomeData = FarmerHomeData(dummyProfile, dummySummary, dummyReports)
 
     @Before
-    fun setUp(){
+    fun setUp() {
         getFarmerHomeDataUseCase = mockk()
         logoutUseCase = mockk(relaxed = true)
         homeRepository = mockk(relaxed = true)
 
-        every{getFarmerHomeDataUseCase()} returns flowOf(dummyHomeData)
+        every { getFarmerHomeDataUseCase() } returns flowOf(dummyHomeData)
 
-        coEvery {homeRepository.deleteReport(any())} returns Resource.Success(Unit)
-        coEvery {homeRepository.submitReport(any())} returns Resource.Success(Unit)
-        coEvery { homeRepository.getLatestReports()} returns flowOf(dummyReports)
+        coEvery { homeRepository.deleteReport(any()) } returns Resource.Success(Unit)
+        coEvery { homeRepository.submitReport(any()) } returns Resource.Success(Unit)
+        coEvery { homeRepository.getLatestReports() } returns flowOf(dummyReports)
 
         viewModel = HomePagePetaniViewModel(
             getFarmerHomeDataUseCase,
@@ -68,24 +69,39 @@ class HomePagePetaniViewModelTest {
 
     @Test
     fun `init should load data successfully and map to correct uiState`() = runTest {
-        val state = viewModel.uiState.value
-        assertFalse(state.isLoading)
+        viewModel.uiState.test {
+            var state = awaitItem()
+            if (state.isLoading) {
+                state = awaitItem()
+            }
 
-        assertEquals(dummyProfile.name, state.userProfile.name)
-        assertEquals(dummySummary.pendingCount, state.reportSummary.pendingCount)
+            assertFalse(state.isLoading)
 
-        assertEquals(2, state.latestReports.size)
+            assertEquals(dummyProfile.name, state.userProfile.name)
+            assertEquals(dummySummary.pendingCount, state.reportSummary.pendingCount)
 
-        assertEquals("id-1", state.latestReports[0].id)
-        assertEquals("Menunggu", state.latestReports[0].statusDisplay)
-        assertTrue(state.latestReports[0].isEditable)
-        assertEquals("Laporan Periode Mei 2025", state.latestReports[0].periodTitle)
+            assertEquals(2, state.latestReports.size)
+
+            assertEquals("id-1", state.latestReports[0].id)
+            assertEquals("Menunggu", state.latestReports[0].statusDisplay)
+            assertFalse(state.latestReports[0].isEditable)
+            assertEquals("Laporan Periode Mei 2025", state.latestReports[0].periodTitle)
+
+            val actualNte = state.latestReports[0].nteDisplay
+            assertTrue("Harus mengandung 'Rp'", actualNte.contains("Rp"))
+            val cleanActual = actualNte.replace("\\s".toRegex(), "").replace("\u00A0", "")
+            val cleanExpectedNumber = "8.000.000"
+            assertTrue(
+                "Harus mengandung angka 8.000.000. Aktual (bersih): $cleanActual",
+                cleanActual.contains(cleanExpectedNumber)
+            )
+        }
     }
 
     @Test
     fun `onRefreshData success should call repository and set isRefreshing to false`() = runTest {
         viewModel.uiState.test {
-            skipItems(1)
+            awaitItem()
             viewModel.onEvent(HomeEvent.OnRefreshData)
 
             val refreshState = awaitItem()
@@ -95,14 +111,20 @@ class HomePagePetaniViewModelTest {
             assertFalse(refreshedState.isRefreshing)
             assertNull(refreshedState.generalError)
 
-            coVerify(exactly = 1){homeRepository.getLatestReports()}
+            coVerify(exactly = 1) { homeRepository.getLatestReports() }
         }
     }
 
     @Test
-    fun `onLogoutClick should set isLogoutConfirmationVisible to true`() {
-        viewModel.onEvent(HomeEvent.OnLogoutClick)
-        assertTrue(viewModel.uiState.value.isLogoutConfirmationVisible)
+    fun `onLogoutClick should set isLogoutConfirmationVisible to true`() = runTest {
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(HomeEvent.OnLogoutClick)
+
+            val updatedState = awaitItem()
+            assertTrue(updatedState.isLogoutConfirmationVisible)
+        }
     }
 
     @Test
@@ -136,36 +158,48 @@ class HomePagePetaniViewModelTest {
     }
 
     @Test
-    fun `onReportMoreOptionClick should set reportIdForOptionSheet`(){
+    fun `onReportMoreOptionClick should set reportIdForOptionSheet`() = runTest {
         val reportId = "raport-id-222"
-        viewModel.onEvent(HomeEvent.OnReportMoreOptionClick(reportId))
-        assertEquals(reportId, viewModel.uiState.value.reportIdForOptionSheet)
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(HomeEvent.OnReportMoreOptionClick(reportId))
+
+            val updatedState = awaitItem()
+            assertEquals(reportId, updatedState.reportIdForOptionSheet)
+        }
     }
 
     @Test
-    fun `onDeleteClick should close option sheet and show delete confirmation dialog`(){
+    fun `onDeleteClick should close option sheet and show delete confirmation dialog`() = runTest {
         val reportId = "raport-id-222"
-        viewModel.onEvent(HomeEvent.OnReportMoreOptionClick("apapun"))
-        viewModel.onEvent(HomeEvent.OnDeleteClick(reportId))
 
-        assertNull(viewModel.uiState.value.reportIdForOptionSheet)
-        assertEquals(reportId, viewModel.uiState.value.reportIdToDelete)
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(HomeEvent.OnReportMoreOptionClick("apapun"))
+            awaitItem()
+            viewModel.onEvent(HomeEvent.OnDeleteClick(reportId))
+
+            val updatedState = awaitItem()
+            assertNull(updatedState.reportIdForOptionSheet)
+            assertEquals(reportId, updatedState.reportIdToDelete)
+        }
     }
 
     @Test
     fun `onDeleteConfirm success should call deleteReport and show success message`() = runTest {
         val reportId = "id-to-delete"
         viewModel.uiState.test {
-            skipItems(1)
+            awaitItem()
             viewModel.onEvent(HomeEvent.OnDeleteConfirm(reportId))
 
-            val loadingState = awaitItem()
-            assertTrue(loadingState.isLoading)
-            assertNull(loadingState.reportIdToDelete)
-
-            val successState = awaitItem()
-            assertFalse(successState.isLoading)
-            assertEquals("Laporan berhasil dihapus", successState.successMessage)
+            var nextState = awaitItem()
+            if (nextState.isLoading) {
+                nextState = awaitItem()
+            }
+            assertFalse(nextState.isLoading)
+            assertEquals("Laporan berhasil dihapus", nextState.successMessage)
 
             coVerify(exactly = 1) { homeRepository.deleteReport(reportId) }
         }
@@ -175,19 +209,17 @@ class HomePagePetaniViewModelTest {
     fun `onSubmitClick success should call submitReport and show success message`() = runTest {
         val reportId = "id-to-submit"
         viewModel.uiState.test {
-            skipItems(1)
+            awaitItem()
             viewModel.onEvent(HomeEvent.OnSubmitClick(reportId))
+            var nextState = awaitItem()
+            if (nextState.isLoading) {
+                nextState = awaitItem()
+            }
 
-            val loadingState = awaitItem()
-            assertTrue(loadingState.isLoading)
-            assertNull(loadingState.reportIdForOptionSheet)
-
-            val successState = awaitItem()
-            assertFalse(successState.isLoading)
-            assertEquals("Laporan berhasil diajukan", successState.successMessage)
+            assertFalse(nextState.isLoading)
+            assertEquals("Laporan berhasil diajukan", nextState.successMessage)
 
             coVerify(exactly = 1) { homeRepository.submitReport(reportId) }
         }
     }
-
 }

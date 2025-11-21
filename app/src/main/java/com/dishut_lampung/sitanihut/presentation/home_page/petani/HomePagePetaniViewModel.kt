@@ -2,7 +2,9 @@ package com.dishut_lampung.sitanihut.presentation.home_page.petani
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dishut_lampung.sitanihut.domain.model.toUiModel
+import com.dishut_lampung.sitanihut.domain.model.Report
+import com.dishut_lampung.sitanihut.domain.model.ReportStatus
+import com.dishut_lampung.sitanihut.domain.model.ReportUiModel
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LogoutUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.home.FarmerHomeData
@@ -22,6 +24,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,6 +34,7 @@ class HomePagePetaniViewModel @Inject constructor(
     private val logoutUseCase: LogoutUseCase,
     private val homeRepository: HomeRepository,
 ): ViewModel(){
+
     private val _dataState = getFarmerHomeDataUseCase()
         .map{it.toUiState()}
         .stateIn(
@@ -39,6 +44,7 @@ class HomePagePetaniViewModel @Inject constructor(
         )
 
     private val  _transientUiState = MutableStateFlow(HomeUiState())
+
     val uiState:StateFlow<HomeUiState> = combine(_transientUiState, _dataState) {currentTransient, dataUi ->
         val loadingStatus = dataUi.isLoading || currentTransient.isRefreshing
         currentTransient.copy(
@@ -55,7 +61,7 @@ class HomePagePetaniViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = HomeUiState()
+        initialValue = HomeUiState(isLoading = true)
     )
 
     private val _eventFlow = MutableSharedFlow<HomeUiEvent>()
@@ -140,13 +146,13 @@ class HomePagePetaniViewModel @Inject constructor(
                         successMessage = "Laporan berhasil dihapus"
                     )}
                 } is Resource.Error -> {
-                    updateTransientState {
-                        it.copy(
-                            isLoading = false,
-                            generalError = result.message
-                        )
-                    }
-                } else -> updateTransientState{it.copy(isLoading = false)}
+                updateTransientState {
+                    it.copy(
+                        isLoading = false,
+                        generalError = result.message
+                    )
+                }
+            } else -> updateTransientState{it.copy(isLoading = false)}
             }
         }
     }
@@ -164,13 +170,13 @@ class HomePagePetaniViewModel @Inject constructor(
                         successMessage = "Laporan berhasil diajukan"
                     )}
                 } is Resource.Error -> {
-                    updateTransientState {
-                        it.copy(
-                            isLoading = false,
-                            generalError = result.message
-                        )
-                    }
-                } else -> updateTransientState{it.copy(isLoading=false)}
+                updateTransientState {
+                    it.copy(
+                        isLoading = false,
+                        generalError = result.message
+                    )
+                }
+            } else -> updateTransientState{it.copy(isLoading=false)}
             }
         }
     }
@@ -194,6 +200,72 @@ class HomePagePetaniViewModel @Inject constructor(
             generalError = null,
         )
     }
-
-
 }
+
+// Extension function untuk mapping Domain Model ke UI Model
+fun Report.toUiModel(): ReportUiModel {
+    val formatter = NumberFormat.getCurrencyInstance(Locale("in", "ID")).apply {
+        maximumFractionDigits = 0
+    }
+
+    val nteFormatted = try {
+        formatter.format(this.totalTransaction.toDouble())
+    } catch (e: Exception) {
+        "Rp0"
+    }
+
+    val statusText = when (this.status) {
+        ReportStatus.APPROVED -> "Disetujui"
+        ReportStatus.REJECTED -> "Ditolak"
+        ReportStatus.PENDING -> "Menunggu"
+        ReportStatus.DRAFT -> "Draft"
+    }
+
+    val isEditable = this.status == ReportStatus.DRAFT || this.status == ReportStatus.REJECTED
+    val isDeletable = this.status == ReportStatus.DRAFT || this.status == ReportStatus.REJECTED
+    val periodTitle = "Laporan Periode ${this.monthPeriod} ${this.period}"
+
+    return ReportUiModel(
+        id = this.id,
+        periodTitle = periodTitle,
+        dateDisplay = this.submissionDate,
+        nteDisplay = "Total Nilai Transaksi Ekonomi: $nteFormatted",
+        statusDisplay = statusText,
+        isEditable = isEditable,
+        domainStatus = this.status,
+        isDeletable = isDeletable
+    )
+}
+
+//fun Report.toUiModel(): ReportUiModel {
+//    val formatter = NumberFormat.getCurrencyInstance(Locale("in", "ID")).apply {
+//        maximumFractionDigits = 0
+//    }
+//    val nteFormatted = try {
+//        formatter.format(this.totalTransaction.toDouble())
+//    }catch (e:Exception){
+//        "Rp 0"
+//    }
+//
+//    val statusText = when(this.status){
+//        ReportStatus.APPROVED -> "Disetujui"
+//        ReportStatus.REJECTED -> "Ditolak"
+//        ReportStatus.PENDING -> "Menunggu"
+//        ReportStatus.DRAFT -> "Belum diajukan"
+//    }
+//
+//    val isEditable = this.status == ReportStatus.DRAFT || this.status == ReportStatus.REJECTED
+//    val isDeletable = this.status == ReportStatus.DRAFT || this.status == ReportStatus.REJECTED
+//    val periodTitle = "Laporan Periode ${this.monthPeriod} ${this.period}"
+//
+//    return ReportUiModel(
+//        id = this.id,
+//        periodTitle = periodTitle,
+//        dateDisplay = this.submissionDate,
+//        nteDisplay = nteFormatted,
+//        statusDisplay = statusText,
+//        isEditable = isEditable,
+//        domainStatus = this.status,
+//        isDeletable = isDeletable
+//    )
+//}
