@@ -60,6 +60,7 @@ class HomeRepositoryImplTest {
             .allowMainThreadQueries()
             .build()
         reportDao = db.reportDao()
+        every { userPreferences.userId } returns flowOf("user-dummy")
 
         repository = HomeRepositoryImpl(apiService, reportDao, userPreferences)
     }

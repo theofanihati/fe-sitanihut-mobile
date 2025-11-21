@@ -18,8 +18,11 @@ interface ReportDao {
     @Upsert
     suspend fun upsertAll(reports: List<ReportEntity>)
 
-    @Query("SELECT * FROM laporan ORDER BY date DESC LIMIT 10")
-    fun getLatestReports(): Flow<List<ReportEntity>>
+    @Query("SELECT * FROM laporan WHERE userId = :userId ORDER BY date DESC LIMIT 10")
+    fun getLatestReports(userId: String): Flow<List<ReportEntity>>
+
+    @Query("SELECT * FROM laporan WHERE status = :status ORDER BY date DESC")
+    fun getReportsByStatus(status: String): Flow<List<ReportEntity>>
 
     @Query("""
     SELECT 
