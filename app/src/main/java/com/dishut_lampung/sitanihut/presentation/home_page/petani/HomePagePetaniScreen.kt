@@ -45,6 +45,7 @@ import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.model.ReportUiModel
 import com.dishut_lampung.sitanihut.presentation.ReportSummaryCard
+import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
 import com.dishut_lampung.sitanihut.presentation.components.HomeMenuGrid
 import com.dishut_lampung.sitanihut.presentation.components.HomeMenuItem
 import com.dishut_lampung.sitanihut.presentation.components.ReportCard
@@ -207,43 +208,49 @@ fun HomePagePetaniScreen(
                         modifier = Modifier.padding(bottom = 4.dp, top = 8.dp)
                     )
 
-                    if (!state.isLoading && state.latestReports.isEmpty()) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                        ) {
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Text(
-                                text = "Yahh, belum ada laporan",
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = "Yuk, Ajukan Laporan!",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                            )
+                    when {
+                        state.isLoading -> {
+                            CustomCircularProgressIndicator()
                         }
-                    } else {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
-                            state.latestReports.forEach { report ->
-                                ReportCard(
-                                    item = report,
-                                    isPetani = true,
-                                    onCardClick = onReportClick,
-                                    onActionClick = onActionClick
+                        state.latestReports.isEmpty() -> {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                            ) {
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Text(
+                                    text = "Yahh, belum ada laporan",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                Text(
+                                    text = "Yuk, Ajukan Laporan!",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
                             }
-                            Spacer(modifier = Modifier.height(32.dp))
+                        }
+                        else -> {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                state.latestReports.forEach { report ->
+                                    ReportCard(
+                                        item = report,
+                                        isPetani = true,
+                                        onCardClick = onReportClick,
+                                        onActionClick = onActionClick
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(32.dp))
+                            }
                         }
                     }
                 }
