@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.presentation.components.topbar
 
 import android.util.Log
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,7 +43,6 @@ fun HomeTopBar(
     modifier: Modifier = Modifier,
     onProfileClick: (String) -> Unit,
 ) {
-    Log.d("SITANIHUT_LOG", "Nilai imageUrl yang diterima: $imageUrl")
     TopAppBar(
         modifier = modifier,
         colors = TopAppBarDefaults.topAppBarColors(
@@ -71,6 +71,7 @@ fun HomeTopBar(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
+                        .border(2.dp, Color.White, CircleShape)
                 )
 
                 Spacer(Modifier.width(12.dp))

@@ -34,7 +34,7 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         Screen.Kkph.ProfileKkph.route-> ScaffoldConfig(
             showMainNav = false,
             showBackNav = true,
-            topBarTheme = TopBarTheme.LIGHT_BACKGROUND
+            topBarTheme = TopBarTheme.DARK_BACKGROUND
         )
         else -> ScaffoldConfig()
     }

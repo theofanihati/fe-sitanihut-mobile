@@ -1,20 +1,23 @@
 package com.dishut_lampung.sitanihut.presentation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.dishut_lampung.sitanihut.presentation.components.dialog.LogoutConfirmationDialog
 import com.dishut_lampung.sitanihut.presentation.components.topbar.DetailTopBar
 import com.dishut_lampung.sitanihut.presentation.components.topbar.HomeTopBar
 import com.dishut_lampung.sitanihut.presentation.navigation.NavGraph
@@ -33,6 +36,7 @@ fun MainScreen(
     val currentRoute = navBackStackEntry?.destination?.route
     val config = scaffoldConfig(currentRoute)
     val userProfile by viewModel.userProfileState.collectAsState()
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     val lightTopBarColors = TopAppBarDefaults.topAppBarColors(
         containerColor = Color.Transparent,
@@ -45,6 +49,24 @@ fun MainScreen(
         titleContentColor = Color.White,
         navigationIconContentColor = Color.White
     )
+
+    if (showLogoutDialog) {
+        LogoutConfirmationDialog(
+            onDismiss = { showLogoutDialog = false },
+            onConfirm = {
+                showLogoutDialog = false
+                viewModel.logout()
+                navController.navigate("auth") {
+                    popUpTo(0) { inclusive = true }
+                }
+            },
+            title = "Keluar dari akun?",
+            supportingText = "Aksi tidak dapat dikembalikan",
+            confirmButtonText = "Keluar",
+            dismissButtonText = "Batal",
+            confirmColor = MaterialTheme.colorScheme.error
+        )
+    }
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -62,19 +84,20 @@ fun MainScreen(
                         role = userProfile.role,
                         imageUrl = userProfile.imageUrl,
                         onLogoutClick = {
-                            viewModel.logout()
-                            navController.navigate("auth") {
-                                popUpTo(0) { inclusive = true }
-                            }
+                            showLogoutDialog = true
                         },
                         onProfileClick = { role ->
                             val destination = when (role.lowercase()) {
                                 "petani" -> Screen.Petani.ProfilePetani.route
                                 "penyuluh" -> Screen.Penyuluh.ProfilePenyuluh.route
                                 "kkph" -> Screen.Kkph.ProfileKkph.route
-                                else -> "profile/petani" // Default ke Petani jika role tidak dikenal
+                                else -> null
                             }
-                            navController.navigate(destination)
+                            if (destination != null) {
+                                navController.navigate(destination)
+                            } else {
+                                android.util.Log.e("Navigation", "Role tidak dikenali: $role")
+                            }
                         }
                     )
                 }

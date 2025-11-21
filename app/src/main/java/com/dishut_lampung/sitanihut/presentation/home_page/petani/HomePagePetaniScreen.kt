@@ -171,16 +171,7 @@ fun HomePagePetaniScreen(
                 .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
         ) {
-            Spacer(Modifier.height(80.dp))
-
-//            Text(
-//                text = "INI HOME PAGE",
-//                style = MaterialTheme.typography.labelLarge,
-//                modifier = Modifier.padding(horizontal = Dimens.ScreenPadding),
-//                color = MaterialTheme.colorScheme.surface
-//            )
-
-            Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(80.dp))
 
             ReportSummaryCard(
                 modifier = Modifier.padding(horizontal = Dimens.ScreenPadding),
