@@ -45,7 +45,7 @@ fun ReportEntity.toDomain(): Report {
         "disetujui" -> ReportStatus.APPROVED
         "ditolak" -> ReportStatus.REJECTED
         "menunggu" -> ReportStatus.PENDING
-        "belum diajukan" -> ReportStatus.PENDING
+        "belum diajukan" -> ReportStatus.DRAFT
         else -> ReportStatus.DRAFT
     }
 
