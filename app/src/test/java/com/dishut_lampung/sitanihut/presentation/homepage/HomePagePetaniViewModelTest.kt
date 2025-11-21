@@ -150,14 +150,6 @@ class HomePagePetaniViewModelTest {
     }
 
     @Test
-    fun `onReportSubmissionMenuClick should emit NavigateToReportSubmission`() = runTest {
-        viewModel.eventFlow.test {
-            viewModel.onEvent(HomeEvent.OnReportSubmissionMenuClick)
-            assertTrue(awaitItem() is HomeUiEvent.NavigateToReportSubmission)
-        }
-    }
-
-    @Test
     fun `onReportMoreOptionClick should set reportIdForOptionSheet`() = runTest {
         val reportId = "raport-id-222"
         viewModel.uiState.test {

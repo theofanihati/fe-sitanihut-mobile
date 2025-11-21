@@ -27,10 +27,6 @@ sealed class HomeEvent {
     object OnLogoutConfirm : HomeEvent()
     object OnLogoutCancel : HomeEvent()
 
-    object OnCommodityMenuClick : HomeEvent()
-    object OnReportSubmissionMenuClick : HomeEvent()
-    object OnInformationMenuClick : HomeEvent()
-
     data class OnReportMoreOptionClick(val reportId: String) : HomeEvent()
     object OnReportOptionSheetDismiss : HomeEvent()
 
@@ -49,9 +45,6 @@ sealed class HomeEvent {
 sealed interface HomeUiEvent {
     data class NavigateToProfile(val role: String) : HomeUiEvent
     object NavigateToLogin : HomeUiEvent
-    object NavigateToCommodityList : HomeUiEvent
-    object NavigateToReportSubmission : HomeUiEvent
-    object NavigateToInformation : HomeUiEvent
     data class NavigateToReportDetail(val reportId: String) : HomeUiEvent
     data class NavigateToEditReport(val reportId: String) : HomeUiEvent
 }
