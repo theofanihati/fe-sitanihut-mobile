@@ -15,12 +15,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Eco
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -49,6 +48,7 @@ import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgre
 import com.dishut_lampung.sitanihut.presentation.components.HomeMenuGrid
 import com.dishut_lampung.sitanihut.presentation.components.HomeMenuItem
 import com.dishut_lampung.sitanihut.presentation.components.ReportCard
+import com.dishut_lampung.sitanihut.presentation.components.bottomsheet.ReportOptionBottomSheet
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiState
@@ -68,6 +68,12 @@ fun HomePagePetaniScreenPreview() {
             onNavigateToCommodity = { },
             onNavigateToReportSubmission = { },
             onNavigateToInfo = { },
+            onOptionDismiss = {},
+            onDeleteReportClick = {},
+            onEditReportClick = {},
+            onSubmitReportClick = {},
+            onRefresh = {},
+            modifier = Modifier.fillMaxSize(),
             state = HomeUiState(
                 isLoading = false,
                 latestReports = dummyReports
@@ -108,9 +114,25 @@ fun HomePagePetaniRoute(
         onNavigateToCommodity = onNavigateToCommodity,
         onNavigateToReportSubmission = onNavigateToReportSubmission,
         onNavigateToInfo = onNavigateToInfo,
+        onOptionDismiss = {
+            viewModel.onEvent(HomeEvent.OnReportOptionSheetDismiss)
+        },
+        onDeleteReportClick = { reportId ->
+            viewModel.onEvent(HomeEvent.OnDeleteClick(reportId))
+        },
+        onEditReportClick = { reportId ->
+            viewModel.onEvent(HomeEvent.OnEditClick(reportId))
+        },
+        onSubmitReportClick = { reportId ->
+            viewModel.onEvent(HomeEvent.OnSubmitClick(reportId))
+        },
+        onRefresh = {
+            viewModel.onEvent(HomeEvent.OnRefreshData)
+        }
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePagePetaniScreen(
     modifier: Modifier = Modifier,
@@ -120,7 +142,13 @@ fun HomePagePetaniScreen(
     onNavigateToCommodity: () -> Unit = {},
     onNavigateToReportSubmission: () -> Unit,
     onNavigateToInfo: () -> Unit,
+    onOptionDismiss: () -> Unit,
+    onDeleteReportClick: (String) -> Unit,
+    onEditReportClick: (String) -> Unit,
+    onSubmitReportClick: (String) -> Unit,
+    onRefresh: () -> Unit
 ) {
+    val isRefreshing = state.isRefreshing
     val petaniMenus = remember {
         listOf(
             HomeMenuItem(
@@ -165,96 +193,131 @@ fun HomePagePetaniScreen(
                 modifier = Modifier.matchParentSize()
             )
         }
-
-        Column(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .statusBarsPadding()
         ) {
-        Spacer(Modifier.height(80.dp))
-
-            ReportSummaryCard(
-                modifier = Modifier.padding(horizontal = Dimens.ScreenPadding),
-                summary = state.reportSummary,
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            HomeMenuGrid(
-                modifier = Modifier.padding(horizontal = Dimens.ScreenPadding),
-                menuItems = petaniMenus
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
-                shadowElevation = 4.dp
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp, horizontal = Dimens.ScreenPadding)
-                        .defaultMinSize(minHeight = 600.dp)
+                Spacer(Modifier.height(80.dp))
+
+                ReportSummaryCard(
+                    modifier = Modifier.padding(horizontal = Dimens.ScreenPadding),
+                    summary = state.reportSummary,
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                HomeMenuGrid(
+                    modifier = Modifier.padding(horizontal = Dimens.ScreenPadding),
+                    menuItems = petaniMenus
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                    shadowElevation = 4.dp
                 ) {
-                    Text(
-                        text = "Laporan Terbaru",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(bottom = 4.dp, top = 8.dp)
-                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp, horizontal = Dimens.ScreenPadding)
+                            .defaultMinSize(minHeight = 600.dp)
+                    ) {
+                        Text(
+                            text = "Laporan Terbaru",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = 4.dp, top = 8.dp)
+                        )
 
-                    when {
-                        state.isLoading -> {
-                            CustomCircularProgressIndicator()
-                        }
-                        state.latestReports.isEmpty() -> {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp),
-                            ) {
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                Text(
-                                    text = "Yahh, belum ada laporan",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-
-                                Spacer(modifier = Modifier.height(4.dp))
-
-                                Text(
-                                    text = "Yuk, Ajukan Laporan!",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                )
+                        when {
+                            state.isLoading -> {
+                                CustomCircularProgressIndicator()
                             }
-                        }
-                        else -> {
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                state.latestReports.forEach { report ->
-                                    ReportCard(
-                                        item = report,
-                                        isPetani = true,
-                                        onCardClick = onReportClick,
-                                        onActionClick = onActionClick
+
+                            state.latestReports.isEmpty() -> {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp),
+                                ) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    Text(
+                                        text = "Yahh, belum ada laporan",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    Text(
+                                        text = "Yuk, Ajukan Laporan!",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(32.dp))
+                            }
+
+                            else -> {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    state.latestReports.forEach { report ->
+                                        ReportCard(
+                                            item = report,
+                                            isPetani = true,
+                                            onCardClick = onReportClick,
+                                            onActionClick = onActionClick
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(32.dp))
+                                }
                             }
                         }
                     }
                 }
             }
+        }
+
+        if (state.reportIdForOptionSheet != null) {
+            val selectedReportId = state.reportIdForOptionSheet
+            val selectedReport = state.latestReports.find { it.id == selectedReportId }
+            val isEditable = selectedReport?.isEditable ?: false
+
+            ReportOptionBottomSheet(
+                onDismiss = onOptionDismiss,
+                onDetailClick = {
+                    onOptionDismiss()
+                    onReportClick(selectedReportId)
+                },
+                onEditClick = {
+                    onOptionDismiss()
+                    onEditReportClick(selectedReportId)
+                },
+                onDeleteClick = {
+                    onOptionDismiss()
+                    onDeleteReportClick(selectedReportId)
+                },
+                onSubmitClick = {
+                    onOptionDismiss()
+                    onSubmitReportClick(selectedReportId)
+                },
+                isEditable = isEditable
+            )
         }
     }
 }
