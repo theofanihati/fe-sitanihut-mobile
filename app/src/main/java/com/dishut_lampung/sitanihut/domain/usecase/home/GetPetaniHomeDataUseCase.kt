@@ -14,7 +14,7 @@ data class FarmerHomeData(
     val latestReports: List<Report>
 )
 
-class GetFarmerHomeDataUseCase @Inject constructor(
+class GetPetaniHomeDataUseCase @Inject constructor(
     private val homeRepository: HomeRepository
 ) {
     operator fun invoke(): Flow<FarmerHomeData> {

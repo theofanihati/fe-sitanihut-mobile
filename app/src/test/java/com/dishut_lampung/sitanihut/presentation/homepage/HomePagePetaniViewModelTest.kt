@@ -8,7 +8,7 @@ import com.dishut_lampung.sitanihut.domain.model.UserProfile
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LogoutUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.home.FarmerHomeData
-import com.dishut_lampung.sitanihut.domain.usecase.home.GetFarmerHomeDataUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.home.GetPetaniHomeDataUseCase
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiEvent
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
@@ -35,7 +35,7 @@ class HomePagePetaniViewModelTest {
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule()
 
-    private lateinit var getFarmerHomeDataUseCase: GetFarmerHomeDataUseCase
+    private lateinit var getPetaniHomeDataUseCase: GetPetaniHomeDataUseCase
     private lateinit var logoutUseCase: LogoutUseCase
     private lateinit var homeRepository: HomeRepository
     private lateinit var viewModel: HomePagePetaniViewModel
@@ -50,18 +50,18 @@ class HomePagePetaniViewModelTest {
 
     @Before
     fun setUp() {
-        getFarmerHomeDataUseCase = mockk()
+        getPetaniHomeDataUseCase = mockk()
         logoutUseCase = mockk(relaxed = true)
         homeRepository = mockk(relaxed = true)
 
-        every { getFarmerHomeDataUseCase() } returns flowOf(dummyHomeData)
+        every { getPetaniHomeDataUseCase() } returns flowOf(dummyHomeData)
 
         coEvery { homeRepository.deleteReport(any()) } returns Resource.Success(Unit)
         coEvery { homeRepository.submitReport(any()) } returns Resource.Success(Unit)
         coEvery { homeRepository.getLatestReports() } returns flowOf(dummyReports)
 
         viewModel = HomePagePetaniViewModel(
-            getFarmerHomeDataUseCase,
+            getPetaniHomeDataUseCase,
             logoutUseCase,
             homeRepository
         )

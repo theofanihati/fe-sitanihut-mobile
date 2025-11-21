@@ -14,13 +14,13 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
-class GetFarmerHomeDataUseCaseTest {
-    private lateinit var getFarmerHomeDataUseCase: GetFarmerHomeDataUseCase
+class GetPetaniHomeDataUseCaseTest {
+    private lateinit var getPetaniHomeDataUseCase: GetPetaniHomeDataUseCase
     private val mockHomeRepository: HomeRepository = mockk<HomeRepository>(relaxed = true)
 
     @Before
     fun setUp() {
-        getFarmerHomeDataUseCase = GetFarmerHomeDataUseCase(mockHomeRepository)
+        getPetaniHomeDataUseCase = GetPetaniHomeDataUseCase(mockHomeRepository)
     }
 
     @Test
@@ -42,7 +42,7 @@ class GetFarmerHomeDataUseCaseTest {
         every { mockHomeRepository.getReportSummary() } returns flowOf(expectedSummary)
         every { mockHomeRepository.getLatestReports() } returns flowOf(expectedReports)
 
-        val resultFlow = getFarmerHomeDataUseCase()
+        val resultFlow = getPetaniHomeDataUseCase()
 
         resultFlow.test {
             val actualEmission = awaitItem()

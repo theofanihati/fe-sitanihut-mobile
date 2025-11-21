@@ -18,7 +18,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LogoutUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateEmailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidatePasswordUseCase
-import com.dishut_lampung.sitanihut.domain.usecase.home.GetFarmerHomeDataUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.home.GetPetaniHomeDataUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -154,7 +154,7 @@ object AppModule{
     }
     @Provides
     @Singleton
-    fun getFarmerHomeDataUseCase(repository: HomeRepository): GetFarmerHomeDataUseCase {
-        return GetFarmerHomeDataUseCase(repository)
+    fun getFarmerHomeDataUseCase(repository: HomeRepository): GetPetaniHomeDataUseCase {
+        return GetPetaniHomeDataUseCase(repository)
     }
 }
