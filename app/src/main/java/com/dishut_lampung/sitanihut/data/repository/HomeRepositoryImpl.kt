@@ -15,11 +15,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
 
 class HomeRepositoryImpl @Inject constructor(
@@ -88,31 +91,75 @@ class HomeRepositoryImpl @Inject constructor(
     }
 
     override fun getLatestReports(): Flow<List<Report>> {
-        val localData = reportDao.getLatestReports().map { entities ->
-            entities.map { it.toDomain() }
-        }
-
-        return localData.onStart {
-            fetchReportsFromNetwork()
+        return userPreferences.userId.flatMapLatest { userId ->
+            if (userId.isNullOrEmpty()) {
+                flowOf(emptyList())
+            } else {
+                reportDao.getLatestReports(userId).map { entities ->
+                    entities.map { it.toDomain() }
+                }.onStart {
+                    syncMyReportHistory()
+                }
+            }
         }
     }
 
-    private suspend fun fetchReportsFromNetwork() {
+    private suspend fun syncMyReportHistory() {
         try {
             val token = userPreferences.getAuthToken()
-
             if (token != null) {
-                val networkResponse = apiService.getLatestReports("Bearer $token")
-                if (networkResponse.statusCode == 200) {
-                    val reportDtos = networkResponse.data.items
-                    val reportEntities = reportDtos.map { it.toEntity() }
-                    reportDao.upsertAll(reportEntities)
+                val response = apiService.getLatestReports("Bearer $token")
+
+                val remoteData = response.data.items
+                if (remoteData.isNotEmpty()) {
+                    reportDao.upsertAll(remoteData.map { it.toEntity() })
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
+
+    override fun getReportsByStatus(status: String): Flow<Resource<List<Report>>> = flow {
+        emit(Resource.Loading())
+
+        val localData = reportDao.getReportsByStatus(status).first()
+        val localDomain = localData.map { it.toDomain() }
+
+        if (localDomain.isNotEmpty()) {
+            emit(Resource.Success(localDomain))
+        }
+
+        try {
+            val token = userPreferences.getAuthToken()
+            if (token.isNullOrBlank()) {
+                if (localDomain.isEmpty()) emit(Resource.Error("Token expired"))
+                return@flow
+            }
+
+            val response = apiService.getReportsByStatus("Bearer $token", status)
+            val remoteItems = response.data
+
+            if (remoteItems != null) {
+                reportDao.upsertAll(remoteItems.map { it.toEntity() })
+
+                val newDomainData = remoteItems.map { it.toDomain() }
+                emit(Resource.Success(newDomainData))
+            } else if (localDomain.isEmpty()) {
+                emit(Resource.Success(emptyList()))
+            }
+
+        } catch (e: IOException) {
+            if (localDomain.isNotEmpty()) {
+                emit(Resource.Success(localDomain))
+            } else {
+                emit(Resource.Error("Gagal terhubung internet."))
+            }
+        } catch (e: Exception) {
+            if (localDomain.isEmpty()) emit(Resource.Error(e.localizedMessage ?: "Error"))
+        }
+    }
+
     override suspend fun deleteReport(reportId: String): Resource<Unit> {
         return try {
             reportDao.deleteReportById(reportId)
