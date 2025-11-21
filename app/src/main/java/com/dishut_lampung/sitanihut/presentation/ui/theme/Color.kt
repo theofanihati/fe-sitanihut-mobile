@@ -248,3 +248,12 @@ val onWarningDarkHighContrast = Color(0xFF000000)
 val warningContainerDarkHighContrast = Color(0xFFFFB274)
 val onWarningContainerDarkHighContrast = Color(0xFF170700)
 
+val purple = Color(0xFF550080)
+val blue = Color(0xFF2A5D7C)
+val warning = Color(0xFFFE8A04)
+val lightOrange = Color(0xFFFFBB6D)
+val lightGreen = Color(0xFF71C080)
+val lightPink = Color(0xFFF09D9D)
+val tosca = Color(0xFF208966)
+
+

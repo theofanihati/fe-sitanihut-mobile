@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.dishut_lampung.sitanihut.presentation.home_page.kkph.HomePageKkphScreen
 import com.dishut_lampung.sitanihut.presentation.home_page.penyuluh.HomePagePenyuluhScreen
+import com.dishut_lampung.sitanihut.presentation.home_page.petani.HomePagePetaniRoute
 import com.dishut_lampung.sitanihut.presentation.home_page.petani.HomePagePetaniScreen
 import com.dishut_lampung.sitanihut.presentation.landing_page.LandingPageRoute
 
@@ -30,8 +31,20 @@ fun NavGraph(
             )
         }
         composable(route = Screen.HomePetani.route) {
-            HomePagePetaniScreen(
-//                modifier = modifier,
+            HomePagePetaniRoute(
+                modifier = modifier,
+                onNavigateToDetail = {
+                    navController.navigate("profile_petani_screen")
+                },
+                onNavigateToInfo = {
+                    navController.navigate("information")
+                },
+                onNavigateToCommodity = {
+                    navController.navigate("data_commodity")
+                },
+                onNavigateToReportSubmission = {
+                    navController.navigate("report-submission")
+                }
             )
         }
         composable(route = Screen.HomePenyuluh.route) {

@@ -7,21 +7,27 @@ sealed class Screen(val route: String) {
     data object HomePenyuluh : Screen("home_screen_penyuluh")
     data object HomeKkph :Screen("home_screen_kkph")
 
+    object Information : Screen("information")
+    object DataCommodity : Screen("data_commodity")
+
     sealed class Auth(route : String) : Screen(route) {
         data object Login : Screen("login_screen")
         data object ForgotPassword : Screen("forgot_password_screen")
     }
 
     sealed class  Petani(route: String) : Screen(route) {
-        data object ProfilePetani : Screen("profile_petani_screen")
+        data object ProfilePetani : Petani("profile_petani_screen")
+
+        object ReportSubmission : Petani("report-submission")
+        data class DetailReportSubmission(val id : String) : Petani("report-submission/$id")
     }
 
     sealed class  Penyuluh(route: String) : Screen(route) {
-        data object ProfilePenyuluh : Screen("profile_penyuluh_screen")
+        data object ProfilePenyuluh : Penyuluh("profile_penyuluh_screen")
     }
 
     sealed class  Kkph(route: String) : Screen(route) {
-        data object ProfileKkph : Screen("profile_kkph_screen")
+        data object ProfileKkph : Kkph("profile_kkph_screen")
     }
 
 }
