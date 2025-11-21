@@ -21,6 +21,12 @@ interface HomeApiService {
         @Query("limit") limit: Int = 10
     ): ApiResponse<PaginatedData<ReportListItemDto>>
 
+    @GET("v1/laporan")
+    suspend fun getReportsByStatus(
+        @Header("Authorization") token: String,
+        @Query("status") status: String
+    ): ApiResponse<List<ReportListItemDto>>
+
     @DELETE("v1/laporan/{id}")
     suspend fun deleteReport(
         @Header("Authorization") token: String,

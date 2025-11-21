@@ -1,5 +1,6 @@
 package com.dishut_lampung.sitanihut.presentation.home_page
 
+import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportSummary
 import com.dishut_lampung.sitanihut.domain.model.ReportUiModel
 import com.dishut_lampung.sitanihut.domain.model.UserProfile
