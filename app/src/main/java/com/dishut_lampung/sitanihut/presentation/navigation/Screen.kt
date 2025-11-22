@@ -10,6 +10,12 @@ sealed class Screen(val route: String) {
     object Information : Screen("information")
     object DataCommodity : Screen("data_commodity")
 
+    object DataKth : Screen("data_kth")
+    object DataPetani : Screen("data_petani")
+    object ReportVerification : Screen("report-verification")
+    data class DetailReportVerification(val id : String) : Screen("report-verification/$id")
+    object UserManagement : Screen("user-management")
+
     sealed class Auth(route : String) : Screen(route) {
         data object Login : Screen("login_screen")
         data object ForgotPassword : Screen("forgot_password_screen")
@@ -24,15 +30,11 @@ sealed class Screen(val route: String) {
 
     sealed class  Penyuluh(route: String) : Screen(route) {
         data object ProfilePenyuluh : Penyuluh("profile_penyuluh_screen")
-        object DataKth : Penyuluh("data_kth")
-        object DataPetani : Penyuluh("data_petani")
-        object ReportVerification : Penyuluh("report-verification")
-        data class DetailReportVerification(val id : String) : Penyuluh("report-verification/$id")
-        object UserManagement : Penyuluh("user-management")
     }
 
     sealed class  Kkph(route: String) : Screen(route) {
         data object ProfileKkph : Kkph("profile_kkph_screen")
+        object DataPenyuluh: Kkph("data_penyuluh")
     }
 
 }

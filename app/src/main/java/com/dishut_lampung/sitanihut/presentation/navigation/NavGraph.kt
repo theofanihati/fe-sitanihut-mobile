@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.dishut_lampung.sitanihut.presentation.home_page.kkph.HomePageKkphRoute
 import com.dishut_lampung.sitanihut.presentation.home_page.kkph.HomePageKkphScreen
 import com.dishut_lampung.sitanihut.presentation.home_page.penyuluh.HomePagePenyuluhRoute
 import com.dishut_lampung.sitanihut.presentation.home_page.penyuluh.HomePagePenyuluhScreen
@@ -75,8 +76,32 @@ fun NavGraph(
             )
         }
         composable(route = Screen.HomeKkph.route) {
-            HomePageKkphScreen(
+            HomePageKkphRoute(
                 modifier = modifier,
+                onNavigateToDetail = {
+                    navController.navigate("profile_kkph_screen")
+                },
+                onNavigateToCommodity = {
+                    navController.navigate("data_commodity")
+                },
+                onNavigateToKTH = {
+                    navController.navigate("data_kth")
+                },
+                onNavigateToPetani = {
+                    navController.navigate("data_petani")
+                },
+                onNavigateToPenyuluh = {
+                    navController.navigate("data_penyuluh")
+                },
+                onNavigateToReportVerification = {
+                    navController.navigate("report-verification")
+                },
+                onNavigateToUserManagement = {
+                    navController.navigate("user-management")
+                },
+                onNavigateToInfo = {
+                    navController.navigate("information")
+                },
             )
         }
 

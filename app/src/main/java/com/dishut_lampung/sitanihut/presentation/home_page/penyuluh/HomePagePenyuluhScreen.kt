@@ -78,7 +78,7 @@ fun HomePagePenyuluhScreenPreview() {
             modifier = Modifier.fillMaxSize(),
             state = HomeUiState(
                 isLoading = false,
-                latestReports = dummyReports
+                latestReports = dummyReportsPenyuluh
             ),
             onNavigateToCommodity = {},
             onNavigateToKTH = {},
@@ -313,7 +313,7 @@ fun HomePagePenyuluhScreen(
     }
 }
 
-val dummyReports = listOf(
+val dummyReportsPenyuluh = listOf(
     ReportUiModel(
         id = "1",
         periodTitle = "Laporan Periode Mei 2025",
