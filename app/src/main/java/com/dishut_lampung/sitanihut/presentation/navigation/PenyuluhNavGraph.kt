@@ -6,8 +6,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.dishut_lampung.sitanihut.presentation.home_page.penyuluh.HomePagePenyuluhRoute
-import com.dishut_lampung.sitanihut.presentation.home_page.penyuluh.HomePagePenyuluhScreen
-import com.dishut_lampung.sitanihut.presentation.login.LoginRoute
+import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScreen
+import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
+import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutScreen
+import com.dishut_lampung.sitanihut.presentation.information.InformationScreen
+import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutRoute
 import com.dishut_lampung.sitanihut.presentation.profile.PetaniProfileScreen
 
 fun NavGraphBuilder.penyuluhNavGraph(
@@ -49,7 +52,21 @@ fun NavGraphBuilder.penyuluhNavGraph(
                 )
         }
         composable(route = Screen.Penyuluh.ProfilePenyuluh.route){
-            PetaniProfileScreen(navController = navController)
+            PetaniProfileScreen()
+        }
+        composable(route = Screen.Information.route){
+            InformationScreen()
+        }
+        composable(route = Screen.About.route){
+            AboutScreen()
+        }
+        composable(route = Screen.Contact.route){
+            ContactScreen()
+        }
+        composable(route = Screen.Dishut.route){
+            DishutRoute(
+                navController = navController
+            )
         }
     }
 }
