@@ -15,16 +15,16 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
-class GetVerificationHomeDataUseCaseTest {
+class GetPenyuluhHomeDataUseCaseTest {
 
     @MockK
     private lateinit var repository: HomeRepository
-    private lateinit var useCase: GetVerificationHomeDataUseCase
+    private lateinit var useCase: GetPenyuluhHomeDataUseCase
 
     @Before
     fun setUp() {
         MockKAnnotations.init(this)
-        useCase = GetVerificationHomeDataUseCase(repository)
+        useCase = GetPenyuluhHomeDataUseCase(repository)
     }
 
     @Test
