@@ -7,6 +7,6 @@ class DownloadStructureImageUseCase @Inject constructor(
     private val repository: CompanyRepository
 ) {
     suspend operator fun invoke(): Result<String> {
-        return TODO("Implementasi repository belum dibuat")
+        return repository.saveStructureImageToGallery()
     }
 }
