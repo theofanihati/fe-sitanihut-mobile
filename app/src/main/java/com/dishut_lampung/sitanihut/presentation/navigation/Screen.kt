@@ -24,6 +24,11 @@ sealed class Screen(val route: String) {
 
     sealed class  Penyuluh(route: String) : Screen(route) {
         data object ProfilePenyuluh : Penyuluh("profile_penyuluh_screen")
+        object DataKth : Penyuluh("data_kth")
+        object DataPetani : Penyuluh("data_petani")
+        object ReportVerification : Penyuluh("report-verification")
+        data class DetailReportVerification(val id : String) : Penyuluh("report-verification/$id")
+        object UserManagement : Penyuluh("user-management")
     }
 
     sealed class  Kkph(route: String) : Screen(route) {

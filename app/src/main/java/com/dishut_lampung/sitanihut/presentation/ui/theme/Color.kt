@@ -255,5 +255,8 @@ val lightOrange = Color(0xFFFFBB6D)
 val lightGreen = Color(0xFF71C080)
 val lightPink = Color(0xFFF09D9D)
 val tosca = Color(0xFF208966)
+val brown = Color(0xFF9B663C)
+val green = Color(0xFF3A6935)
+
 
 
