@@ -9,8 +9,10 @@ import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.remote.api.AuthApiService
 import com.dishut_lampung.sitanihut.data.remote.api.HomeApiService
 import com.dishut_lampung.sitanihut.data.repository.AuthRepositoryImpl
+import com.dishut_lampung.sitanihut.data.repository.CompanyRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.HomeRepositoryImpl
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
+import com.dishut_lampung.sitanihut.domain.repository.CompanyRepository
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ForgotPasswordUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginStatusUseCase
@@ -101,6 +103,14 @@ object AppModule{
         reportDao: ReportDao
     ): HomeRepository {
         return HomeRepositoryImpl(apiService, reportDao, userPreferences)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCompanyRepository(
+        @ApplicationContext context: Context
+    ): CompanyRepository {
+        return CompanyRepositoryImpl(context)
     }
 
     // DATABASE
