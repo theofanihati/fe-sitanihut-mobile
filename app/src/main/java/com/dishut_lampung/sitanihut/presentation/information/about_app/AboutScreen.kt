@@ -1,6 +1,8 @@
 package com.dishut_lampung.sitanihut.presentation.information.about_app
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,71 +36,81 @@ fun AboutScreen() {
     )
 
     val scrollState = rememberScrollState()
-
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(horizontal = ScreenPadding),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
     ) {
-        Spacer(Modifier.height(80.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(horizontal = ScreenPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(Modifier.height(100.dp))
 
-        Text(
-            text = "SITANIHUT Lampung",
-            style = MaterialTheme.typography.headlineSmall.copy(
-                fontWeight = FontWeight.Bold,
-            ),
-            color = MaterialTheme.colorScheme.tertiary,
-            textAlign = TextAlign.Center
-        )
+            Text(
+                text = "SITANIHUT Lampung",
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                ),
+                color = MaterialTheme.colorScheme.tertiary,
+                textAlign = TextAlign.Center
+            )
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = "Sistem Informasi Petani Hutan Provinsi Lampung",
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.SemiBold
-            ),
-            textAlign = TextAlign.Center
-        )
+            Text(
+                text = "Sistem Informasi Petani Hutan Provinsi Lampung",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                textAlign = TextAlign.Center
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Platform digital guna mendukung pengelolaan data petani hutan dan kelompok tani hutan secara terpadu, akurat, dan mudah diakses. Bertujuan membantu Dinas Kehutanan dalam pencatatan, pemantauan, serta pelaporan kegiatan petani hutan di seluruh wilayah Provinsi Lampung.",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Start,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+            Text(
+                text = "Platform digital guna mendukung pengelolaan data petani hutan dan kelompok tani hutan secara terpadu, akurat, dan mudah diakses. Bertujuan membantu Dinas Kehutanan dalam pencatatan, pemantauan, serta pelaporan kegiatan petani hutan di seluruh wilayah Provinsi Lampung.",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Start,
+                color = MaterialTheme.colorScheme.onSurface
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Image(
-            painter = painterResource(id = R.drawable.roadmap_pelaporan),
-            contentDescription = "Langkah Melakukan Pelaporan",
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier.fillMaxWidth()
-        )
+            Image(
+                painter = painterResource(id = R.drawable.roadmap_pelaporan),
+                contentDescription = "Langkah Melakukan Pelaporan",
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                    .padding(vertical = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Versi 1.0.0 (Beta)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Center
+                )
 
-        Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text = "Versi 1.0.0 (Beta)",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            textAlign = TextAlign.Center
-        )
+                Text(
+                    text = "© 2025 Dinas Kehutanan Provinsi Lampung",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Center,
+                )
+            }
 
-        Spacer(modifier = Modifier.height(2.dp))
-
-        Text(
-            text = "© 2025 Dinas Kehutanan Provinsi Lampung",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            textAlign = TextAlign.Center,
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
     }
 }

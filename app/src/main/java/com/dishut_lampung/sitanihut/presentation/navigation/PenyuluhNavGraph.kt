@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.dishut_lampung.sitanihut.presentation.home_page.penyuluh.HomePagePenyuluhRoute
+import com.dishut_lampung.sitanihut.presentation.information.InformationRoute
 import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScreen
 import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutScreen
@@ -55,7 +56,18 @@ fun NavGraphBuilder.penyuluhNavGraph(
             PetaniProfileScreen()
         }
         composable(route = Screen.Information.route){
-            InformationScreen()
+            InformationRoute(
+                navController = navController,
+                onNavigateToAboutApp = {
+                    navController.navigate("information/about-app")
+                },
+                onNavigateToAboutCompany = {
+                    navController.navigate("information/about-company")
+                },
+                onNavigateToContact = {
+                    navController.navigate("information/contact")
+                }
+            )
         }
         composable(route = Screen.About.route){
             AboutScreen()

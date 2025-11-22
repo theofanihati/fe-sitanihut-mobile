@@ -90,7 +90,7 @@ fun DishutScreen(
                 .padding(horizontal = ScreenPadding),
 //        horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(Modifier.height(80.dp))
+            Spacer(Modifier.height(100.dp))
 
             Column(
                 modifier = Modifier
@@ -126,7 +126,16 @@ fun DishutScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Dinas Kehutanan Provinsi Lampung adalah organisasi perangkat daerah yang mempunyai tugas menyelenggarakan sebagian urusan pemerintahan provinsi di bidang kehutanan serta tugas lain sesuai dengan kebijakan yang ditetapkan oleh Gubernur berdasarkan peraturan perundang-undangan yang berlaku",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Start,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
 
             Text(
                 text = "KPH Provinsi Lampung",
@@ -146,14 +155,14 @@ fun DishutScreen(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             CustomCarousel(
                 items = kphData,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             Text(
                 text = "Susunan Organisasi",
@@ -172,7 +181,7 @@ fun DishutScreen(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Image(
                 painter = painterResource(id = R.drawable.susunan_organisasi),
@@ -181,7 +190,7 @@ fun DishutScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             Button(
                 onClick = onDownloadClick,
@@ -189,7 +198,7 @@ fun DishutScreen(
                     .fillMaxWidth()
                     .height(40.dp),
                 shape = MaterialTheme.shapes.extraLarge,
-                enabled = !state.isLoading
+                enabled = !state.isLoading,
             ) {
                 if (state.isLoading) {
                     CircularProgressIndicator(

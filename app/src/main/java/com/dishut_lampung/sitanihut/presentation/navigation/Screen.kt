@@ -8,9 +8,9 @@ sealed class Screen(val route: String) {
     data object HomeKkph :Screen("home_screen_kkph")
 
     object Information : Screen("information")
-    object About : Screen("information/about")
+    object About : Screen("information/about-app")
     object Contact : Screen("information/contact")
-    object Dishut : Screen("information/dishut")
+    object Dishut : Screen("information/about-company")
 
     object DataCommodity : Screen("data_commodity")
 

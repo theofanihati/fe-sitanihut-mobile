@@ -39,7 +39,7 @@ fun MainScreen(
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     val lightTopBarColors = TopAppBarDefaults.topAppBarColors(
-        containerColor = Color.Transparent,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         titleContentColor = MaterialTheme.colorScheme.onSurface,
         navigationIconContentColor = MaterialTheme.colorScheme.onSurface
     )
