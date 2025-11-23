@@ -8,8 +8,9 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetUserDetailUseCase @Inject constructor(
+    private val profileRepository: ProfileRepository
 ) {
     operator fun invoke(userId: String): Flow<Resource<UserDetail>> {
-        TODO("blum buund")
+        return profileRepository.getUserDetail(userId)
     }
 }
