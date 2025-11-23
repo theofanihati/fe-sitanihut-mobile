@@ -8,6 +8,7 @@ import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.remote.api.AuthApiService
 import com.dishut_lampung.sitanihut.data.remote.api.HomeApiService
+import com.dishut_lampung.sitanihut.data.remote.interceptor.AuthInterceptor
 import com.dishut_lampung.sitanihut.data.repository.AuthRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.CompanyRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.HomeRepositoryImpl
@@ -50,6 +51,11 @@ object AppModule{
                 HttpLoggingInterceptor.Level.NONE
             }
         }
+    }
+
+    @Singleton
+    fun provideAuthInterceptor(userPreferences: UserPreferences): AuthInterceptor {
+        return AuthInterceptor(userPreferences)
     }
 
     @Provides

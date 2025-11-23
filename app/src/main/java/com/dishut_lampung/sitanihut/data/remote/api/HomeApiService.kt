@@ -17,26 +17,22 @@ import retrofit2.http.Query
 interface HomeApiService {
     @GET("v1/laporan")
     suspend fun getLatestReports(
-        @Header("Authorization") token: String,
         @Query("limit") limit: Int = 10
     ): ApiResponse<PaginatedData<ReportListItemDto>>
 
     @GET("v1/laporan")
     suspend fun getReportsByStatus(
-        @Header("Authorization") token: String,
         @Query("status") status: String
     ): ApiResponse<List<ReportListItemDto>>
 
     @DELETE("v1/laporan/{id}")
     suspend fun deleteReport(
-        @Header("Authorization") token: String,
         @Path("id") id: String
     ): ApiResponse<Any?>
 
     @Multipart
     @POST("v1/laporan/{id}")
     suspend fun submitReport(
-        @Header("Authorization") token: String,
         @Path("id") id: String,
         @Part("_method") method: RequestBody, // "PATCH"
         @Part("status") status: RequestBody   // "menunggu"
@@ -44,7 +40,6 @@ interface HomeApiService {
 
     @GET("v1/users/{id}")
     suspend fun getUserDetail(
-        @Header("Authorization") token: String,
         @Path("id") id: String
     ): ApiResponse<UserDto>
 }

@@ -57,7 +57,7 @@ class HomeRepositoryImpl @Inject constructor(
             Log.d("SITANIHUT_SYNC", "Token: $token, User ID: $userId")
 
             if (!token.isNullOrEmpty() && !userId.isNullOrEmpty()) {
-                val response = apiService.getUserDetail("Bearer $token", userId)
+                val response = apiService.getUserDetail(userId)
 
                 if (response.statusCode == 200 && response.data != null) {
                     val data = response.data
@@ -108,7 +108,7 @@ class HomeRepositoryImpl @Inject constructor(
         try {
             val token = userPreferences.getAuthToken()
             if (token != null) {
-                val response = apiService.getLatestReports("Bearer $token")
+                val response = apiService.getLatestReports()
 
                 val remoteData = response.data.items
                 if (remoteData.isNotEmpty()) {
@@ -137,7 +137,7 @@ class HomeRepositoryImpl @Inject constructor(
                 return@flow
             }
 
-            val response = apiService.getReportsByStatus("Bearer $token", status)
+            val response = apiService.getReportsByStatus(status)
             val remoteItems = response.data
 
             if (remoteItems != null) {
@@ -166,7 +166,7 @@ class HomeRepositoryImpl @Inject constructor(
 
             val token = userPreferences.getAuthToken()
             if (token != null) {
-                apiService.deleteReport("Bearer $token", reportId)
+                apiService.deleteReport(reportId)
             }
 
             Resource.Success(Unit)
@@ -185,7 +185,7 @@ class HomeRepositoryImpl @Inject constructor(
             val statusPart = "menunggu".toRequestBody("text/plain".toMediaTypeOrNull())
 
             if (token != null) {
-                apiService.submitReport("Bearer $token", reportId, methodPart, statusPart)
+                apiService.submitReport(reportId, methodPart, statusPart)
             }
 
             Resource.Success(Unit)
