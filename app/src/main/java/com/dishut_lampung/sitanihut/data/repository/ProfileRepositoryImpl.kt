@@ -25,6 +25,43 @@ class ProfileRepositoryImpl @Inject constructor(
     private val roleDao: RoleDao,
 ) : ProfileRepository {
     override fun getUserDetail(userId: String): Flow<Resource<UserDetail>> = flow {
-        TODO("blum buund")
+        emit(Resource.Loading())
+
+        val cached = userDao.getUserById(userId).firstOrNull()
+        if (cached != null) {
+            emit(Resource.Success(cached.toUserDetail()))
+        }
+
+        try {
+            val response = apiService.getUserDetail(userId)
+            val userDto = response.data
+
+            var roleName = roleDao.getRoleName(userDto.roleId)
+
+            if (roleName == null) {
+                try {
+                    val rolesResponse = apiService.getRoles()
+                    val roleEntities = rolesResponse.data.map { it.toEntity() }
+                    roleDao.insertRoles(roleEntities)
+
+                    roleName = roleDao.getRoleName(userDto.roleId)
+                } catch (e: Exception) {
+                    // Silent fail fetch roles
+                }
+            }
+            val finalRoleName = roleName ?: "Pengguna"
+
+            val userEntity = userDto.toEntity(finalRoleName)
+
+            userDao.upsertUser(userEntity)
+
+            val newCached = userDao.getUserById(userId).firstOrNull()
+            if (newCached != null) {
+                emit(Resource.Success(newCached.toUserDetail()))
+            }
+
+        } catch (e: Exception) {
+            emit(Resource.Error(e.localizedMessage ?: "Error", cached?.toUserDetail()))
+        }
     }
 }
