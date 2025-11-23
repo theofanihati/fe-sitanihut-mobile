@@ -3,7 +3,7 @@ package com.dishut_lampung.sitanihut.data.mapper
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
 import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
-import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
+import com.dishut_lampung.sitanihut.data.remote.dto.UserDto
 import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.model.ReportUiModel
@@ -12,7 +12,7 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-fun UserDetailDto.toEntity(role: String): UserEntity {
+fun UserDto.toEntity(role: String): UserEntity {
     return UserEntity(
         id = this.id,
         name = this.name,

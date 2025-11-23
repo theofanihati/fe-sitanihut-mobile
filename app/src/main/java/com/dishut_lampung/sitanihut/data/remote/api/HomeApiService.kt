@@ -3,7 +3,7 @@ package com.dishut_lampung.sitanihut.data.remote.api
 import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
-import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
+import com.dishut_lampung.sitanihut.data.remote.dto.UserDto
 import okhttp3.RequestBody
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -46,5 +46,5 @@ interface HomeApiService {
     suspend fun getUserDetail(
         @Header("Authorization") token: String,
         @Path("id") id: String
-    ): ApiResponse<UserDetailDto>
+    ): ApiResponse<UserDto>
 }
