@@ -9,10 +9,9 @@ import com.dishut_lampung.sitanihut.presentation.home_page.penyuluh.HomePagePeny
 import com.dishut_lampung.sitanihut.presentation.information.InformationRoute
 import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScreen
 import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
-import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutScreen
-import com.dishut_lampung.sitanihut.presentation.information.InformationScreen
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutRoute
-import com.dishut_lampung.sitanihut.presentation.profile.PetaniProfileScreen
+import com.dishut_lampung.sitanihut.presentation.profile.petani.PetaniProfileRoute
+import com.dishut_lampung.sitanihut.presentation.profile.petani.PetaniProfileScreen
 
 fun NavGraphBuilder.penyuluhNavGraph(
     modifier : Modifier,
@@ -53,7 +52,7 @@ fun NavGraphBuilder.penyuluhNavGraph(
                 )
         }
         composable(route = Screen.Penyuluh.ProfilePenyuluh.route){
-            PetaniProfileScreen()
+            PetaniProfileRoute()
         }
         composable(route = Screen.Information.route){
             InformationRoute(

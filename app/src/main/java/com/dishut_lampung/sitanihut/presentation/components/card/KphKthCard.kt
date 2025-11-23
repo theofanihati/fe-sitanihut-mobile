@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation
+package com.dishut_lampung.sitanihut.presentation.components.card
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,15 +20,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.dishut_lampung.sitanihut.domain.model.ReportSummary
 
 @Composable
-fun ReportSummaryCard(
+fun KphKthCard(
     modifier: Modifier = Modifier,
-    summary: ReportSummary,
-    showRejected: Boolean = true
+    kthName: String? = null,
+    kphName: String?
 ) {
+    val containerColor = Color(0xFF1B2E21).copy(alpha = 0.85f)
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -46,64 +48,52 @@ fun ReportSummaryCard(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SummaryItem(
-                count = summary.pendingCount,
-                label = "Menunggu",
-                countColor = Color.White
-            )
+            if (!kthName.isNullOrBlank()) {
+                InfoItem(
+                    label = "KTH",
+                    value = kthName,
+                    modifier = Modifier.weight(1f)
+                )
 
-            SummaryDivider()
-
-            SummaryItem(
-                count = summary.approvedCount,
-                label = "Disetujui",
-                countColor = Color.White
-            )
-
-            if (showRejected) {
-                SummaryDivider()
-
-                SummaryItem(
-                    count = summary.rejectedCount,
-                    label = "Ditolak",
-                    countColor = Color.White
+                Box(
+                    modifier = Modifier
+                        .width(1.dp)
+                        .height(32.dp)
+                        .background(Color.White.copy(alpha = 0.3f))
                 )
             }
+
+            InfoItem(
+                label = "KPH",
+                value = kphName ?: "-",
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
 
 @Composable
-private fun SummaryItem(
-    count: Int,
+private fun InfoItem(
     label: String,
-    countColor: Color
+    value: String,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.White.copy(alpha = 0.9f)
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+            color = Color.White.copy(alpha = 0.7f)
         )
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = count.toString(),
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontWeight = FontWeight.Bold
-            ),
-            color = countColor
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.White,
+            textAlign = TextAlign.Center,
+            maxLines = 2
         )
     }
-}
-
-@Composable
-private fun SummaryDivider() {
-    Box(
-        modifier = Modifier
-            .height(40.dp)
-            .width(1.dp)
-            .background(Color.White.copy(alpha = 0.8f))
-    )
 }

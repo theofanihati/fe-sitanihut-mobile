@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.profile
+package com.dishut_lampung.sitanihut.presentation.profile.penyuluh
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box

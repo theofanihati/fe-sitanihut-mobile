@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.components
+package com.dishut_lampung.sitanihut.presentation.components.card
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,9 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.dishut_lampung.sitanihut.domain.model.ReportUiModel
 import com.dishut_lampung.sitanihut.presentation.ui.theme.blue
 import com.dishut_lampung.sitanihut.presentation.ui.theme.purple
@@ -161,7 +158,7 @@ data class StatusColor(
 )
 
 @Composable
-fun getStatusColors(statusText: String): StatusColor{
+fun getStatusColors(statusText: String): StatusColor {
     return when (statusText.lowercase()) {
         "belum diajukan", "draft" -> StatusColor(Color.LightGray, Color.White)
         "menunggu" -> StatusColor(warning, Color.White)

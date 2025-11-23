@@ -31,10 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,11 +41,11 @@ import coil.compose.AsyncImage
 import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.model.ReportUiModel
-import com.dishut_lampung.sitanihut.presentation.ReportSummaryCard
+import com.dishut_lampung.sitanihut.presentation.components.card.ReportSummaryCard
 import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
-import com.dishut_lampung.sitanihut.presentation.components.HomeMenuGrid
-import com.dishut_lampung.sitanihut.presentation.components.HomeMenuItem
-import com.dishut_lampung.sitanihut.presentation.components.ReportCard
+import com.dishut_lampung.sitanihut.presentation.components.card.HomeMenuGrid
+import com.dishut_lampung.sitanihut.presentation.components.card.HomeMenuItem
+import com.dishut_lampung.sitanihut.presentation.components.card.ReportCard
 import com.dishut_lampung.sitanihut.presentation.components.bottomsheet.ReportOptionBottomSheet
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiEvent
