@@ -31,6 +31,7 @@ class GetUserDetailUseCaseTest {
             id = dummyUserId,
             email= "Petani@gmail.com",
             roleId = "id-petani",
+            role = "petani",
             kphName = "KPH 123",
             kphId = "kph-123",
             kthName = "KTH 456",

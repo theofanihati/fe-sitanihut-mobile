@@ -164,7 +164,7 @@ fun PetaniProfileScreen(
 }
 
 @Composable
-fun ProfileContent(user: UserDetail) {
+private fun ProfileContent(user: UserDetail) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -251,7 +251,7 @@ fun ProfileContent(user: UserDetail) {
 }
 
 @Composable
-fun ProfileDetailRow(
+private fun ProfileDetailRow(
     label: String,
     value: String
 ) {
