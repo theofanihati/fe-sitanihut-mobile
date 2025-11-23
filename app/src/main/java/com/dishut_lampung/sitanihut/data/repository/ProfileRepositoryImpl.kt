@@ -11,6 +11,7 @@ import com.dishut_lampung.sitanihut.domain.model.UserDetail
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.util.Resource
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
@@ -23,6 +24,7 @@ class ProfileRepositoryImpl @Inject constructor(
     private val apiService: UserApiService,
     private val userDao: UserDao,
     private val roleDao: RoleDao,
+    private val userPreferences: UserPreferences
 ) : ProfileRepository {
     override fun getUserDetail(userId: String): Flow<Resource<UserDetail>> = flow {
         emit(Resource.Loading())
@@ -33,6 +35,9 @@ class ProfileRepositoryImpl @Inject constructor(
         }
 
         try {
+            val currentUserId = userPreferences.userId.first()
+            val isCurrentUser = currentUserId == userId
+
             val response = apiService.getUserDetail(userId)
             val userDto = response.data
 
@@ -49,6 +54,11 @@ class ProfileRepositoryImpl @Inject constructor(
                     // Silent fail fetch roles
                 }
             }
+            if (roleName == null && isCurrentUser) {
+                val prefRole = userPreferences.userRole.first()
+                roleName = prefRole?.replaceFirstChar { it.uppercase() }
+            }
+
             val finalRoleName = roleName ?: "Pengguna"
 
             val userEntity = userDto.toEntity(finalRoleName)

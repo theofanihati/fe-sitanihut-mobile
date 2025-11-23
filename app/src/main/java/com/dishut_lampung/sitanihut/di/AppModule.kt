@@ -133,9 +133,10 @@ object AppModule{
     fun provideProfileRepository(
         apiService: UserApiService,
         userDao: UserDao,
-        roleDao: RoleDao
+        roleDao: RoleDao,
+        userPreferences: UserPreferences
     ): ProfileRepository {
-        return ProfileRepositoryImpl(apiService, userDao, roleDao)
+        return ProfileRepositoryImpl(apiService, userDao, roleDao, userPreferences)
     }
 
     @Provides
