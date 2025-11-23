@@ -4,6 +4,7 @@ data class UserDetail(
     val id: String,
     val email: String,
     val roleId: String,
+    val role: String? = "",
     val kphId: String? = "",
     val kphName: String? = "",
     val kthId: String? = "",

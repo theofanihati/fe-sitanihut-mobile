@@ -12,7 +12,19 @@ data class UserEntity(
     val name: String,
     val role: String,
     val profilePictureUrl: String?,
-//    val jenisKelamin: String,
-//    val kthName: String,
-//    val kphName: String,
+
+    val email: String? = null,
+    val roleId: String? = null,
+    val kphId: String? = null,
+    val kphName: String? = null,
+    val kthId: String? = null,
+    val kthName: String? = null,
+    val identityNumber: String? = null,
+    val gender: String? = null,
+    val address: String? = null,
+    val whatsAppNumber: String? = null,
+    val lastEducation: String? = null,
+    val sideJob: String? = null,
+    val landArea: Double? = null,
+    val position: String? = null
 )

@@ -1,23 +1,31 @@
 package com.dishut_lampung.sitanihut.data.mapper
 
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
+import com.dishut_lampung.sitanihut.data.local.entity.RoleEntity
 import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
+import com.dishut_lampung.sitanihut.data.remote.dto.RoleDto
+import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDto
 import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
-import com.dishut_lampung.sitanihut.domain.model.ReportUiModel
+import com.dishut_lampung.sitanihut.domain.model.UserDetail
 import com.dishut_lampung.sitanihut.domain.model.UserProfile
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+// home profil ringkas
 fun UserDto.toEntity(role: String): UserEntity {
     return UserEntity(
         id = this.id,
         name = this.name,
         role = role,
-        profilePictureUrl = this.profilePictureUrl
+        profilePictureUrl = this.profilePictureUrl,
+        email = null, roleId = null, kphId = null, kphName = null,
+        kthId = null, kthName = null, identityNumber = null, gender = null,
+        address = null, whatsAppNumber = null, lastEducation = null,
+        sideJob = null, landArea = null, position = null
     )
 }
 
@@ -34,11 +42,58 @@ fun ReportListItemDto.toEntity(): ReportEntity {
     )
 }
 
-fun UserEntity.toDomain(): UserProfile {
+// home profil ringkas
+fun UserEntity.toUserProfile(): UserProfile {
     return UserProfile(
         name = this.name,
         role = this.role,
         profilePictureUrl = this.profilePictureUrl
+    )
+}
+
+fun UserDetailDto.toEntity(roleNameResolved: String): UserEntity {
+    return UserEntity(
+        id = this.id,
+        email = this.email,
+        roleId = this.roleId,
+        role = roleNameResolved,
+        kphId = this.kphId,
+        kphName = this.kphName,
+        kthId = this.kthId,
+        kthName = this.kthName,
+        name = this.name,
+        identityNumber = this.identityNumber,
+        gender = this.gender,
+        profilePictureUrl = this.profilePictureUrl,
+        address = this.address,
+        whatsAppNumber = this.whatsAppNumber,
+        lastEducation = this.lastEducation,
+        sideJob = this.sideJob,
+        landArea = this.landArea,
+        position = this.position
+    )
+}
+
+fun UserEntity.toUserDetail(): UserDetail {
+    return UserDetail(
+        id = this.id,
+        email = this.email?: "",
+        roleId = this.roleId?: "",
+        role = this.role,
+        kphId = this.kphId,
+        kphName = this.kphName,
+        kthId = this.kthId,
+        kthName = this.kthName,
+        name = this.name,
+        identityNumber = this.identityNumber?: "",
+        gender = this.gender?: "",
+        profilePictureUrl = this.profilePictureUrl,
+        address = this.address,
+        whatsAppNumber = this.whatsAppNumber,
+        lastEducation = this.lastEducation,
+        sideJob = this.sideJob,
+        landArea = this.landArea,
+        position = this.position
     )
 }
 
@@ -97,23 +152,9 @@ fun ReportListItemDto.toDomain(): Report {
     )
 }
 
-//fun Report.toUiModel(): ReportUiModel {
-//    val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
-//    val nteFormatted = formatRp.format(this.totalTransaction)
-//
-//    val statusString = when (this.status) {
-//        ReportStatus.APPROVED -> "Disetujui"
-//        ReportStatus.REJECTED -> "Ditolak"
-//        ReportStatus.PENDING -> "Menunggu"
-//        ReportStatus.DRAFT -> "Draft"
-//    }
-//
-//    return ReportUiModel(
-//        id = this.id,
-//        periodTitle = "Laporan Periode ${this.monthPeriod} ${this.period}",
-//        dateDisplay = this.submissionDate,
-//        nteDisplay = nteFormatted,
-//        statusDisplay = statusString,
-//        domainStatus = this.status
-//    )
-//}
+fun RoleDto.toEntity(): RoleEntity {
+    return RoleEntity(
+        id = this.id,
+        name = this.name
+    )
+}
