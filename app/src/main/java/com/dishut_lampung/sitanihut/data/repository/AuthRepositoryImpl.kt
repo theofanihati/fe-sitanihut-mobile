@@ -49,16 +49,12 @@ class AuthRepositoryImpl @Inject constructor(
                     if (userDetailResponse.statusCode == 200 && userDetailResponse.data != null) {
                         val fullDataDto = userDetailResponse.data
 
-                        // Mapping dari DTO (API) ke Entity (Database)
-                        // Pastikan kamu punya extension function .toEntity() atau mapping manual
                         val userEntity = UserEntity(
                             id = fullDataDto.id,
                             name = fullDataDto.name,
                             role = role,
                             email = fullDataDto.email,
                             profilePictureUrl = fullDataDto.profilePictureUrl,
-
-                            // Data Lengkap:
                             roleId = fullDataDto.roleId,
                             kphId = fullDataDto.kphId,
                             kphName = fullDataDto.kphName,
