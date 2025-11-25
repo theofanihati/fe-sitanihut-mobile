@@ -12,7 +12,7 @@ data class HomeUiState(
     val successMessage: String? = null,
 
     val userProfile: UserProfile = UserProfile("Pengguna", "Petani", null),
-    val reportSummary: ReportSummary = ReportSummary(0, 0, 0),
+    val reportSummary: ReportSummary = ReportSummary(0, 0, 0,0),
     val latestReports: List<ReportUiModel> = emptyList(),
 
     val isLogoutConfirmationVisible: Boolean = false,

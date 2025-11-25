@@ -212,6 +212,7 @@ fun Report.toUiModel(): ReportUiModel {
     val statusText = when (this.status) {
         ReportStatus.APPROVED -> "Disetujui"
         ReportStatus.REJECTED -> "Ditolak"
+        ReportStatus.VERIFIED -> "Diverifikasi"
         ReportStatus.PENDING -> "Menunggu"
         ReportStatus.DRAFT -> "Belum diajukan"
     }

@@ -325,7 +325,7 @@ val dummyReportsPenanggungJawab = listOf(
         dateDisplay = "12 Mei 2025",
         nteDisplay = "Rp 1.500.000",
         statusDisplay = "Pemeriksaan KPH",
-        domainStatus = ReportStatus.PENDING,
+        domainStatus = ReportStatus.VERIFIED,
         isEditable = false,
         isDeletable = false
     ),
@@ -335,7 +335,7 @@ val dummyReportsPenanggungJawab = listOf(
         dateDisplay = "10 April 2025",
         nteDisplay = "Rp 2.300.000",
         statusDisplay = "Pemeriksaan KPH",
-        domainStatus = ReportStatus.PENDING,
+        domainStatus = ReportStatus.VERIFIED,
         isEditable = false,
         isDeletable = false
     ),
@@ -345,7 +345,7 @@ val dummyReportsPenanggungJawab = listOf(
         dateDisplay = "5 Maret 2025",
         nteDisplay = "Rp 800.000",
         statusDisplay = "Pemeriksaan KPH",
-        domainStatus = ReportStatus.PENDING,
+        domainStatus = ReportStatus.APPROVED,
         isEditable = true,
         isDeletable = true
     ),
@@ -355,7 +355,7 @@ val dummyReportsPenanggungJawab = listOf(
         dateDisplay = "2 Februari 2025",
         nteDisplay = "Rp 4.000.000",
         statusDisplay = "Pemeriksaan KPH",
-        domainStatus = ReportStatus.PENDING,
+        domainStatus = ReportStatus.REJECTED,
         isEditable = false,
         isDeletable = false
     )

@@ -90,7 +90,7 @@ fun MainScreen(
                             val destination = when (role.lowercase()) {
                                 "petani" -> Screen.Petani.ProfilePetani.route
                                 "penyuluh" -> Screen.Penyuluh.ProfilePenyuluh.route
-                                "penanggung-jawab" -> Screen.PenanggungJawab.ProfilePenanggungJawab.route
+                                "penanggung jawab" -> Screen.PenanggungJawab.ProfilePenanggungJawab.route
                                 else -> null
                             }
                             if (destination != null) {

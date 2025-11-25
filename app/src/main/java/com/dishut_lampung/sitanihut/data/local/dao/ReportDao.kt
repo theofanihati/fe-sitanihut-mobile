@@ -9,8 +9,9 @@ import kotlinx.coroutines.flow.Flow
 
 data class ReportCountTuple(
     val PENDING: Int,
+    val VERIFIED: Int,
     val APPROVED: Int,
-    val REJECTED: Int
+    val REJECTED: Int,
 )
 
 @Dao
@@ -26,11 +27,12 @@ interface ReportDao {
 
     @Query("""
     SELECT 
-        COUNT(CASE WHEN status = 'menunggu' THEN 1 END) as PENDING, 
-        COUNT(CASE WHEN status = 'disetujui' THEN 1 END) as APPROVED, 
-        COUNT(CASE WHEN status = 'ditolak' THEN 1 END) as REJECTED
+        COUNT(CASE WHEN LOWER(status) = 'menunggu' THEN 1 END) as PENDING, 
+        COUNT(CASE WHEN LOWER(status) = 'diverifikasi' THEN 1 END) as VERIFIED, 
+        COUNT(CASE WHEN LOWER(status) = 'disetujui' THEN 1 END) as APPROVED, 
+        COUNT(CASE WHEN LOWER(status) = 'ditolak' THEN 1 END) as REJECTED
     FROM laporan
-    WHERE id = :userId
+    WHERE userId = :userId
 """)
     fun getReportSummaryStat(userId: String): Flow<ReportCountTuple>
 

@@ -77,11 +77,12 @@ class HomeRepositoryImpl @Inject constructor(
     override fun getReportSummary(): Flow<ReportSummary> {
         return userPreferences.userId.flatMapLatest { userId ->
             if (userId.isNullOrEmpty()) {
-                flowOf(ReportSummary(0, 0, 0))
+                flowOf(ReportSummary(0, 0, 0,0))
             } else {
                 reportDao.getReportSummaryStat(userId).map { tuple ->
                     ReportSummary(
                         pendingCount = tuple.PENDING,
+                        verifiedcount = tuple.VERIFIED,
                         approvedCount = tuple.APPROVED,
                         rejectedCount = tuple.REJECTED
                     )

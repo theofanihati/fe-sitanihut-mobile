@@ -101,6 +101,7 @@ fun ReportEntity.toDomain(): Report {
     val status = when (this.status.lowercase(Locale.ROOT)) {
         "disetujui" -> ReportStatus.APPROVED
         "ditolak" -> ReportStatus.REJECTED
+        "diverifikasi" -> ReportStatus.VERIFIED
         "menunggu" -> ReportStatus.PENDING
         "belum diajukan" -> ReportStatus.DRAFT
         else -> ReportStatus.DRAFT
@@ -128,6 +129,7 @@ fun ReportListItemDto.toDomain(): Report {
     val statusEnum = when (this.status?.lowercase(Locale.ROOT)) {
         "disetujui" -> ReportStatus.APPROVED
         "ditolak" -> ReportStatus.REJECTED
+        "diverifikasi" -> ReportStatus.VERIFIED
         "menunggu" -> ReportStatus.PENDING
         "belum diajukan" -> ReportStatus.DRAFT
         else -> ReportStatus.DRAFT

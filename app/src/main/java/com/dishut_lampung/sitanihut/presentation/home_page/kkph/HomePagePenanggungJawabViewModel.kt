@@ -63,15 +63,15 @@ class HomePagePenanggungJawabViewModel @Inject constructor(
 
         viewModelScope.launch {
             val profileFlow = homeRepository.getUserProfile()
-            val pendingFlow = homeRepository.getReportsByStatus("menunggu")
+            val verifiedFlow = homeRepository.getReportsByStatus("diverifikasi")
             val approvedFlow = homeRepository.getReportsByStatus("disetujui")
 
-            combine(profileFlow, pendingFlow, approvedFlow) { profile, pendingRes, approvedRes ->
+            combine(profileFlow, verifiedFlow, approvedFlow) { profile, verifiedRes, approvedRes ->
 
-                val pendingList = when (pendingRes) {
-                    is Resource.Success -> pendingRes.data ?: emptyList()
+                val verifiedList = when (verifiedRes) {
+                    is Resource.Success -> verifiedRes.data ?: emptyList()
                     is Resource.Error -> {
-                        _state.update { it.copy(generalError = pendingRes.message) }
+                        _state.update { it.copy(generalError = verifiedRes.message) }
                         emptyList()
                     }
                     is Resource.Loading -> emptyList()
@@ -86,10 +86,11 @@ class HomePagePenanggungJawabViewModel @Inject constructor(
                     is Resource.Loading -> emptyList()
                 }
 
-                val errorMsg = pendingRes.message ?: approvedRes.message
+                val errorMsg = verifiedRes.message ?: approvedRes.message
 
                 val summary = ReportSummary(
-                    pendingCount = pendingList.size,
+                    pendingCount = 0,
+                    verifiedcount = verifiedList.size,
                     approvedCount = approvedList.size,
                     rejectedCount = 0
                 )
@@ -99,8 +100,8 @@ class HomePagePenanggungJawabViewModel @Inject constructor(
                     isRefreshing = false,
                     userProfile = profile,
                     reportSummary = summary,
-                    latestReports = pendingList.map { it.toKkphUiModel() },
-                    generalError = if (pendingList.isEmpty() && approvedList.isEmpty()) errorMsg else null
+                    latestReports = verifiedList.map { it.toKkphUiModel() },
+                    generalError = if (verifiedList.isEmpty() && approvedList.isEmpty()) errorMsg else null
                 )
             }.collect { newState ->
                 _state.value = newState
@@ -140,6 +141,7 @@ class HomePagePenanggungJawabViewModel @Inject constructor(
         val statusText = when (this.status) {
             ReportStatus.APPROVED -> "Disetujui"
             ReportStatus.REJECTED -> "Ditolak"
+            ReportStatus.VERIFIED -> "Diverifikasi"
             ReportStatus.PENDING -> "Menunggu"
             ReportStatus.DRAFT -> "Belum diajukan"
         }
