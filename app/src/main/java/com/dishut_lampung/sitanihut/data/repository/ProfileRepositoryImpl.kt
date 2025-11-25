@@ -71,7 +71,7 @@ class ProfileRepositoryImpl @Inject constructor(
             }
 
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "Error", cached?.toUserDetail()))
+            emit(Resource.Error(e.localizedMessage ?: "Gagal terhubung ke server. Menampilkan data offline", cached?.toUserDetail()))
         }
     }
 }

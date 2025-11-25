@@ -111,11 +111,13 @@ object AppModule{
     @Provides
     @Singleton
     fun provideAuthRepository(
-        apiService: AuthApiService,
+        authApiService: AuthApiService,
+        userApiService: UserApiService,
         userPreferences: UserPreferences,
-        reportDao: ReportDao
+        reportDao: ReportDao,
+        userDao: UserDao
     ): AuthRepository {
-        return AuthRepositoryImpl(apiService, userPreferences, reportDao)
+        return AuthRepositoryImpl(authApiService, userApiService, userPreferences, reportDao, userDao)
     }
 
     @Provides

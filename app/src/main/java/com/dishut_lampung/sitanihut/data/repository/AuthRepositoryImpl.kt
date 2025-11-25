@@ -3,7 +3,10 @@ package com.dishut_lampung.sitanihut.data.repository
 import retrofit2.HttpException
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
+import com.dishut_lampung.sitanihut.data.local.dao.UserDao
+import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
 import com.dishut_lampung.sitanihut.data.remote.api.AuthApiService
+import com.dishut_lampung.sitanihut.data.remote.api.UserApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.AuthDto
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.model.User
@@ -14,8 +17,10 @@ import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val apiService: AuthApiService,
+    private val userApiService: UserApiService,
     private val userPreferences: UserPreferences,
-    private val reportDao: ReportDao
+    private val reportDao: ReportDao,
+    private val userDao: UserDao
 ) : AuthRepository {
 
     override suspend fun login(email: String, password: String): AuthResult<User> {
@@ -37,6 +42,45 @@ class AuthRepositoryImpl @Inject constructor(
                 userPreferences.saveUserRole(role)
                 userPreferences.saveUserName(name)
                 userPreferences.saveUserId(id)
+
+                try {
+                    val userDetailResponse = userApiService.getUserDetail(id)
+
+                    if (userDetailResponse.statusCode == 200 && userDetailResponse.data != null) {
+                        val fullDataDto = userDetailResponse.data
+
+                        // Mapping dari DTO (API) ke Entity (Database)
+                        // Pastikan kamu punya extension function .toEntity() atau mapping manual
+                        val userEntity = UserEntity(
+                            id = fullDataDto.id,
+                            name = fullDataDto.name,
+                            role = role,
+                            email = fullDataDto.email,
+                            profilePictureUrl = fullDataDto.profilePictureUrl,
+
+                            // Data Lengkap:
+                            roleId = fullDataDto.roleId,
+                            kphId = fullDataDto.kphId,
+                            kphName = fullDataDto.kphName,
+                            kthId = fullDataDto.kthId,
+                            kthName = fullDataDto.kthName,
+                            identityNumber = fullDataDto.identityNumber,
+                            gender = fullDataDto.gender,
+                            address = fullDataDto.address,
+                            whatsAppNumber = fullDataDto.whatsAppNumber,
+                            lastEducation = fullDataDto.lastEducation,
+                            sideJob = fullDataDto.sideJob,
+                            landArea = fullDataDto.landArea,
+                            position = fullDataDto.position
+                        )
+                        userDao.upsertUser(userEntity)
+                    } else {
+                        saveBasicUserToDb(id, name, role, emailResp, null)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    saveBasicUserToDb(id, name, role, emailResp, null)
+                }
 
                 AuthResult.Success(
                     data = User(
@@ -71,6 +115,17 @@ class AuthRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             AuthResult.Error(e.message ?: "Terjadi kesalahan yang tidak diketahui.")
         }
+    }
+
+    private suspend fun saveBasicUserToDb(id: String, name: String, role: String, email: String, pic: String?) {
+        val basicUser = UserEntity(
+            id = id,
+            name = name,
+            role = role,
+            email = email,
+            profilePictureUrl = pic
+        )
+        userDao.upsertUser(basicUser)
     }
 
     override suspend fun requestPasswordReset(email: String): AuthResult<Unit> {
