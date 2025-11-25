@@ -25,7 +25,7 @@ import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
-class HomePageKkphViewModel @Inject constructor(
+class HomePagePenanggungJawabViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
     private val logoutUseCase: LogoutUseCase
 ) : ViewModel() {

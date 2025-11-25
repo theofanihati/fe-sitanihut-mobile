@@ -61,7 +61,7 @@ class MainViewModel @Inject constructor(
                         when (role?.lowercase()) {
                             "petani" -> Screen.HomePetani.route
                             "penyuluh" -> Screen.HomePenyuluh.route
-                            "kkph" -> Screen.HomeKkph.route
+                            "penanggung-jawab" -> Screen.HomeKkph.route
                             else -> "auth"
                         }
                     }

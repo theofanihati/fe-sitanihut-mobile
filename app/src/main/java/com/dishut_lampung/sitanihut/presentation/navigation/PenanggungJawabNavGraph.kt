@@ -5,7 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.dishut_lampung.sitanihut.presentation.home_page.kkph.HomePageKkphRoute
+import com.dishut_lampung.sitanihut.presentation.home_page.kkph.HomePagePenanggungJawabRoute
 import com.dishut_lampung.sitanihut.presentation.information.InformationRoute
 import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScreen
 import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
@@ -16,7 +16,7 @@ fun NavGraphBuilder.kkphNavGraph(
     modifier : Modifier,
     navController : NavHostController
 ) {
-    navigation(startDestination = Screen.HomeKkph.route, route = "kkph") {
+    navigation(startDestination = Screen.HomeKkph.route, route = "penanggung-jawab") {
         composable(route = Screen.HomeKkph.route) {
             val onNavigateToDetail = { id : String ->
                 navController.navigateSingleTop("report-verification/$id")
@@ -42,7 +42,7 @@ fun NavGraphBuilder.kkphNavGraph(
             val onNavigateToInfo = {
                 navController.navigate("information")
             }
-            HomePageKkphRoute(
+            HomePagePenanggungJawabRoute(
                 modifier = Modifier,
                 onNavigateToDetail = onNavigateToDetail,
                 onNavigateToCommodity = onNavigateToCommodity,
@@ -54,7 +54,7 @@ fun NavGraphBuilder.kkphNavGraph(
                 onNavigateToInfo = onNavigateToInfo
             )
         }
-        composable(route = Screen.Kkph.ProfileKkph.route){
+        composable(route = Screen.PenanggungJawab.ProfilePenanggungJawab.route){
             KkphProfileRoute ()
         }
         composable(route = Screen.Information.route){

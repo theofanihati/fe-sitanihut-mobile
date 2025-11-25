@@ -1,12 +1,9 @@
-package com.dishut_lampung.sitanihut.presentation.homepage
+package com.dishut_lampung.sitanihut.presentation.information
 
 import com.dishut_lampung.sitanihut.domain.usecase.information.DownloadStructureImageUseCase
-import com.dishut_lampung.sitanihut.domain.validator.ValidationResult
-import com.dishut_lampung.sitanihut.presentation.information.InformationEvent
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutViewModel
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest

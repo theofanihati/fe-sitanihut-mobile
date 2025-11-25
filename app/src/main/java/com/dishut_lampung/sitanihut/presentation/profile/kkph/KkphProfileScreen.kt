@@ -45,14 +45,14 @@ import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgre
 import com.dishut_lampung.sitanihut.presentation.components.card.KphKthCard
 import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens
 
-@Preview(showBackground = true, name = "Kkph Profile")
+@Preview(showBackground = true, name = "penanggung jawab Profile")
 @Composable
 fun KkphProfileScreenPreview() {
     val dummyUser = UserDetail(
         id = "1",
         name = "Goeslawz Oast",
         email = "goes@kkph.com",
-        role = "Kkph",
+        role = "penanggung-jawab",
         profilePictureUrl = "",
         roleId = "role-1",
         kphId = "kph-1",

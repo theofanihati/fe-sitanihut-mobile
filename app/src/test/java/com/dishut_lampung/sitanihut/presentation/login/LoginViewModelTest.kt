@@ -36,6 +36,7 @@ class LoginViewModelTest {
     fun setUp() {
         loginUseCase = mockk()
         validateEmailUseCase = mockk(relaxed = true)
+        homeRepository = mockk(relaxed = true)
 
         viewModel = LoginViewModel(
             loginUseCase,

@@ -26,6 +26,7 @@ class ProfileRepositoryImplTest {
     private lateinit var mockApiService: UserApiService
     private lateinit var mockUserDao: UserDao
     private lateinit var mockRoleDao: RoleDao
+    private lateinit var mockUserPreferences: UserPreferences
     private lateinit var repository: ProfileRepository
 
     private val userId = "123"
@@ -64,6 +65,7 @@ class ProfileRepositoryImplTest {
             apiService = mockApiService,
             userDao = mockUserDao,
             roleDao = mockRoleDao,
+            userPreferences = mockUserPreferences
         )
     }
 

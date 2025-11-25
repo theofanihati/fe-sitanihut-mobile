@@ -9,7 +9,7 @@ import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LogoutUseCase
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiEvent
-import com.dishut_lampung.sitanihut.presentation.home_page.kkph.HomePageKkphViewModel
+import com.dishut_lampung.sitanihut.presentation.home_page.kkph.HomePagePenanggungJawabViewModel
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.MockKAnnotations
@@ -27,7 +27,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class HomePageKkphViewModelTest {
+class HomePagePenanggungJawabViewModelTest {
 
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule()
@@ -38,7 +38,7 @@ class HomePageKkphViewModelTest {
     @MockK
     private lateinit var logoutUseCase: LogoutUseCase
 
-    private lateinit var viewModel: HomePageKkphViewModel
+    private lateinit var viewModel: HomePagePenanggungJawabViewModel
 
     private val dummyProfile = UserProfile("Goeslawz Oast", "Kepala KPH", "url")
     private val reportPending1 = Report("1", 2024, "Agustus", "01-08-2024", 50000.0, ReportStatus.PENDING)
@@ -66,7 +66,7 @@ class HomePageKkphViewModelTest {
         coEvery { homeRepository.getReportsByStatus("menunggu") } returns flowOf(Resource.Success(pendingList))
         coEvery { homeRepository.getReportsByStatus("disetujui") } returns flowOf(Resource.Success(approvedList))
 
-        viewModel = HomePageKkphViewModel(homeRepository, logoutUseCase)
+        viewModel = HomePagePenanggungJawabViewModel(homeRepository, logoutUseCase)
         viewModel.state.test {
             val state = awaitItem()
 
@@ -86,7 +86,7 @@ class HomePageKkphViewModelTest {
         val pendingList = listOf(reportPending1)
         coEvery { homeRepository.getReportsByStatus("menunggu") } returns flowOf(Resource.Success(pendingList))
 
-        viewModel = HomePageKkphViewModel(homeRepository, logoutUseCase)
+        viewModel = HomePagePenanggungJawabViewModel(homeRepository, logoutUseCase)
         viewModel.state.test {
             val state = awaitItem()
             val item = state.latestReports.first()
@@ -103,7 +103,7 @@ class HomePageKkphViewModelTest {
         coEvery { homeRepository.getReportsByStatus("menunggu") } returns flowOf(Resource.Error("Network Error"))
         coEvery { homeRepository.getReportsByStatus("disetujui") } returns flowOf(Resource.Success(emptyList()))
 
-        viewModel = HomePageKkphViewModel(homeRepository, logoutUseCase)
+        viewModel = HomePagePenanggungJawabViewModel(homeRepository, logoutUseCase)
         viewModel.state.test {
             val state = awaitItem()
             assertEquals("Network Error", state.generalError)
@@ -113,7 +113,7 @@ class HomePageKkphViewModelTest {
 
     @Test
     fun `onEvent OnRefreshData should trigger reload`() = runTest {
-        viewModel = HomePageKkphViewModel(homeRepository, logoutUseCase)
+        viewModel = HomePagePenanggungJawabViewModel(homeRepository, logoutUseCase)
 
         viewModel.onEvent(HomeEvent.OnRefreshData)
         coVerify(atLeast = 2) { homeRepository.getUserProfile() }
@@ -123,7 +123,7 @@ class HomePageKkphViewModelTest {
 
     @Test
     fun `onEvent OnLogoutConfirm should call logout usecase and navigate`() = runTest {
-        viewModel = HomePageKkphViewModel(homeRepository, logoutUseCase)
+        viewModel = HomePagePenanggungJawabViewModel(homeRepository, logoutUseCase)
         coEvery { logoutUseCase() } returns Unit
 
         viewModel.eventFlow.test {
@@ -136,7 +136,7 @@ class HomePageKkphViewModelTest {
 
     @Test
     fun `onEvent OnViewDetailClick should navigate to report detail`() = runTest {
-        viewModel = HomePageKkphViewModel(homeRepository, logoutUseCase)
+        viewModel = HomePagePenanggungJawabViewModel(homeRepository, logoutUseCase)
 
         viewModel.eventFlow.test {
             viewModel.onEvent(HomeEvent.OnViewDetailClick("123"))

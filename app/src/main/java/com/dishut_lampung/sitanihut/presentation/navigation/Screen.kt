@@ -5,7 +5,7 @@ sealed class Screen(val route: String) {
     data object LandingPage : Screen("landing_screen")
     data object HomePetani : Screen("home_screen_petani")
     data object HomePenyuluh : Screen("home_screen_penyuluh")
-    data object HomeKkph :Screen("home_screen_kkph")
+    data object HomeKkph :Screen("home_screen_penanggung-jawab")
 
     object Information : Screen("information")
     object About : Screen("information/about-app")
@@ -36,9 +36,9 @@ sealed class Screen(val route: String) {
         data object ProfilePenyuluh : Penyuluh("profile_penyuluh_screen")
     }
 
-    sealed class  Kkph(route: String) : Screen(route) {
-        data object ProfileKkph : Kkph("profile_kkph_screen")
-        object DataPenyuluh: Kkph("data_penyuluh")
+    sealed class  PenanggungJawab(route: String) : Screen(route) {
+        data object ProfilePenanggungJawab : PenanggungJawab("profile_penanggung_jawab_screen")
+        object DataPenyuluh: PenanggungJawab("data_penyuluh")
     }
 
 }

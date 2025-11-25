@@ -31,7 +31,7 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         // PAKE BACK NAV DARK
         Screen.Petani.ProfilePetani.route,
         Screen.Penyuluh.ProfilePenyuluh.route,
-        Screen.Kkph.ProfileKkph.route-> ScaffoldConfig(
+        Screen.PenanggungJawab.ProfilePenanggungJawab.route-> ScaffoldConfig(
             showMainNav = false,
             showBackNav = true,
             topBarTheme = TopBarTheme.DARK_BACKGROUND

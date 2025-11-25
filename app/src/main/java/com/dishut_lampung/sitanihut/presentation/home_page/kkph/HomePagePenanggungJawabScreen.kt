@@ -64,15 +64,15 @@ import com.dishut_lampung.sitanihut.presentation.ui.theme.tosca
 
 @Preview(showBackground = true)
 @Composable
-fun HomePageKkphScreenPreview() {
+fun HomePagePenanggungJawabScreenPreview() {
     SitanihutTheme(dynamicColor = false) {
-        HomePageKkphScreen(
+        HomePagePenanggungJawabScreen(
             onReportClick = { },
             onRefresh = {},
             modifier = Modifier.fillMaxSize(),
             state = HomeUiState(
                 isLoading = false,
-                latestReports = dummyReportsKkph
+                latestReports = dummyReportsPenanggungJawab
             ),
             onNavigateToCommodity = {},
             onNavigateToKTH = {},
@@ -86,7 +86,7 @@ fun HomePageKkphScreenPreview() {
 }
 
 @Composable
-fun HomePageKkphRoute(
+fun HomePagePenanggungJawabRoute(
     modifier: Modifier = Modifier,
     onNavigateToDetail: (String) -> Unit,
     onNavigateToCommodity: () -> Unit = {},
@@ -96,7 +96,7 @@ fun HomePageKkphRoute(
     onNavigateToReportVerification: () -> Unit,
     onNavigateToUserManagement: () -> Unit = {},
     onNavigateToInfo: () -> Unit,
-    viewModel: HomePageKkphViewModel = hiltViewModel()
+    viewModel: HomePagePenanggungJawabViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -111,7 +111,7 @@ fun HomePageKkphRoute(
         }
     }
 
-    HomePageKkphScreen(
+    HomePagePenanggungJawabScreen(
         state = state,
         modifier = modifier,
         onReportClick = { reportId -> onNavigateToDetail(reportId) },
@@ -130,7 +130,7 @@ fun HomePageKkphRoute(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePageKkphScreen(
+fun HomePagePenanggungJawabScreen(
     modifier: Modifier = Modifier,
     state: HomeUiState,
     onReportClick: (String) -> Unit,
@@ -144,7 +144,7 @@ fun HomePageKkphScreen(
     onRefresh: () -> Unit
 ) {
     val isRefreshing = state.isRefreshing
-    val kkphMenus = remember {
+    val penanggungJawabMenus = remember {
         listOf(
             HomeMenuItem(
                 labelTop = "Data",
@@ -239,7 +239,7 @@ fun HomePageKkphScreen(
 
                 HomeMenuGrid(
                     modifier = Modifier.padding(horizontal = Dimens.ScreenPadding),
-                    menuItems = kkphMenus
+                    menuItems = penanggungJawabMenus
                 )
 
                 Spacer(Modifier.height(16.dp))
@@ -318,7 +318,7 @@ fun HomePageKkphScreen(
     }
 }
 
-val dummyReportsKkph = listOf(
+val dummyReportsPenanggungJawab = listOf(
     ReportUiModel(
         id = "1",
         periodTitle = "Laporan Periode Mei 2025",
