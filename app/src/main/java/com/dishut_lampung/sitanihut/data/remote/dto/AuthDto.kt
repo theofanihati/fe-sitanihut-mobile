@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 
 class AuthDto {
     data class LoginRequest(
-        val email: String,
+        val login: String,
         val password: String
     )
 

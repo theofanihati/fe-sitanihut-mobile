@@ -267,7 +267,7 @@ fun HomePagePenyuluhScreen(
                                     Spacer(modifier = Modifier.height(16.dp))
 
                                     Text(
-                                        text = "Hmmmm, belum ada laporan",
+                                        text = "Wah, tidak ada yang perlu diperiksa!",
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary

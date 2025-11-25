@@ -108,7 +108,7 @@ class LoginViewModel @Inject constructor(
                     pendingDestinationRoute = when (role) {
                         "petani" -> Screen.HomePetani.route
                         "penyuluh" -> Screen.HomePenyuluh.route
-                        "penanggung-jawab" -> Screen.HomeKkph.route
+                        "penanggung jawab" -> Screen.HomeKkph.route
                         else -> Screen.HomePetani.route
                     }
 
