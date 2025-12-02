@@ -24,7 +24,7 @@ class DeleteReportUseCaseTest {
     }
 
     @Test
-    fun `berhasil delete`() = runTest {
+    fun `invoke should call deleteReport from repository and return Success`() = runTest {
         val reportId = "123"
         val expectedResult = Resource.Success(Unit)
 
@@ -39,7 +39,7 @@ class DeleteReportUseCaseTest {
     }
 
     @Test
-    fun `repo fail, gagal delete, error`() = runTest {
+    fun `invoke should return Error when repository fails`() = runTest {
         val reportId = "123"
         val errorMessage = "Delete failed"
         val expectedResult = Resource.Error<Unit>(errorMessage)
