@@ -61,7 +61,7 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     packaging {
         resources {
@@ -88,6 +88,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui-text-google-fonts")
     implementation(libs.core.ktx)
+//    implementation(libs.androidx.room.compiler.processing.testing)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -146,4 +147,9 @@ dependencies {
 
     // robolectric: test room
     testImplementation("org.robolectric:robolectric:4.14.1")
+
+    // paging 3
+    implementation("androidx.paging:paging-runtime-ktx:3.2.1")
+    implementation("androidx.paging:paging-compose:3.2.1")
+    implementation("androidx.room:room-paging:2.6.1")
 }
