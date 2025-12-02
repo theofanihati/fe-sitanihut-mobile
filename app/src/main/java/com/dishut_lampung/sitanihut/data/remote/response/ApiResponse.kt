@@ -13,7 +13,7 @@ data class ApiResponse<T>(
 
 data class PaginatedData<T>(
     @SerializedName("data")
-    val items: List<T>,
+    val data: List<T>,
     @SerializedName("totalPages")
     val totalPages: Int,
     @SerializedName("count")

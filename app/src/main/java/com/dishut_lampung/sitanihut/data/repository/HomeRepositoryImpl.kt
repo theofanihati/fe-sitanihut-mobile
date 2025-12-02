@@ -111,7 +111,7 @@ class HomeRepositoryImpl @Inject constructor(
             if (token != null) {
                 val response = apiService.getLatestReports()
 
-                val remoteData = response.data.items
+                val remoteData = response.data.data
                 if (remoteData.isNotEmpty()) {
                     reportDao.upsertAll(remoteData.map { it.toEntity() })
                 }

@@ -26,7 +26,7 @@ class GetPetaniHomeDataUseCaseTest {
     @Test
     fun `invoke should combine all data from repository and emit single FarmerHomeData`() = runTest {
         val expectedProfile = UserProfile("Budi Santoso", "Petani", "http://example.com/pic.jpg")
-        val expectedSummary = ReportSummary(pendingCount = 5, approvedCount = 10, rejectedCount = 2)
+        val expectedSummary = ReportSummary(pendingCount = 5, approvedCount = 10, verifiedcount = 2, rejectedCount = 2)
         val expectedReports = listOf(
             Report(
                 id = "1",

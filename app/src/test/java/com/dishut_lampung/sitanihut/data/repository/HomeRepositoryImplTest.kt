@@ -99,7 +99,7 @@ class HomeRepositoryImplTest {
             userId = "user-dummy",
             userName = "Petani Dua"
         )
-        val paginatedData = PaginatedData(items = listOf(networkReportDto), totalPages = 1, count = 1)
+        val paginatedData = PaginatedData(data = listOf(networkReportDto), totalPages = 1, count = 1)
         val apiResponse = ApiResponse(200, "Success", paginatedData)
 
         mockWebServer.enqueue(MockResponse().setBody(Gson().toJson(apiResponse)))

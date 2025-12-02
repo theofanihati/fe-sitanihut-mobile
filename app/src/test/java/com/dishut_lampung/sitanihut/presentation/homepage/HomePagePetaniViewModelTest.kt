@@ -41,7 +41,7 @@ class HomePagePetaniViewModelTest {
     private lateinit var viewModel: HomePagePetaniViewModel
 
     private val dummyProfile = UserProfile("Budi Santoso", "Petani", "http://example.com/pic.jpg")
-    private val dummySummary = ReportSummary(1, 2, 3)
+    private val dummySummary = ReportSummary(1, 2, 2,3)
     private val dummyReports = listOf(
         Report("id-1", 2025, "Mei", "25-05-2025", 8000000.0, ReportStatus.PENDING),
         Report("id-2", 2025, "Mei", "20-05-2025", 5000000.0, ReportStatus.REJECTED)

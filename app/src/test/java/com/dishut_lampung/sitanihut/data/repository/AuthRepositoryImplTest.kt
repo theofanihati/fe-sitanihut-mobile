@@ -2,7 +2,9 @@ package com.dishut_lampung.sitanihut.data.repository
 
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
+import com.dishut_lampung.sitanihut.data.local.dao.UserDao
 import com.dishut_lampung.sitanihut.data.remote.api.AuthApiService
+import com.dishut_lampung.sitanihut.data.remote.api.UserApiService
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.google.gson.Gson
 import io.mockk.coVerify
@@ -23,8 +25,10 @@ class AuthRepositoryImplTest {
     private lateinit var authRepository: AuthRepositoryImpl
     private lateinit var mockWebServer: MockWebServer
     private lateinit var apiService: AuthApiService
+    private lateinit var userApiService: UserApiService
     private val mockUserPreferences: UserPreferences = mockk(relaxed = true)
     private val mockReportDao: ReportDao = mockk(relaxed = true)
+    private val mockUserDao: UserDao = mockk(relaxed = true)
 
     @Before
     fun setUp() {
@@ -34,8 +38,13 @@ class AuthRepositoryImplTest {
             .addConverterFactory(GsonConverterFactory.create(Gson()))
             .build()
             .create(AuthApiService::class.java)
+        userApiService = Retrofit.Builder()
+            .baseUrl(mockWebServer.url("/api/"))
+            .addConverterFactory(GsonConverterFactory.create(Gson()))
+            .build()
+            .create(UserApiService::class.java)
 
-        authRepository = AuthRepositoryImpl(apiService, mockUserPreferences, mockReportDao)
+        authRepository = AuthRepositoryImpl(apiService, userApiService, mockUserPreferences, mockReportDao, mockUserDao)
     }
 
     @After
