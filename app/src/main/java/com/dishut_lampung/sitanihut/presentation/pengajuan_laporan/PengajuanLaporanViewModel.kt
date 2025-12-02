@@ -25,11 +25,11 @@ class PengajuanLaporanViewModel @Inject constructor(
     private val submitReportUseCase: SubmitReportUseCase
 ) : ViewModel() {
 
-    private val privateUiState = MutableStateFlow(PengajuanLaporanUiState())
-    val uiState = privateUiState.asStateFlow()
+    private val _uiState = MutableStateFlow(PengajuanLaporanUiState())
+    val uiState = _uiState.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val reportPagingFlow = privateUiState
+    val reportPagingFlow = _uiState
         .map { it.searchQuery to it.selectedStatus }
         .distinctUntilChanged()
         .flatMapLatest { (query, status) ->
@@ -37,47 +37,47 @@ class PengajuanLaporanViewModel @Inject constructor(
                 .cachedIn(viewModelScope)
         }
 
-    fun onEvent(e: PengajuanLaporanEvent) {
-        when (e) {
+    fun onEvent(event: PengajuanLaporanEvent) {
+        when (event) {
             is PengajuanLaporanEvent.OnSearchQueryChange -> {
-                privateUiState.value = privateUiState.value.copy(searchQuery = e.query)
+                _uiState.update { it.copy(searchQuery = event.query) }
             }
             is PengajuanLaporanEvent.OnFilterChange -> {
-                privateUiState.value = privateUiState.value.copy(selectedStatus = e.status)
+                _uiState.update { it.copy(selectedStatus = event.status) }
             }
             is PengajuanLaporanEvent.OnReportMoreOptionClick -> {
-                privateUiState.value = privateUiState.value.copy(isOptionSheetVisible = true, selectedReportId = e.id)
+                _uiState.update { it.copy(isOptionSheetVisible = true, selectedReportId = event.id) }
             }
             PengajuanLaporanEvent.OnReportOptionSheetDismiss -> {
-                privateUiState.value = privateUiState.value.copy(isOptionSheetVisible = false, selectedReportId = null)
+                _uiState.update { it.copy(isOptionSheetVisible = false, selectedReportId = null) }
             }
             PengajuanLaporanEvent.OnDeleteClick -> {
-                privateUiState.value =privateUiState.value.copy(isOptionSheetVisible = false, isDeleteDialogVisible = true)
+                _uiState.update { it.copy(isOptionSheetVisible = false, isDeleteDialogVisible = true) }
             }
             PengajuanLaporanEvent.OnDismissDeleteDialog -> {
-                privateUiState.value =privateUiState.value.copy(isDeleteDialogVisible = false)
+                _uiState.update { it.copy(isDeleteDialogVisible = false) }
             }
-            PengajuanLaporanEvent.OnDeleteConfirm -> EXECUTE_DELETE_PROCESS()
-            PengajuanLaporanEvent.OnSubmitClick -> EXECUTE_SUBMIT_PROCESS()
+            PengajuanLaporanEvent.OnDeleteConfirm -> deleteReport()
+            PengajuanLaporanEvent.OnSubmitClick -> submitReport()
 
             PengajuanLaporanEvent.OnDismissError -> {
-                privateUiState.value =privateUiState.value.copy(errorMessage = null)
+                _uiState.update { it.copy(errorMessage = null) }
             }
             PengajuanLaporanEvent.OnDismissSuccessMessage -> {
-                privateUiState.value =privateUiState.value.copy(successMessage = null)
+                _uiState.update { it.copy(successMessage = null) }
             }
         }
     }
 
-    private fun EXECUTE_DELETE_PROCESS() {
-        val id = privateUiState.value.selectedReportId ?: return
+    private fun deleteReport() {
+        val id = _uiState.value.selectedReportId ?: return
 
         viewModelScope.launch {
-            privateUiState.update { it.copy(isLoading = true, isDeleteDialogVisible = false) }
+            _uiState.update { it.copy(isLoading = true, isDeleteDialogVisible = false) }
 
             when (val result = deleteReportUseCase(id)) {
                 is Resource.Success -> {
-                    privateUiState.update {
+                    _uiState.update {
                         it.copy(
                             isLoading = false,
                             successMessage = "Laporan berhasil dihapus",
@@ -87,7 +87,7 @@ class PengajuanLaporanViewModel @Inject constructor(
                 }
 
                 is Resource.Error -> {
-                    privateUiState.update {
+                    _uiState.update {
                         it.copy(
                             isLoading = false,
                             errorMessage = result.message
@@ -99,18 +99,18 @@ class PengajuanLaporanViewModel @Inject constructor(
         }
     }
 
-    private fun EXECUTE_SUBMIT_PROCESS() {
-        val id = privateUiState.value.selectedReportId ?: return
+    private fun submitReport() {
+        val id = _uiState.value.selectedReportId ?: return
 
         viewModelScope.launch {
-            privateUiState.update { it.copy(isLoading = true, isOptionSheetVisible = false) } // Tutup sheet langsung
+            _uiState.update { it.copy(isLoading = true, isOptionSheetVisible = false) } // Tutup sheet langsung
 
             when (val result = submitReportUseCase(id)) {
                 is Resource.Success -> {
-                    privateUiState.update { it.copy(isLoading = false, successMessage = "Laporan berhasil diajukan") }
+                    _uiState.update { it.copy(isLoading = false, successMessage = "Laporan berhasil diajukan") }
                 }
                 is Resource.Error -> {
-                    privateUiState.update { it.copy(isLoading = false, errorMessage = result.message) }
+                    _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
                 }
                 else -> {}
             }
