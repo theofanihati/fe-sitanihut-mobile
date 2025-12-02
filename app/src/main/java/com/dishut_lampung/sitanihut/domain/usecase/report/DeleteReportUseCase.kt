@@ -8,6 +8,6 @@ class DeleteReportUseCase @Inject constructor(
     private val repository: ReportRepository
 ) {
     suspend operator fun invoke(id: String): Resource<Unit> {
-        TODO("belum beb")
+        return repository.deleteReport(id)
     }
 }
