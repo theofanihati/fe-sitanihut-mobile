@@ -15,6 +15,9 @@ Versi mobile (Android) dari platform **Sitanihut**, dibangun dengan **Kotlin** d
 - DataStore: Penyimpanan preferensi
 - Retrofit: Library HTTP
 - [Lottie: Animasi berbasis JSON](https://lottiefiles.com/)
+- JUnit 4 (unit testing)
+- Turbine (flow testing)
+- Roboelectric (room testing)
 
 ---
 
@@ -26,6 +29,6 @@ Versi mobile (Android) dari platform **Sitanihut**, dibangun dengan **Kotlin** d
 ```bash
    git clone <git-url-repo>
 ```
-2. Buka project di Android Studio (Giraffe/lebih baru).
+2. Buka project di Android Studio (Koala/lebih baru).
 3. Sync Gradle dependencies.
 4. Jalankan di emulator atau perangkat Android.
