@@ -49,10 +49,36 @@ class ReportRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteReport(reportId: String): Resource<Unit> {
-        return TODO("blum la")
+        return try {
+            reportDao.deleteReportById(reportId)
+
+            val token = userPreferences.getAuthToken()
+            if (token != null) {
+                apiService.deleteReport(reportId)
+            }
+
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Success(Unit)
+        }
     }
 
     override suspend fun submitReport(reportId: String): Resource<Unit> {
-        return TODO("blum la")
+        return try {
+            reportDao.submitReportById(reportId)
+            val token = userPreferences.getAuthToken()
+            val methodPart = "PATCH".toRequestBody("text/plain".toMediaTypeOrNull())
+            val statusPart = "menunggu".toRequestBody("text/plain".toMediaTypeOrNull())
+
+            if (token != null) {
+                apiService.submitReport(reportId, methodPart, statusPart)
+            }
+
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Success(Unit)
+        }
     }
 }
