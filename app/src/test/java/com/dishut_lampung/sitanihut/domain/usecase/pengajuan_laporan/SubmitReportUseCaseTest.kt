@@ -23,7 +23,7 @@ class SubmitReportUseCaseTest {
     }
 
     @Test
-    fun `sukses submit`() = runTest {
+    fun `invoke should call submitReport from repository and return Success`() = runTest {
         val reportId = "123"
         val expectedResult = Resource.Success(Unit)
 
@@ -37,7 +37,7 @@ class SubmitReportUseCaseTest {
     }
 
     @Test
-    fun `gagal submit`() = runTest {
+    fun `invoke should return Error when repository fails`() = runTest {
         val reportId = "123"
         val expectedResult = Resource.Error<Unit>("Network Error")
 
