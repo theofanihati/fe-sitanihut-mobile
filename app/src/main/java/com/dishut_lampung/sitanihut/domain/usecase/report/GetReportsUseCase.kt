@@ -15,6 +15,6 @@ class GetReportsUseCase @Inject constructor(
         params: String = "",
         status: ReportStatus? = null
     ): Flow<PagingData<Report>> {
-       TODO("belum beb")
+        return reportRepository.getReports(params, status)
     }
 }

@@ -31,7 +31,7 @@ class GetReportsUseCaseTest {
     }
 
     @Test
-    fun `waktu get dapet laporan dari repo`() = runTest {
+    fun `invoke should return PagingData from repository`() = runTest {
         val dummyPagingData = PagingData.from(emptyList<Report>())
         every { repository.getReports(any(), any()) } returns flowOf(dummyPagingData)
 
