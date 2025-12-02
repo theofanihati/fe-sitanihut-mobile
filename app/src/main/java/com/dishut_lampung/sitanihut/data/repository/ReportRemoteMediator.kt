@@ -28,6 +28,66 @@ class ReportRemoteMediator(
         loadType: LoadType,
         state: PagingState<Int, ReportEntity>
     ): MediatorResult {
-        TODO("Not yet implemented")
+        val page = when (loadType) {
+            LoadType.REFRESH -> {
+                val remoteKeys = getRemoteKeyClosestToCurrentPosition(state)
+                remoteKeys?.nextKey?.minus(1) ?: 1
+            }
+            LoadType.PREPEND -> return MediatorResult.Success(endOfPaginationReached = true)
+            LoadType.APPEND -> {
+                val remoteKeys = getRemoteKeyForLastItem(state)
+                val nextKey = remoteKeys?.nextKey
+                    ?: return MediatorResult.Success(endOfPaginationReached = remoteKeys != null)
+                nextKey
+            }
+        }
+
+        try {
+            val response = apiService.getReports(
+                page = page,
+                limit = state.config.pageSize,
+                search = query,
+                status = status
+            )
+
+            val reportsDto = response.data?.data ?: emptyList()
+            val totalPages = response.data?.totalPages ?: 1
+            val isEndOfList = reportsDto.isEmpty() || page >= response.data.totalPages
+
+            db.withTransaction {
+                val isFullRefresh = (loadType == LoadType.REFRESH) && query.isBlank() && status == null
+                if (isFullRefresh) {
+                    db.remoteKeysDao().clearRemoteKeys()
+                    db.reportDao().clearAllLaporan()
+                }
+
+                val prevKey = if (page == 1) null else page - 1
+                val nextKey = if (isEndOfList) null else page + 1
+
+                val keys = reportsDto.map {
+                    RemoteKeys(id = it.id, prevKey = prevKey, nextKey = nextKey)
+                }
+                db.remoteKeysDao().insertAll(keys)
+
+                val entities = reportsDto.map { it.toEntity() }
+                db.reportDao().insertAll(entities)
+            }
+            return MediatorResult.Success(endOfPaginationReached = isEndOfList)
+        } catch (exception: Exception) {
+            return MediatorResult.Error(exception)
+        }
+    }
+
+    private suspend fun getRemoteKeyForLastItem(state: PagingState<Int, ReportEntity>): RemoteKeys? {
+        return state.pages.lastOrNull { it.data.isNotEmpty() }?.data?.lastOrNull()
+            ?.let { repo -> db.remoteKeysDao().getRemoteKeysId(repo.id) }
+    }
+
+    private suspend fun getRemoteKeyClosestToCurrentPosition(state: PagingState<Int, ReportEntity>): RemoteKeys? {
+        return state.anchorPosition?.let { position ->
+            state.closestItemToPosition(position)?.id?.let { repoId ->
+                db.remoteKeysDao().getRemoteKeysId(repoId)
+            }
+        }
     }
 }
