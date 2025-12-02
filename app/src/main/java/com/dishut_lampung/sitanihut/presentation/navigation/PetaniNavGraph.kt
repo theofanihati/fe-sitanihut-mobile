@@ -10,6 +10,8 @@ import com.dishut_lampung.sitanihut.presentation.information.InformationRoute
 import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScreen
 import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutRoute
+import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.PengajuanLaporanRoute
+import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.PengajuanLaporanScreen
 import com.dishut_lampung.sitanihut.presentation.profile.petani.PetaniProfileRoute
 import com.dishut_lampung.sitanihut.presentation.profile.petani.PetaniProfileScreen
 
@@ -44,6 +46,20 @@ fun NavGraphBuilder.petaniNavGraph(
         composable(route = Screen.Petani.ProfilePetani.route){
             PetaniProfileRoute()
         }
+        composable(route = Screen.Petani.ReportSubmission.route){
+            PengajuanLaporanRoute(
+                onNavigateToAddReport = {
+                    navController.navigateSingleTop("report-submission-add")
+                },
+                onNavigateToDetail = {
+                    navController.navigateSingleTop("report-submission-detail/$id")
+                },
+                onNavigateToEdit = {
+                    navController.navigateSingleTop("report-submission-edit/$id")
+                },
+            )
+        }
+
         composable(route = Screen.Information.route){
             InformationRoute(
                 navController = navController,

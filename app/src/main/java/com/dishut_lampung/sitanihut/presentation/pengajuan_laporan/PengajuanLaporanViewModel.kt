@@ -42,9 +42,6 @@ class PengajuanLaporanViewModel @Inject constructor(
             is PengajuanLaporanEvent.OnSearchQueryChange -> {
                 _uiState.update { it.copy(searchQuery = event.query) }
             }
-            is PengajuanLaporanEvent.OnFilterChange -> {
-                _uiState.update { it.copy(selectedStatus = event.status) }
-            }
             is PengajuanLaporanEvent.OnReportMoreOptionClick -> {
                 _uiState.update { it.copy(isOptionSheetVisible = true, selectedReportId = event.id) }
             }
@@ -65,6 +62,20 @@ class PengajuanLaporanViewModel @Inject constructor(
             }
             PengajuanLaporanEvent.OnDismissSuccessMessage -> {
                 _uiState.update { it.copy(successMessage = null) }
+            }
+            PengajuanLaporanEvent.OnFilterClick -> {
+                _uiState.update { it.copy(isFilterSheetVisible = true) }
+            }
+            is PengajuanLaporanEvent.OnFilterChange -> {
+                _uiState.update {
+                    it.copy(
+                        selectedStatus = event.status,
+                        isFilterSheetVisible = false
+                    )
+                }
+            }
+            PengajuanLaporanEvent.OnDismissFilterSheet -> {
+                _uiState.update { it.copy(isFilterSheetVisible = false) }
             }
         }
     }

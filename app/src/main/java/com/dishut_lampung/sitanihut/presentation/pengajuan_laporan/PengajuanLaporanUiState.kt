@@ -7,6 +7,7 @@ data class PengajuanLaporanUiState(
     val searchQuery: String = "",
     val selectedStatus: ReportStatus? = null,
 
+    val isFilterSheetVisible: Boolean = false,
     val isOptionSheetVisible: Boolean = false,
     val selectedReportId: String? = null,
 
@@ -23,6 +24,8 @@ sealed class PengajuanLaporanEvent {
 
     data class OnReportMoreOptionClick(val id: String) : PengajuanLaporanEvent()
     object OnReportOptionSheetDismiss : PengajuanLaporanEvent()
+    object OnFilterClick : PengajuanLaporanEvent()
+    object OnDismissFilterSheet : PengajuanLaporanEvent()
 
 //    data class OnViewDetailClick(val reportId: String) : PengajuanLaporanEvent()
 //    data class OnEditClick(val reportId: String) : PengajuanLaporanEvent()
