@@ -1,7 +1,10 @@
 package com.dishut_lampung.sitanihut.data.local.dao
 
+import androidx.paging.PagingSource
 import androidx.room.ColumnInfo
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
@@ -16,6 +19,21 @@ data class ReportCountTuple(
 
 @Dao
 interface ReportDao {
+    @Query("""
+        SELECT * FROM laporan 
+        WHERE (
+            month LIKE '%' || :query || '%'
+            OR period LIKE '%' || :query || '%'
+            OR status LIKE '%' || :query || '%'
+            OR nte LIKE '%' || :query || '%')
+        AND (:status IS NULL OR status = :status)
+        ORDER BY date DESC
+    """)
+    fun getReports(query: String, status: String?): PagingSource<Int, ReportEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(reports: List<ReportEntity>)
+
     @Upsert
     suspend fun upsertAll(reports: List<ReportEntity>)
 

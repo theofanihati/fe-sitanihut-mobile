@@ -11,17 +11,20 @@ import com.dishut_lampung.sitanihut.data.local.dao.RoleDao
 import com.dishut_lampung.sitanihut.data.local.dao.UserDao
 import com.dishut_lampung.sitanihut.data.remote.api.AuthApiService
 import com.dishut_lampung.sitanihut.data.remote.api.HomeApiService
+import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
 import com.dishut_lampung.sitanihut.data.remote.api.UserApiService
 import com.dishut_lampung.sitanihut.data.remote.interceptor.AuthInterceptor
 import com.dishut_lampung.sitanihut.data.repository.AuthRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.CompanyRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.HomeRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ProfileRepositoryImpl
+import com.dishut_lampung.sitanihut.data.repository.ReportRepositoryImpl
 import com.dishut_lampung.sitanihut.domain.model.User
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
 import com.dishut_lampung.sitanihut.domain.repository.CompanyRepository
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
+import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ForgotPasswordUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginStatusUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginUseCase
@@ -110,6 +113,12 @@ object AppModule{
 
     @Provides
     @Singleton
+    fun providesReportApiService(retrofit: Retrofit): ReportApiService {
+        return retrofit.create(ReportApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
     fun provideAuthRepository(
         authApiService: AuthApiService,
         userApiService: UserApiService,
@@ -147,6 +156,17 @@ object AppModule{
         @ApplicationContext context: Context
     ): CompanyRepository {
         return CompanyRepositoryImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideReportRepository(
+        apiService: ReportApiService,
+        database: SitanihutDatabase,
+        userPreferences: UserPreferences,
+        reportDao: ReportDao
+    ): ReportRepository {
+        return ReportRepositoryImpl(apiService, database, reportDao, userPreferences)
     }
 
     // DATABASE
