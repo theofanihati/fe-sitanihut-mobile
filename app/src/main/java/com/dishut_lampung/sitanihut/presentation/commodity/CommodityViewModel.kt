@@ -27,20 +27,57 @@ class CommodityViewModel @Inject constructor(
 
     private var searchJob: Job? = null
 
+    init {
+        getCommodities()
+    }
+
     fun onEvent(event: CommodityEvent) {
         when (event) {
             is CommodityEvent.OnSearchQueryChange -> {
-                TODO("Not yet implemented")
+                _uiState.value = _uiState.value.copy(query = event.query)
+                searchJob?.cancel()
+                searchJob = viewModelScope.launch {
+                    delay(500L)
+                    getCommodities(event.query)
+                }
             }
             is CommodityEvent.OnRefresh -> {
-                TODO("Not yet implemented")
+                getCommodities(_uiState.value.query)
             }
+
             CommodityEvent.OnDismissError -> {
-                TODO("Not yet implemented")
+                _uiState.update { it.copy(errorMessage = null) }
             }
             CommodityEvent.OnDismissSuccessMessage -> {
-                TODO("Not yet implemented")
+                _uiState.update { it.copy(successMessage = null) }
             }
         }
+    }
+
+    private fun getCommodities(query: String = "") {
+        getCommoditiesUseCase(query).onEach { result ->
+            when (result) {
+                is Resource.Success -> {
+                    _uiState.value = _uiState.value.copy(
+                        items = result.data ?: emptyList(),
+                        isLoading = false,
+                        error = null
+                    )
+                }
+                is Resource.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        items = result.data ?: emptyList(),
+                        isLoading = false,
+                        error = result.message ?: "Terjadi kesalahan"
+                    )
+                }
+                is Resource.Loading -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = true,
+                        error = null
+                    )
+                }
+            }
+        }.launchIn(viewModelScope)
     }
 }
