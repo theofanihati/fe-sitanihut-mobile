@@ -9,6 +9,6 @@ class GetCommoditiesUseCase(
     private val repository: CommodityRepository
 ) {
     operator fun invoke(query: String = ""): Flow<Resource<List<Commodity>>> {
-        return TODO("blum we wkwkwk")
+        return repository.getCommodities(query)
     }
 }
