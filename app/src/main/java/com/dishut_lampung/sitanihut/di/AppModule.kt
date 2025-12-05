@@ -6,21 +6,25 @@ import androidx.room.Room
 import com.dishut_lampung.sitanihut.BuildConfig
 import com.dishut_lampung.sitanihut.data.local.SitanihutDatabase
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
+import com.dishut_lampung.sitanihut.data.local.dao.CommodityDao
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.local.dao.RoleDao
 import com.dishut_lampung.sitanihut.data.local.dao.UserDao
 import com.dishut_lampung.sitanihut.data.remote.api.AuthApiService
+import com.dishut_lampung.sitanihut.data.remote.api.CommodityApiService
 import com.dishut_lampung.sitanihut.data.remote.api.HomeApiService
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
 import com.dishut_lampung.sitanihut.data.remote.api.UserApiService
 import com.dishut_lampung.sitanihut.data.remote.interceptor.AuthInterceptor
 import com.dishut_lampung.sitanihut.data.repository.AuthRepositoryImpl
+import com.dishut_lampung.sitanihut.data.repository.CommodityRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.CompanyRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.HomeRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ProfileRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ReportRepositoryImpl
 import com.dishut_lampung.sitanihut.domain.model.User
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
+import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
 import com.dishut_lampung.sitanihut.domain.repository.CompanyRepository
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
@@ -31,6 +35,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LogoutUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateEmailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidatePasswordUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.commodity.GetCommoditiesUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.home.GetPetaniHomeDataUseCase
 import dagger.Module
 import dagger.Provides
@@ -63,6 +68,7 @@ object AppModule{
         }
     }
 
+    @Provides
     @Singleton
     fun provideAuthInterceptor(userPreferences: UserPreferences): AuthInterceptor {
         return AuthInterceptor(userPreferences)
@@ -119,6 +125,12 @@ object AppModule{
 
     @Provides
     @Singleton
+    fun provideCommodityApiService(retrofit: Retrofit): CommodityApiService {
+        return retrofit.create(CommodityApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
     fun provideAuthRepository(
         authApiService: AuthApiService,
         userApiService: UserApiService,
@@ -169,6 +181,15 @@ object AppModule{
         return ReportRepositoryImpl(apiService, database, reportDao, userPreferences)
     }
 
+    @Provides
+    @Singleton
+    fun provideCommodityRepository(
+        apiService: CommodityApiService,
+        dao: CommodityDao
+    ): CommodityRepository {
+        return CommodityRepositoryImpl(apiService, dao)
+    }
+
     // DATABASE
     @Provides
     @Singleton
@@ -195,6 +216,11 @@ object AppModule{
     @Singleton
     fun provideRoleDao(database: SitanihutDatabase): RoleDao {
         return database.roleDao()
+    }
+    @Provides
+    @Singleton
+    fun provideCommodityDao(database: SitanihutDatabase): CommodityDao {
+        return database.commodityDao()
     }
 
     // USE CASE
@@ -233,4 +259,10 @@ object AppModule{
     fun getFarmerHomeDataUseCase(repository: HomeRepository): GetPetaniHomeDataUseCase {
         return GetPetaniHomeDataUseCase(repository)
     }
+    @Provides
+    @Singleton
+    fun getCommoditiesUseCase(repository: CommodityRepository): GetCommoditiesUseCase {
+        return GetCommoditiesUseCase(repository)
+    }
+
 }
