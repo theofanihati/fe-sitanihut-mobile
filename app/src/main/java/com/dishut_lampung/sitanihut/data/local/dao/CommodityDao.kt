@@ -17,6 +17,7 @@ interface CommodityDao {
         SELECT * FROM commodities 
         WHERE name LIKE '%' || :query || '%' 
         OR code LIKE '%' || :query || '%'
+        OR category LIKE '%' || :query || '%'
         ORDER BY name ASC
     """)
     fun getCommodities(query: String): Flow<List<CommodityEntity>>

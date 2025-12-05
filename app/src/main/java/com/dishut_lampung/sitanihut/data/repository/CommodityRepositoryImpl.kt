@@ -30,7 +30,7 @@ class CommodityRepositoryImpl(
         emit(Resource.Loading())
         try {
             val response = apiService.getCommodities(search = params)
-            val dtoList = response.data
+            val dtoList = response.data.data
 
             if (dtoList.isNotEmpty()) {
                 val entities = dtoList.map { dto ->
