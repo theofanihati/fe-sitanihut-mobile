@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.FloatingActionButton
@@ -51,6 +52,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
+import com.dishut_lampung.sitanihut.domain.model.ReportUiModel
 import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
 import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
@@ -79,7 +81,7 @@ private fun PengajuanLaporanScreenPreview() {
                 submissionDate = "2025-01-20",
                 totalTransaction = 500000.0,
                 status = ReportStatus.VERIFIED
-            ),
+            ).toUiModel(),
             Report(
                 id = "2",
                 period = 2025,
@@ -87,7 +89,7 @@ private fun PengajuanLaporanScreenPreview() {
                 submissionDate = "2025-02-15",
                 totalTransaction = 1250000.0,
                 status = ReportStatus.PENDING
-            ),
+            ).toUiModel(),
             Report(
                 id = "3",
                 period = 2025,
@@ -95,7 +97,7 @@ private fun PengajuanLaporanScreenPreview() {
                 submissionDate = "2025-03-10",
                 totalTransaction = 0.0,
                 status = ReportStatus.DRAFT
-            ),
+            ).toUiModel(),
             Report(
                 id = "4",
                 period = 2025,
@@ -103,7 +105,7 @@ private fun PengajuanLaporanScreenPreview() {
                 submissionDate = "2025-04-05",
                 totalTransaction = 750000.0,
                 status = ReportStatus.REJECTED
-            )
+            ).toUiModel()
         )
         val pagingFlow = flowOf(PagingData.from(dummyReports))
         val pagingItems = pagingFlow.collectAsLazyPagingItems()
@@ -168,7 +170,7 @@ fun PengajuanLaporanRoute(
 @Composable
 fun PengajuanLaporanScreen(
     state: PengajuanLaporanUiState,
-    pagingItems: androidx.paging.compose.LazyPagingItems<com.dishut_lampung.sitanihut.domain.model.Report>,
+    pagingItems: androidx.paging.compose.LazyPagingItems<ReportUiModel>,
     modifier: Modifier = Modifier,
     onEvent: (PengajuanLaporanEvent) -> Unit,
     onNavigateToAddReport: () -> Unit,
@@ -269,14 +271,12 @@ fun PengajuanLaporanScreen(
                 ) { index ->
                     val report = pagingItems[index]
                     if (report != null) {
-                        val uiModel = report.toUiModel()
-
                         ReportCard(
-                            item = uiModel,
+                            item = report,
                             isPetani = true,
-                            onCardClick = { onNavigateToDetail(uiModel.id) },
+                            onCardClick = { onNavigateToDetail(report.id) },
                             onActionClick = {
-                                onEvent(PengajuanLaporanEvent.OnReportMoreOptionClick(uiModel.id))
+                                onEvent(PengajuanLaporanEvent.OnReportMoreOptionClick(report.id))
                             }
                         )
                     }
@@ -320,7 +320,7 @@ fun PengajuanLaporanScreen(
             exit = fadeOut(),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 80.dp, end = 16.dp)
+                .padding(bottom = 92.dp, end = 28.dp)
         ) {
             FloatingActionButton(
                 onClick = {
@@ -332,7 +332,7 @@ fun PengajuanLaporanScreen(
                 contentColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(40.dp)
             ) {
-                Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Ke Atas")
+                Icon(Icons.Default.ArrowUpward, contentDescription = "Ke Atas")
             }
         }
 
@@ -382,7 +382,7 @@ fun PengajuanLaporanScreen(
     if (state.isOptionSheetVisible && state.selectedReportId != null) {
         val selectedReportId = state.selectedReportId!!
         val report = pagingItems.itemSnapshotList.items.find { it.id == selectedReportId }
-        val isEditable = report?.toUiModel()?.isEditable ?: false
+        val isEditable = report?.isEditable ?: false
 
         ReportOptionBottomSheet(
             onDismiss = { onEvent(PengajuanLaporanEvent.OnReportOptionSheetDismiss) },
