@@ -250,7 +250,7 @@ fun PengajuanLaporanScreen(
                 if (pagingItems.loadState.refresh is LoadState.Error) {
                     item {
                         ErrorMessage(
-                            message = "Gagal memuat data",
+                            message = "Gagal memuat data, menampilkan data offline",
                         )
                     }
                 }
@@ -451,8 +451,8 @@ fun FilterButton(
     modifier: Modifier = Modifier,
     isActive: Boolean = false
 ) {
-    val containerColor = if (isActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLowest
-    val contentColor = if (isActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+    val containerColor = if (isActive) MaterialTheme.colorScheme.surfaceContainerLowest else MaterialTheme.colorScheme.surfaceContainerLowest
+    val contentColor = if (isActive) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface
 
     Surface(
         modifier = modifier

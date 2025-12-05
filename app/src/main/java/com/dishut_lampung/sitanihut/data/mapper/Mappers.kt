@@ -160,3 +160,13 @@ fun RoleDto.toEntity(): RoleEntity {
         name = this.name
     )
 }
+
+fun ReportStatus.toDbValue(): String {
+    return when(this) {
+        ReportStatus.DRAFT -> "belum diajukan"
+        ReportStatus.PENDING -> "menunggu"
+        ReportStatus.VERIFIED -> "diverifikasi"
+        ReportStatus.APPROVED -> "disetujui"
+        ReportStatus.REJECTED -> "ditolak"
+    }
+}

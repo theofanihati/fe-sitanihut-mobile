@@ -114,7 +114,7 @@ class PengajuanLaporanViewModel @Inject constructor(
         val id = _uiState.value.selectedReportId ?: return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, isOptionSheetVisible = false) } // Tutup sheet langsung
+            _uiState.update { it.copy(isLoading = true, isOptionSheetVisible = false) }
 
             when (val result = submitReportUseCase(id)) {
                 is Resource.Success -> {

@@ -8,6 +8,7 @@ import androidx.paging.map
 import com.dishut_lampung.sitanihut.data.local.SitanihutDatabase
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
+import com.dishut_lampung.sitanihut.data.mapper.toDbValue
 import com.dishut_lampung.sitanihut.data.mapper.toDomain
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
 import com.dishut_lampung.sitanihut.domain.model.Report
@@ -38,10 +39,11 @@ class ReportRepositoryImpl @Inject constructor(
                 apiService = apiService,
                 db = db,
                 query = params,
-                status = status?.name
+                status = status?.toDbValue()
             ),
             pagingSourceFactory = {
-                db.reportDao().getReports(query = params, status = status?.name)
+                val statusDbValue = status?.toDbValue()
+                db.reportDao().getReports(query = params, status = statusDbValue)
             }
         ).flow.map { pagingData ->
             pagingData.map { it.toDomain() }
