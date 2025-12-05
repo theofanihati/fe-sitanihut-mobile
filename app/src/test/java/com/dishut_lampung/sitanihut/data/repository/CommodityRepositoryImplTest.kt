@@ -46,6 +46,11 @@ class CommodityRepositoryImplTest {
             totalPages = 1,
             count = 1
         )
+        val apiResponse = ApiResponse(
+            statusCode = 404,
+            message = "success",
+            data = paginatedData
+        )
 
         val entity = CommodityEntity(
             id = "1",
@@ -54,7 +59,7 @@ class CommodityRepositoryImplTest {
             category = "buah buahan"
         )
 
-        coEvery { mockApiService.getCommodities(search = query) } returns paginatedData
+        coEvery { mockApiService.getCommodities(search = query) } returns apiResponse
         every { mockDao.getCommodities(query) } returns flowOf(listOf(entity))
 
         repository.getCommodities(query).test {
