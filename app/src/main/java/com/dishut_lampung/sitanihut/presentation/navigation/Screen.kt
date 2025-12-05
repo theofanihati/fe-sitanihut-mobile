@@ -42,5 +42,4 @@ sealed class Screen(val route: String) {
         data object ProfilePenanggungJawab : PenanggungJawab("profile_penanggung_jawab_screen")
         object DataPenyuluh: PenanggungJawab("data_penyuluh")
     }
-
 }

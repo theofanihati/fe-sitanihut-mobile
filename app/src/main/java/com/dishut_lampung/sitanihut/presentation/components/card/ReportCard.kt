@@ -42,7 +42,6 @@ fun ReportCard(
     modifier: Modifier = Modifier,
     item: ReportUiModel,
     isPetani: Boolean,
-    isKomoditas: Boolean = false,
     onCardClick: (String) -> Unit,
     onActionClick: (String) -> Unit
 ) {
@@ -140,9 +139,7 @@ fun ReportCard(
                             contentDescription = "Opsi",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    } else if(isKomoditas){
-                    }
-                    else {
+                    } else {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = "Detail",

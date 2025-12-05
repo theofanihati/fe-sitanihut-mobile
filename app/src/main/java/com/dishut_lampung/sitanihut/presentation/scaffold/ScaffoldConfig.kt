@@ -42,6 +42,7 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         Screen.About.route,
         Screen.Dishut.route,
         Screen.Contact.route,
+        Screen.DataCommodity.route,
         Screen.Petani.ReportSubmission.route-> ScaffoldConfig(
             showMainNav = false,
             showBackNav = true,

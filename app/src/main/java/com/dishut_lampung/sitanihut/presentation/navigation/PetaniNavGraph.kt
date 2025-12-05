@@ -5,6 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.dishut_lampung.sitanihut.presentation.commodity.CommodityRoute
 import com.dishut_lampung.sitanihut.presentation.home_page.petani.HomePagePetaniRoute
 import com.dishut_lampung.sitanihut.presentation.information.InformationRoute
 import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScreen
@@ -45,6 +46,9 @@ fun NavGraphBuilder.petaniNavGraph(
 
         composable(route = Screen.Petani.ProfilePetani.route){
             PetaniProfileRoute()
+        }
+        composable(route = Screen.DataCommodity.route){
+            CommodityRoute()
         }
         composable(route = Screen.Petani.ReportSubmission.route){
             PengajuanLaporanRoute(

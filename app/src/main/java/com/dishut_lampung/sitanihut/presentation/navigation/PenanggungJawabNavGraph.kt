@@ -5,6 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.dishut_lampung.sitanihut.presentation.commodity.CommodityRoute
 import com.dishut_lampung.sitanihut.presentation.home_page.kkph.HomePagePenanggungJawabRoute
 import com.dishut_lampung.sitanihut.presentation.information.InformationRoute
 import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScreen
@@ -56,6 +57,9 @@ fun NavGraphBuilder.kkphNavGraph(
         }
         composable(route = Screen.PenanggungJawab.ProfilePenanggungJawab.route){
             KkphProfileRoute ()
+        }
+        composable(route = Screen.DataCommodity.route){
+            CommodityRoute()
         }
         composable(route = Screen.Information.route){
             InformationRoute(
