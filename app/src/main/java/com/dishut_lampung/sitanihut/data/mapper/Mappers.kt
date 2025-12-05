@@ -1,12 +1,15 @@
 package com.dishut_lampung.sitanihut.data.mapper
 
+import com.dishut_lampung.sitanihut.data.local.entity.CommodityEntity
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
 import com.dishut_lampung.sitanihut.data.local.entity.RoleEntity
 import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
+import com.dishut_lampung.sitanihut.data.remote.dto.CommodityDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
 import com.dishut_lampung.sitanihut.data.remote.dto.RoleDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDto
+import com.dishut_lampung.sitanihut.domain.model.Commodity
 import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
@@ -169,4 +172,22 @@ fun ReportStatus.toDbValue(): String {
         ReportStatus.APPROVED -> "disetujui"
         ReportStatus.REJECTED -> "ditolak"
     }
+}
+
+fun CommodityDto.toEntity(): CommodityEntity {
+    return CommodityEntity(
+        id = id,
+        code = code,
+        name = name,
+        category = category
+    )
+}
+
+fun CommodityEntity.toDomain(): Commodity {
+    return Commodity(
+        id = id,
+        code = code,
+        name = name,
+        category = category
+    )
 }

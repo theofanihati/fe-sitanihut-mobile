@@ -4,5 +4,5 @@ data class Commodity(
     val id: String,
     val code: String,
     val name: String,
-    val type: String,
+    val category: String,
 )
