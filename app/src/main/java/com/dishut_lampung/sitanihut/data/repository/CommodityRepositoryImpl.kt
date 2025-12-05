@@ -27,6 +27,37 @@ class CommodityRepositoryImpl(
 ) : CommodityRepository {
 
     override fun getCommodities(params: String): Flow<Resource<List<Commodity>>> = flow {
-        TODO()
+        emit(Resource.Loading())
+        try {
+            val response = apiService.getCommodities(search = params)
+            val dtoList = response.data
+
+            if (dtoList.isNotEmpty()) {
+                val entities = dtoList.map { dto ->
+                    CommodityEntity(
+                        id = dto.id,
+                        code = dto.code,
+                        name = dto.name,
+                        category = dto.category
+                    )
+                }
+                dao.insertCommodities(entities)
+            }
+        } catch (e: Exception) {
+            emit(Resource.Error("Gagal update data: ${e.message}"))
+        }
+        val localData = dao.getCommodities(params)
+
+        localData.collect { entities ->
+            val domainData = entities.map { entity ->
+                Commodity(
+                    id = entity.id,
+                    code = entity.code,
+                    name = entity.name,
+                    category = entity.category
+                )
+            }
+            emit(Resource.Success(domainData))
+        }
     }
 }
