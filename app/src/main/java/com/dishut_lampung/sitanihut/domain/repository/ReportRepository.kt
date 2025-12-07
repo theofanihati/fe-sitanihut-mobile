@@ -1,6 +1,8 @@
 package com.dishut_lampung.sitanihut.domain.repository
 
 import androidx.paging.PagingData
+import com.dishut_lampung.sitanihut.domain.model.Commodity
+import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.util.Resource
@@ -10,4 +12,5 @@ interface ReportRepository {
     fun getReports(params: String, status: ReportStatus?): Flow<PagingData<Report>>
     suspend fun deleteReport(reportId: String): Resource<Unit>
     suspend fun submitReport(reportId: String): Resource<Unit>
+    suspend fun createReport(input: CreateReportInput): Resource<Unit>
 }
