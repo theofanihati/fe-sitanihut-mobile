@@ -9,6 +9,6 @@ class CreateReportUseCase @Inject constructor(
     private val repository: ReportRepository
 ) {
     suspend operator fun invoke(input: CreateReportInput): Resource<Unit> {
-        return TODO("hehe belum")
+        return repository.createReport(input)
     }
 }
