@@ -176,9 +176,10 @@ object AppModule{
         apiService: ReportApiService,
         database: SitanihutDatabase,
         userPreferences: UserPreferences,
-        reportDao: ReportDao
+        reportDao: ReportDao,
+        @ApplicationContext context: Context
     ): ReportRepository {
-        return ReportRepositoryImpl(apiService, database, reportDao, userPreferences)
+        return ReportRepositoryImpl(apiService, database, reportDao, userPreferences, context)
     }
 
     @Provides
