@@ -15,8 +15,8 @@ class ValidateReportInputUseCase @Inject constructor() {
         if (!isValidNumber(input.modal)) {
             return ValidationResult(false, "Modal harus terisi dan lebih dari 0")
         }
-        val nteString = input.totalNte.toString()
-        if (input.totalNte <= 0) {
+        val nteString = input.nte.toString()
+        if (input.nte <= 0) {
             return ValidationResult(false, "NTE harus terisi")
         }
 

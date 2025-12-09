@@ -48,7 +48,7 @@ class ValidateReportUseCaseTest {
         farmerNotes = "",
         attachments = emptyList(),
         isAjukan = true,
-        totalNte = 50000.0
+        nte = 50000.0
     )
 
     @Test
