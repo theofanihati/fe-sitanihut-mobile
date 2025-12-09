@@ -4,6 +4,7 @@ import com.dishut_lampung.sitanihut.data.remote.dto.AuthDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
 import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
+import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -36,4 +37,11 @@ interface ReportApiService {
         @Part("_method") method: RequestBody, // "PATCH"
         @Part("status") status: RequestBody   // "menunggu"
     ): ApiResponse<Any?>
+
+    @Multipart
+    @POST("v1/laporan")
+    suspend fun createReport(
+        @Part("data") reportData: RequestBody,
+        @Part attachments: List<MultipartBody.Part>
+    ): Response<ApiResponse<Any?>>
 }
