@@ -103,7 +103,52 @@ class ReportRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun createReport(input: CreateReportInput): Resource<Unit> {
-        return TODO("nanti ya")
+    override suspend fun createReport(input: CreateReportInput): Resource<Unit>{
+        val reportId = UUID.randomUUID().toString()
+        val isoDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }.format(Date())
+
+        val requestDto = input.toDto(id = reportId, updatedAt = isoDate)
+        val gson = Gson()
+        val jsonPayloadString = gson.toJson(requestDto)
+
+        val filePathsString = input.attachments.joinToString(",") { it.absolutePath }
+        val currentUserId = userPreferences.userId.first() ?: ""
+
+        val newReport = ReportEntity(
+            id = reportId,
+            userId = currentUserId,
+
+            period = input.period,
+            month = input.month,
+            date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
+            nte = input.nte,
+            status = "menunggu",
+
+            syncStatus = SyncStatus.PENDING_CREATE,
+
+            jsonPayload = jsonPayloadString,
+            attachmentPaths = filePathsString
+        )
+        return try {
+            reportDao.insertAll(listOf(newReport))
+
+            val workRequest = OneTimeWorkRequestBuilder<ReportSyncWorker>()
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+                )
+                .build()
+
+            WorkManager.getInstance(context).enqueue(workRequest)
+
+            Resource.Success(Unit)
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Error("Gagal menyimpan data: ${e.message}")
+        }
     }
 }
