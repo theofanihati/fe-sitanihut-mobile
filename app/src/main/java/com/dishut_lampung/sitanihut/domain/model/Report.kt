@@ -20,7 +20,7 @@ data class CreateReportInput(
     val farmerNotes: String,
     val attachments: List<File>,
     val isAjukan: Boolean,
-    val totalNte: Double,
+    val nte: Double,
 )
 
 data class MasaTanam(
