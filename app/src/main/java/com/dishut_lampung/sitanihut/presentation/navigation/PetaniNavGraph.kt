@@ -13,6 +13,7 @@ import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScre
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutRoute
 import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.PengajuanLaporanRoute
 import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.PengajuanLaporanScreen
+import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create.AddReportRoute
 import com.dishut_lampung.sitanihut.presentation.profile.petani.PetaniProfileRoute
 import com.dishut_lampung.sitanihut.presentation.profile.petani.PetaniProfileScreen
 
@@ -61,6 +62,13 @@ fun NavGraphBuilder.petaniNavGraph(
                 onNavigateToEdit = {
                     navController.navigateSingleTop("report-submission-edit/$id")
                 },
+            )
+        }
+        composable(route = Screen.Petani.AddReportSubmission.route){
+            AddReportRoute(
+                onNavigateUp = {
+                    navController.navigateSingleTop("report-submission")
+                }
             )
         }
 

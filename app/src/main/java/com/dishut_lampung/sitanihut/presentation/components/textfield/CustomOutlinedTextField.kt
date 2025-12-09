@@ -48,7 +48,7 @@ fun CustomOutlinedTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     keyboardType : KeyboardType = KeyboardType.Text,
     error : String? = null,
-    rounded : Int = 16,
+    rounded : Int = 40,
     multiLine : Boolean = false,
     maxLines : Int = 1,
     isEnabled : Boolean = true,

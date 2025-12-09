@@ -30,6 +30,7 @@ data class AddReportState(
 data class PlantingDetailUiState(
     val id: Long = System.currentTimeMillis(),
     val commodityId: String = "",
+    val commodityName: String = "",
     val plantType: String = "",
     val plantDate: String = "",
     val plantAge: String = "",
@@ -40,6 +41,7 @@ data class PlantingDetailUiState(
 data class HarvestDetailUiState(
     val id: Long = System.currentTimeMillis(),
     val commodityId: String = "",
+    val commodityName: String = "",
     val harvestDate: String = "",
     val unitPrice: String = "",
     val amount: String = "",
