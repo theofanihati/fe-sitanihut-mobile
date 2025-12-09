@@ -152,4 +152,11 @@ dependencies {
     implementation("androidx.paging:paging-runtime-ktx:3.2.1")
     implementation("androidx.paging:paging-compose:3.2.1")
     implementation("androidx.room:room-paging:2.6.1")
+
+    // work manager
+    implementation(libs.androidx.hilt.common)
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.hilt:hilt-work:1.2.0")
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
+    testImplementation("androidx.work:work-testing")
 }
