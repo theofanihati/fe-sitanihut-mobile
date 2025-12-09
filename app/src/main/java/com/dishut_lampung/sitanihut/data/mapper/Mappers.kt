@@ -3,13 +3,20 @@ package com.dishut_lampung.sitanihut.data.mapper
 import com.dishut_lampung.sitanihut.data.local.entity.CommodityEntity
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
 import com.dishut_lampung.sitanihut.data.local.entity.RoleEntity
+import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
 import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
 import com.dishut_lampung.sitanihut.data.remote.dto.CommodityDto
+import com.dishut_lampung.sitanihut.data.remote.dto.HarvestRequestDto
+import com.dishut_lampung.sitanihut.data.remote.dto.PlantingRequestDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
+import com.dishut_lampung.sitanihut.data.remote.dto.ReportRequestDto
 import com.dishut_lampung.sitanihut.data.remote.dto.RoleDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDto
 import com.dishut_lampung.sitanihut.domain.model.Commodity
+import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
+import com.dishut_lampung.sitanihut.domain.model.MasaPanen
+import com.dishut_lampung.sitanihut.domain.model.MasaTanam
 import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
@@ -41,7 +48,7 @@ fun ReportListItemDto.toEntity(): ReportEntity {
         date = this.date,
         nte = this.nte,
         status = this.status,
-        syncStatus = "SYNCED"
+        syncStatus = SyncStatus.SYNCED
     )
 }
 
@@ -189,5 +196,41 @@ fun CommodityEntity.toDomain(): Commodity {
         code = code,
         name = name,
         category = category
+    )
+}
+
+fun CreateReportInput.toDto(
+    id: String,
+    updatedAt: String
+): ReportRequestDto {
+    return ReportRequestDto(
+        id = id,
+        updatedAt = updatedAt,
+        period = this.period,
+        month = this.month,
+        modal = this.modal.toDoubleOrNull() ?: 0.0,
+        totalNte = this.nte,
+        farmerNotes = this.farmerNotes,
+        plantingDetails = this.plantingDetails.map { it.toDto() },
+        status = if (this.isAjukan) "menunggu" else "belum diajukan",
+        harvestDetails = this.harvestDetails.map { it.toDto() }
+    )
+}
+
+fun MasaTanam.toDto(): PlantingRequestDto {
+    return PlantingRequestDto(
+        commodityId = this.commodityId,
+        date = this.plantDate,
+        plantAge = this.plantAge,
+        amount = this.amount.toIntOrNull() ?: 0,
+    )
+}
+
+fun MasaPanen.toDto(): HarvestRequestDto {
+    return HarvestRequestDto(
+        date = this.harvestDate,
+        commodityId = this.commodityId,
+        unitPrice = this.unitPrice.toDoubleOrNull() ?: 0.0,
+        amount = this.amount.toIntOrNull() ?: 0,
     )
 }
