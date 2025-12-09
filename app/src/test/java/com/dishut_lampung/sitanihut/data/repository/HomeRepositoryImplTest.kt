@@ -8,6 +8,7 @@ import com.dishut_lampung.sitanihut.data.local.SitanihutDatabase
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
+import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
 import com.dishut_lampung.sitanihut.data.remote.api.HomeApiService
 import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
@@ -85,7 +86,7 @@ class HomeRepositoryImplTest {
             date = "2024-08-01",
             nte = 5000.0,
             status = "menunggu",
-            syncStatus = "synced"
+            syncStatus = SyncStatus.SYNCED
         )
         reportDao.upsertAll(listOf(cachedReport))
 
@@ -127,7 +128,7 @@ class HomeRepositoryImplTest {
                 date = "2024-08-${String.format("%02d", i)}",
                 nte = 1000.0,
                 status = "menunggu",
-                syncStatus = "synced"
+                syncStatus = SyncStatus.SYNCED
             )
         }
         reportDao.upsertAll(manyReports)
