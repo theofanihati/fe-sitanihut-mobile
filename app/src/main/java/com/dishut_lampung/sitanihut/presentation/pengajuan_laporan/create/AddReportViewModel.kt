@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,28 +35,21 @@ class AddReportViewModel @Inject constructor(
     }
 
     private fun generatePeriodList() {
-        val cal = Calendar.getInstance()
-        val y = cal.get(Calendar.YEAR)
-        val list = ArrayList<String>()
-        list.add(y.toString())
-        list.add((y - 1).toString())
-        list.add((y - 2).toString())
-        list.add((y - 3).toString())
-        list.add((y - 4).toString())
-        _uiState.value = _uiState.value.copy(periodList = list)
+        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+        val years = (0..4).map { (currentYear - it).toString() }
+        _uiState.update { it.copy(periodList = years) }
     }
 
     private fun loadCommodities() {
-        getCommoditiesUseCase("").onEach { res ->
-            if (res is Resource.Success) {
-                val data = res.data
-                if (data != null) {
-                    _uiState.value = _uiState.value.copy(commodityList = data)
-                } else {
-                    _uiState.value = _uiState.value.copy(commodityList = ArrayList())
+        getCommoditiesUseCase("").onEach { result ->
+            when (result) {
+                is Resource.Success -> {
+                    _uiState.update { it.copy(commodityList = result.data ?: emptyList()) }
                 }
-            } else if (res is Resource.Error) {
-                _uiState.value = _uiState.value.copy(error = "Gagal load komoditas")
+                is Resource.Error -> {
+                    _uiState.update { it.copy(error = "Gagal memuat komoditas") }
+                }
+                else -> {}
             }
         }.launchIn(viewModelScope)
     }
