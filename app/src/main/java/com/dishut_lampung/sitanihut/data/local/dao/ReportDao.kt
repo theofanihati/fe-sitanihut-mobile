@@ -43,6 +43,9 @@ interface ReportDao {
     @Query("SELECT * FROM laporan WHERE status = :status ORDER BY date DESC")
     fun getReportsByStatus(status: String): Flow<List<ReportEntity>>
 
+    @Query("SELECT * FROM laporan WHERE LOWER(syncStatus) = :status")
+    suspend fun getReportsBySyncStatus(status: String): List<ReportEntity>
+
     @Query("""
     SELECT 
         COUNT(CASE WHEN LOWER(status) = 'menunggu' THEN 1 END) as PENDING, 
@@ -53,6 +56,9 @@ interface ReportDao {
     WHERE userId = :userId
 """)
     fun getReportSummaryStat(userId: String): Flow<ReportCountTuple>
+
+    @Query("SELECT * FROM laporan WHERE id = :id")
+    suspend fun getReportById(id: String): ReportEntity?
 
     @Query("DELETE FROM laporan WHERE id = :reportId")
     suspend fun deleteReportById(reportId: String)
