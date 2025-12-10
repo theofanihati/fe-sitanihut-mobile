@@ -10,6 +10,6 @@ class GetReportDetailUseCase @Inject constructor(
     private val repository: ReportRepository
 ) {
     operator fun invoke(id: String): Flow<Resource<Report>> {
-        return TODO()
+        return repository.getReportById(id)
     }
 }
