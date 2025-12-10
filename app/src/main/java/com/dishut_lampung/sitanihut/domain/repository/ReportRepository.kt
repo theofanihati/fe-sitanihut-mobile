@@ -13,6 +13,6 @@ interface ReportRepository {
     suspend fun deleteReport(reportId: String): Resource<Unit>
     suspend fun submitReport(reportId: String): Resource<Unit>
     suspend fun createReport(input: CreateReportInput): Resource<Unit>
-    fun getReportById(id: String): Flow<Resource<Report>>
+    fun getReportById(id: String): Flow<Resource<CreateReportInput>>
     suspend fun updateReport(id: String, input: CreateReportInput): Resource<Boolean>
 }

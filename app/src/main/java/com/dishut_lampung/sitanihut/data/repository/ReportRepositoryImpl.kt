@@ -157,10 +157,64 @@ class ReportRepositoryImpl @Inject constructor(
     }
 
     override fun getReportById(id: String): Flow<Resource<CreateReportInput>> {
-        return TODO()
+        return flow {
+            emit(Resource.Loading())
+            reportDao.getReportByIdFlow(id).collect { entity ->
+                if (entity != null) {
+                    emit(Resource.Success(entity.toCreateReportInput()))
+                } else {
+                    emit(Resource.Error("Laporan tidak ditemukan"))
+                }
+            }
+        }
     }
 
     override suspend fun updateReport(id: String, input: CreateReportInput): Resource<Boolean> {
-        return TODO()
+        return try {
+            val oldReport = reportDao.getReportById(id)
+                ?: return Resource.Error("Laporan tidak ditemukan")
+
+            val newStatus = when (oldReport.syncStatus) {
+                SyncStatus.PENDING_CREATE -> SyncStatus.PENDING_CREATE
+                else -> SyncStatus.PENDING_UPDATE
+            }
+
+            val requestDto = ReportRequestDto(
+                id = id,
+                updatedAt = getCurrentDate(),
+                period = input.period,
+                month = input.month,
+                modal = input.modal.replace(".", "").toDoubleOrNull() ?: 0.0,
+                farmerNotes = input.farmerNotes,
+                nte = input.nte,
+                plantingDetails = input.plantingDetails.map { it.toDto() },
+                harvestDetails = input.harvestDetails.map { it.toDto() },
+                status = oldReport.status
+
+                )
+            val jsonPayload = Gson().toJson(requestDto)
+
+            val plantingJsonForEntity = Gson().toJson(input.plantingDetails)
+            val harvestJsonForEntity = Gson().toJson(input.harvestDetails)
+
+            val updatedEntity = oldReport.copy(
+                period = input.period,
+                month = input.month,
+                modal = input.modal.replace(".", "").toDoubleOrNull(),
+                farmerNotes = input.farmerNotes,
+                nte = input.nte,
+                attachmentPaths = input.attachments.joinToString(","),
+                jsonPayload = jsonPayload,
+                plantingDetailsJson = plantingJsonForEntity,
+                harvestDetailsJson = harvestJsonForEntity,
+                syncStatus = newStatus,
+                date = getCurrentDate()
+            )
+            reportDao.upsertAll(listOf(updatedEntity))
+            Resource.Success(true)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Error("Gagal menyimpan perubahan: ${e.localizedMessage}")
+        }
     }
 }

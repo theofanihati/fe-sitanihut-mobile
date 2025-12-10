@@ -60,6 +60,9 @@ interface ReportDao {
     @Query("SELECT * FROM laporan WHERE id = :id")
     suspend fun getReportById(id: String): ReportEntity?
 
+    @Query("SELECT * FROM laporan WHERE id = :id")
+    fun getReportByIdFlow(id: String): Flow<ReportEntity?>
+
     @Query("DELETE FROM laporan WHERE id = :reportId")
     suspend fun deleteReportById(reportId: String)
 

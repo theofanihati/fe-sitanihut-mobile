@@ -21,6 +21,8 @@ import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
 import com.dishut_lampung.sitanihut.domain.model.UserProfile
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -135,6 +137,45 @@ fun ReportEntity.toDomain(): Report {
     )
 }
 
+fun ReportEntity.toCreateReportInput(): CreateReportInput {
+    val gson = Gson()
+    val plantingList: List<MasaTanam> = try {
+        if (!this.plantingDetailsJson.isNullOrEmpty()) {
+            val type = object : TypeToken<List<MasaTanam>>() {}.type
+            gson.fromJson(this.plantingDetailsJson, type)
+        } else emptyList()
+    } catch (e: Exception) { emptyList() }
+
+    val harvestList: List<MasaPanen> = try {
+        if (!this.harvestDetailsJson.isNullOrEmpty()) {
+            val type = object : TypeToken<List<MasaPanen>>() {}.type
+            gson.fromJson(this.harvestDetailsJson, type)
+        } else emptyList()
+    } catch (e: Exception) { emptyList() }
+
+    val attachmentList = if (!this.attachmentPaths.isNullOrEmpty()) {
+        this.attachmentPaths.split(",").filter { it.isNotBlank() }
+    } else {
+        emptyList()
+    }
+
+    val modalString = this.modal?.let {
+        if (it % 1.0 == 0.0) it.toLong().toString() else it.toString()
+    } ?: ""
+
+    return CreateReportInput(
+        month = this.month,
+        period = this.period,
+        modal = modalString,
+        farmerNotes = this.farmerNotes ?: "",
+        nte = this.nte,
+        isAjukan = false,
+        attachments = attachmentList,
+        plantingDetails = plantingList,
+        harvestDetails = harvestList
+    )
+}
+
 fun ReportListItemDto.toDomain(): Report {
     val statusEnum = when (this.status?.lowercase(Locale.ROOT)) {
         "disetujui" -> ReportStatus.APPROVED
@@ -209,7 +250,7 @@ fun CreateReportInput.toDto(
         period = this.period,
         month = this.month,
         modal = this.modal.toDoubleOrNull() ?: 0.0,
-        totalNte = this.nte,
+        nte = this.nte,
         farmerNotes = this.farmerNotes,
         plantingDetails = this.plantingDetails.map { it.toDto() },
         status = if (this.isAjukan) "menunggu" else "belum diajukan",
