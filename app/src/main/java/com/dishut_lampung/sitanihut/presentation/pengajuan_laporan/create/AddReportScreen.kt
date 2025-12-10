@@ -155,7 +155,7 @@ fun AddReportScreen(
                     value = state.modal,
                     onValueChange = { onEvent(AddReportEvent.OnModalChange(it)) },
                     label = "Modal",
-                    placeholder = "0",
+                    placeholder = "Contoh: 6000",
                     keyboardType = KeyboardType.Number,
                     asteriskAtEnd = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -212,6 +212,7 @@ fun AddReportScreen(
                     onValueChange = { onEvent(AddReportEvent.OnFarmerNotesChange(it)) },
                     label = "Catatan Penyuluh",
                     modifier = Modifier.fillMaxWidth(),
+                    placeholder = "Beri catatan untuk penyuluh",
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -235,8 +236,8 @@ fun AddReportScreen(
                         onClick = { onEvent(AddReportEvent.OnSubmit(isAjukan = false)) },
                         modifier = Modifier
                             .weight(1f)
-                            .height(50.dp),
-                        shape = MaterialTheme.shapes.large
+                            .height(40.dp),
+                        shape = MaterialTheme.shapes.extraLarge
                     ) {
                         Text("Simpan")
                     }
@@ -245,8 +246,8 @@ fun AddReportScreen(
                         onClick = { onEvent(AddReportEvent.OnSubmit(isAjukan = true)) },
                         modifier = Modifier
                             .weight(1f)
-                            .height(50.dp),
-                        shape = MaterialTheme.shapes.large,
+                            .height(40.dp),
+                        shape = MaterialTheme.shapes.extraLarge,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                     ) {
                         Text("Ajukan")
@@ -328,30 +329,28 @@ fun PlantingItemCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             if (item.plantType.equals("Semusim", ignoreCase = true)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    CustomDatePicker(
-                        value = item.plantDate,
-                        onValueChange = { date ->
-                            // TODO: Hitung plantAge otomatis di ViewModel saat date berubah
-                            onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(plantDate = date)))
-                        },
-                        asteriskAtEnd = true,
-                        label = "Tanggal Tanam",
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    CustomOutlinedTextField(
-                        value = item.plantAge,
-                        onValueChange = {},
-                        label = "Usia (Tahun)",
-                        readOnly = true,
-                        isEnabled = false,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
+                CustomDatePicker(
+                    value = item.plantDate,
+                    onValueChange = { date ->
+                        onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(plantDate = date)))
+                    },
+                    asteriskAtEnd = true,
+                    label = "Tanggal Tanam",
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                CustomOutlinedTextField(
+                    value = item.plantAge,
+                    onValueChange = {},
+                    label = "Usia (Tahun)",
+                    asteriskAtEnd = true,
+                    readOnly = true,
+                    isEnabled = false,
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 CustomOutlinedTextField(
                     value = item.amount,
                     onValueChange = { amount ->
@@ -360,28 +359,29 @@ fun PlantingItemCard(
                     label = "Jumlah (${item.unit.ifEmpty { "-" }})",
                     keyboardType = KeyboardType.Number,
                     modifier = Modifier.fillMaxWidth(),
+                    placeholder = "Contoh: 2"
                 )
+
             } else if (item.plantType.equals("Tahunan", ignoreCase = true)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    CustomOutlinedTextField(
-                        value = item.plantAge,
-                        onValueChange = { age ->
-                            onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(plantAge = age)))
-                        },
-                        label = "Usia Tanaman (Tahun)",
-                        keyboardType = KeyboardType.Number,
-                        modifier = Modifier.weight(1.5f),
-                    )
-                    CustomOutlinedTextField(
-                        value = item.amount,
-                        onValueChange = { amount ->
-                            onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(amount = amount)))
-                        },
-                        label = "Jumlah (${item.unit.ifEmpty { "-" }})",
-                        keyboardType = KeyboardType.Number,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
+                CustomOutlinedTextField(
+                    value = item.plantAge,
+                    onValueChange = { age ->
+                        onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(plantAge = age)))
+                    },
+                    label = "Usia Tanaman (Tahun)",
+                    keyboardType = KeyboardType.Number,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                CustomOutlinedTextField(
+                    value = item.amount,
+                    onValueChange = { amount ->
+                        onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(amount = amount)))
+                    },
+                    asteriskAtEnd = true,
+                    label = "Jumlah (${item.unit.ifEmpty { "-" }})",
+                    keyboardType = KeyboardType.Number,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
             Row(horizontalArrangement = Arrangement.End) {
                 Box(
@@ -416,22 +416,10 @@ fun HarvestItemCard(
     onEvent: (AddReportEvent) -> Unit
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Panen #${index + 1}",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = { onEvent(AddReportEvent.OnRemoveHarvestDetail(index)) }) {
-                    Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = MaterialTheme.colorScheme.error)
-                }
-            }
-
+        Column(modifier = Modifier.padding(vertical = 16.dp)) {
             CustomDatePicker(
                 value = item.harvestDate,
                 onValueChange = { date ->
@@ -440,6 +428,7 @@ fun HarvestItemCard(
                 label = "Tanggal Panen",
                 modifier = Modifier.fillMaxWidth(),
                 rounded = 40,
+                asteriskAtEnd = true,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -460,49 +449,67 @@ fun HarvestItemCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                CustomOutlinedTextField(
-                    value = item.amount,
-                    onValueChange = {
-                        onEvent(AddReportEvent.OnHarvestItemChange(index, item.copy(amount = it)))
-                    },
-                    label = "Jumlah",
-                    keyboardType = KeyboardType.Number,
-                    modifier = Modifier.weight(1f),
-                    rounded = 40,
-                )
+            CustomOutlinedTextField(
+                value = item.amount,
+                onValueChange = {
+                    onEvent(AddReportEvent.OnHarvestItemChange(index, item.copy(amount = it)))
+                },
+                label = "Jumlah (kg)",
+                asteriskAtEnd = true,
+                keyboardType = KeyboardType.Number,
+                modifier = Modifier.fillMaxWidth(),
+                rounded = 40,
+                placeholder = "Contoh: 20"
+            )
 
-                CustomOutlinedTextField(
-                    value = item.unitPrice,
-                    onValueChange = {
-                        onEvent(AddReportEvent.OnHarvestItemChange(index, item.copy(unitPrice = it)))
-                    },
-                    label = "Harga Satuan",
-                    keyboardType = KeyboardType.Number,
-                    modifier = Modifier.weight(1f),
-                    rounded = 40,
-                )
-            }
+            CustomOutlinedTextField(
+                value = item.unitPrice,
+                onValueChange = {
+                    onEvent(AddReportEvent.OnHarvestItemChange(index, item.copy(unitPrice = it)))
+                },
+                label = "Harga Satuan (/kg)",
+                asteriskAtEnd = true,
+                keyboardType = KeyboardType.Number,
+                modifier = Modifier.fillMaxWidth(),
+                rounded = 40,
+                placeholder = "Contoh: 2000"
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             val totalFormatted = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(item.totalPrice)
-//            Text(
-//                text = "Total: $totalFormatted",
-//                style = MaterialTheme.typography.labelLarge,
-//                color = MaterialTheme.colorScheme.tertiary,
-//                fontWeight = FontWeight.Bold,
-//                modifier = Modifier.align(Alignment.End)
-//            )
             CustomOutlinedTextField(
                 value = totalFormatted,
-                onValueChange = {
-                },
+                onValueChange = {},
                 readOnly = true,
+                isEnabled = false,
                 label = "Harga Total",
-                modifier = Modifier.weight(1f),
+                asteriskAtEnd = true,
+                modifier = Modifier.fillMaxWidth(),
                 rounded = 40,
             )
+
+            Row(horizontalArrangement = Arrangement.End) {
+                Box(
+                    modifier = Modifier
+                        .weight(0.5f)
+                ){
+                }
+                OutlinedButton(
+                    onClick = { onEvent(AddReportEvent.OnRemoveHarvestDetail(index)) },
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .height(40.dp),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Hapus")
+                }
+            }
         }
     }
 }

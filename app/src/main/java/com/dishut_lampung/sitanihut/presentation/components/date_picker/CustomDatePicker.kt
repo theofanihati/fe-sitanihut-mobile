@@ -138,7 +138,7 @@ fun CustomDatePicker(
                         onClick = {
                             showDialog = false
                             datePickerState.selectedDateMillis?.let { millis ->
-                                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                                val sdf = SimpleDateFormat("dd/MM/yyyy", Locale("id", "ID"))
                                 sdf.timeZone = TimeZone.getTimeZone("UTC")
                                 val formattedDate = sdf.format(Date(millis))
                                 onValueChange(formattedDate)

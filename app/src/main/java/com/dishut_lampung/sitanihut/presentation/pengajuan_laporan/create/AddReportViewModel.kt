@@ -16,6 +16,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,26 +35,6 @@ class AddReportViewModel @Inject constructor(
         loadCommodities()
         onEvent(AddReportEvent.OnAddPlantingDetail)
         generatePeriodList()
-    }
-
-    private fun generatePeriodList() {
-        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
-        val years = (0..4).map { (currentYear - it).toString() }
-        _uiState.update { it.copy(periodList = years) }
-    }
-
-    private fun loadCommodities() {
-        getCommoditiesUseCase("").onEach { result ->
-            when (result) {
-                is Resource.Success -> {
-                    _uiState.update { it.copy(commodityList = result.data ?: emptyList()) }
-                }
-                is Resource.Error -> {
-                    _uiState.update { it.copy(error = "Gagal memuat komoditas") }
-                }
-                else -> {}
-            }
-        }.launchIn(viewModelScope)
     }
 
     fun onEvent(event: AddReportEvent) {
@@ -71,11 +54,21 @@ class AddReportViewModel @Inject constructor(
             }
             is AddReportEvent.OnPlantingItemChange -> {
                 val newList = _uiState.value.plantingDetails.toMutableList()
-                newList[event.index] = event.item
+                var updatedItem = event.item
 
-                if (event.item.plantType == "tahunan") newList[event.index] = newList[event.index].copy(unit = "batang")
-                if (event.item.plantType == "semusim") newList[event.index] = newList[event.index].copy(unit = "kg")
+                if (updatedItem.plantType.equals("tahunan", ignoreCase = true)) {
+                    updatedItem = updatedItem.copy(unit = "batang")
+                    updatedItem = updatedItem.copy(plantDate = "")
+                } else if (updatedItem.plantType.equals("semusim", ignoreCase = true)) {
+                    updatedItem = updatedItem.copy(unit = "kg")
+                }
 
+                if (updatedItem.plantType.equals("semusim", ignoreCase = true) && updatedItem.plantDate.isNotEmpty()) {
+                    val calculatedAge = calculatePlantAge(updatedItem.plantDate)
+                    updatedItem = updatedItem.copy(plantAge = calculatedAge)
+                }
+
+                newList[event.index] = updatedItem
                 _uiState.update { it.copy(plantingDetails = newList) }
             }
 
@@ -91,8 +84,10 @@ class AddReportViewModel @Inject constructor(
                 val newList = _uiState.value.harvestDetails.toMutableList()
 
                 //total Price (Harga * Jumlah)
-                val price = event.item.unitPrice.toDoubleOrNull() ?: 0.0
-                val amount = event.item.amount.toIntOrNull() ?: 0
+                val priceString = event.item.unitPrice
+                val amountString = event.item.amount
+                val price = priceString.replace(",", ".").toDoubleOrNull() ?: 0.0
+                val amount = amountString.replace(",", ".").toDoubleOrNull() ?: 0.0
                 val updatedItem = event.item.copy(totalPrice = price * amount)
 
                 newList[event.index] = updatedItem
@@ -120,6 +115,46 @@ class AddReportViewModel @Inject constructor(
             AddReportEvent.OnDismissMessage -> _uiState.update { it.copy(error = null, successMessage = null) }
 
             else -> {}
+        }
+    }
+
+    private fun generatePeriodList() {
+        val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+        val years = (0..4).map { (currentYear - it).toString() }
+        _uiState.update { it.copy(periodList = years) }
+    }
+
+    private fun loadCommodities() {
+        getCommoditiesUseCase("").onEach { result ->
+            when (result) {
+                is Resource.Success -> {
+                    _uiState.update { it.copy(commodityList = result.data ?: emptyList()) }
+                }
+                is Resource.Error -> {
+                    _uiState.update { it.copy(error = "Gagal memuat komoditas") }
+                }
+                else -> {}
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun calculatePlantAge(dateString: String): String {
+        return try {
+            val format = SimpleDateFormat("dd/MM/yyyy", Locale("id", "ID"))
+            val date = format.parse(dateString) ?: return "0"
+
+            val currentTime = System.currentTimeMillis()
+            val plantedTime = date.time
+
+            val diffInMillis = currentTime - plantedTime
+            if (diffInMillis < 0) return "0"
+
+            val oneYearInMillis = 31557600000.0
+            val ageInYears = diffInMillis / oneYearInMillis
+
+            String.format(Locale.US, "%.1f", ageInYears)
+        } catch (e: Exception) {
+            "0"
         }
     }
 
