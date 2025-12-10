@@ -41,7 +41,7 @@ import java.io.File
 @Composable
 fun FileUploader(
     modifier: Modifier = Modifier,
-    files: List<File>,
+    files: List<String>,
     onAddFileClick: () -> Unit,
     onRemoveFileClick: (Int) -> Unit,
     maxFiles: Int = 10,
@@ -66,9 +66,9 @@ fun FileUploader(
             )
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                files.forEachIndexed { index, file ->
+                files.forEachIndexed { index, filePath ->
                     SelectedFileItem(
-                        file = file,
+                        filePath = filePath,
                         onRemove = { onRemoveFileClick(index) }
                     )
                 }
@@ -143,9 +143,11 @@ private fun SmallAddFileButton(
 
 @Composable
 private fun SelectedFileItem(
-    file: File,
+    filePath: String,
     onRemove: () -> Unit
 ) {
+    val file = File(filePath)
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
@@ -170,8 +172,9 @@ private fun SelectedFileItem(
                     fontWeight = FontWeight.Medium,
                     maxLines = 1
                 )
+                val fileSizeInKb = file.length() / 1024
                 Text(
-                    text = "${file.length() / 1024} KB", //TODO hitung ukuran asli
+                    text = "$fileSizeInKb KB", //TODO hitung ukuran asli
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

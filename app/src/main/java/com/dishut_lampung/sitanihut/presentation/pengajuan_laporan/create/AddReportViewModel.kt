@@ -123,12 +123,21 @@ class AddReportViewModel @Inject constructor(
 
             is AddReportEvent.OnAddAttachment -> {
                 val currentFiles = _uiState.value.attachments
-                val newFiles = currentFiles + event.file
+                val newFiles = currentFiles + event.filePath
                 _uiState.update { it.copy(attachments = newFiles) }
             }
             is AddReportEvent.OnRemoveAttachment -> {
                 val currentFiles = _uiState.value.attachments.toMutableList()
                 if (event.index in currentFiles.indices) {
+                    val pathToRemove = currentFiles[event.index]
+                    try {
+                        val file = java.io.File(pathToRemove)
+                        if (file.exists()) {
+                            file.delete()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                     currentFiles.removeAt(event.index)
                     _uiState.update { it.copy(attachments = currentFiles) }
                 }

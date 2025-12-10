@@ -1,5 +1,8 @@
 package com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,9 +36,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -57,6 +62,9 @@ import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomOutl
 import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomOutlinedTextField
 import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.util.copyUriToInternalStorage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -86,13 +94,28 @@ fun AddReportRoute(
     viewModel: AddReportViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            scope.launch(Dispatchers.IO) {
+                val filePath = copyUriToInternalStorage(context, uri)
+
+                if (filePath != null) {
+                    viewModel.onEvent(AddReportEvent.OnAddAttachment(filePath))
+                }
+            }
+        }
+    }
 
     AddReportScreen(
         state = state,
         onEvent = viewModel::onEvent,
         onNavigateUp = onNavigateUp,
-        // TODO: Handle File Picker Launch here (Activity Result Launcher)
-        onPickFile = { /* Launch File Picker */ }
+        onPickFile = { launcher.launch("*/*") }
     )
 }
 

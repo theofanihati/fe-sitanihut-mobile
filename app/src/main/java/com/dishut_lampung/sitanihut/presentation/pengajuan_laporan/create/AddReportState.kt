@@ -29,7 +29,7 @@ data class AddReportState(
 
     val plantingDetails: List<PlantingDetailUiState> = emptyList(),
     val harvestDetails: List<HarvestDetailUiState> = emptyList(),
-    val attachments: List<File> = emptyList()
+    val attachments: List<String> = emptyList()
 )
 
 data class PlantingDetailUiState(
@@ -77,7 +77,7 @@ sealed class AddReportEvent {
     data class OnRemoveHarvestDetail(val index: Int) : AddReportEvent()
     data class OnHarvestItemChange(val index: Int, val item: HarvestDetailUiState) : AddReportEvent()
 
-    data class OnAddAttachment(val file: File) : AddReportEvent()
+    data class OnAddAttachment(val filePath: String) : AddReportEvent()
     data class OnRemoveAttachment(val index: Int) : AddReportEvent()
 
     data class OnSubmit(val isAjukan: Boolean) : AddReportEvent() // True=Ajukan, False=Simpan

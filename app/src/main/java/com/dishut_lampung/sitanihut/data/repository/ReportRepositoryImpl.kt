@@ -113,7 +113,7 @@ class ReportRepositoryImpl @Inject constructor(
         val gson = Gson()
         val jsonPayloadString = gson.toJson(requestDto)
 
-        val filePathsString = input.attachments.joinToString(",") { it.absolutePath }
+        val filePathsString = input.attachments.joinToString(",")
         val currentUserId = userPreferences.userId.first() ?: ""
 
         val newReport = ReportEntity(

@@ -10,6 +10,7 @@ import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.ConflictResponseDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportRequestDto
+import com.dishut_lampung.sitanihut.util.getMimeType
 import com.google.gson.Gson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -42,7 +43,8 @@ class ReportSyncWorker @AssistedInject constructor(
                     ?.mapNotNull { path ->
                         val file = File(path)
                         if (file.exists()) {
-                            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                            val mimeType = getMimeType(file)
+                            val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())
                             MultipartBody.Part.createFormData("lampiran[]", file.name, requestFile)
                         } else null
                     } ?: emptyList()
@@ -83,8 +85,8 @@ class ReportSyncWorker @AssistedInject constructor(
                             )
 
                             // Ganti PK = Hapus & Insert, tiati
-                            reportDao.deleteReportById(report.id)
                             reportDao.upsertAll(listOf(newReportEntity))
+                            reportDao.deleteReportById(report.id)
                             return Result.retry()
 
                         } catch (e: Exception) {

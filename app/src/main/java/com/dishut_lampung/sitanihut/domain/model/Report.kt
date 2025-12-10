@@ -18,7 +18,7 @@ data class CreateReportInput(
     val plantingDetails: List<MasaTanam>,
     val harvestDetails: List<MasaPanen>,
     val farmerNotes: String,
-    val attachments: List<File>,
+    val attachments: List<String>,
     val isAjukan: Boolean,
     val nte: Double,
 )
