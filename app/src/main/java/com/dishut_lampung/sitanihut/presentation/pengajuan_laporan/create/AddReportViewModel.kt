@@ -39,11 +39,15 @@ class AddReportViewModel @Inject constructor(
 
     fun onEvent(event: AddReportEvent) {
         when (event) {
-            is AddReportEvent.OnMonthChange -> _uiState.update { it.copy(month = event.month) }
-            is AddReportEvent.OnPeriodChange -> _uiState.update { it.copy(period = event.period) }
-            is AddReportEvent.OnModalChange -> _uiState.update { it.copy(modal = event.value) }
+            is AddReportEvent.OnMonthChange -> _uiState.update { it.copy(month = event.month, monthError = null)}
+            is AddReportEvent.OnPeriodChange -> _uiState.update { it.copy(period = event.period, periodError = null) }
+            is AddReportEvent.OnModalChange -> {
+                val errorMsg = validateNumberInput(event.value, "Modal")
+                _uiState.update { it.copy(modal = event.value, modalError = errorMsg) }
+            }
             is AddReportEvent.OnFarmerNotesChange -> _uiState.update { it.copy(farmerNotes = event.value) }
 
+            // MASA TANAM
             AddReportEvent.OnAddPlantingDetail -> {
                 val newList = _uiState.value.plantingDetails + PlantingDetailUiState()
                 _uiState.update { it.copy(plantingDetails = newList) }
@@ -57,21 +61,34 @@ class AddReportViewModel @Inject constructor(
                 var updatedItem = event.item
 
                 if (updatedItem.plantType.equals("tahunan", ignoreCase = true)) {
-                    updatedItem = updatedItem.copy(unit = "batang")
-                    updatedItem = updatedItem.copy(plantDate = "")
+                    updatedItem = updatedItem.copy(unit = "batang", plantDate = "")
                 } else if (updatedItem.plantType.equals("semusim", ignoreCase = true)) {
                     updatedItem = updatedItem.copy(unit = "kg")
                 }
 
                 if (updatedItem.plantType.equals("semusim", ignoreCase = true) && updatedItem.plantDate.isNotEmpty()) {
-                    val calculatedAge = calculatePlantAge(updatedItem.plantDate)
-                    updatedItem = updatedItem.copy(plantAge = calculatedAge)
+                    updatedItem = updatedItem.copy(plantAge = calculatePlantAge(updatedItem.plantDate))
                 }
+
+                val amountError = validateNumberInput(updatedItem.amount, "Jumlah")
+                val ageError = if (updatedItem.plantType.equals("tahunan", true)) {
+                    validateNumberInput(updatedItem.plantAge, "Usia")
+                } else null
+                val dateError = if (updatedItem.plantType.equals("semusim", true) && updatedItem.plantDate.isBlank()) {
+                    "Wajib diisi"
+                } else null
+
+                updatedItem = updatedItem.copy(
+                    amountError = amountError,
+                    plantAgeError = ageError,
+                    plantDateError = dateError
+                )
 
                 newList[event.index] = updatedItem
                 _uiState.update { it.copy(plantingDetails = newList) }
             }
 
+            // MASA PANEN
             AddReportEvent.OnAddHarvestDetail -> {
                 val newList = _uiState.value.harvestDetails + HarvestDetailUiState()
                 _uiState.update { it.copy(harvestDetails = newList) }
@@ -84,11 +101,16 @@ class AddReportViewModel @Inject constructor(
                 val newList = _uiState.value.harvestDetails.toMutableList()
 
                 //total Price (Harga * Jumlah)
-                val priceString = event.item.unitPrice
-                val amountString = event.item.amount
-                val price = priceString.replace(",", ".").toDoubleOrNull() ?: 0.0
-                val amount = amountString.replace(",", ".").toDoubleOrNull() ?: 0.0
-                val updatedItem = event.item.copy(totalPrice = price * amount)
+                val price = event.item.unitPrice.replace(",", ".").toDoubleOrNull() ?: 0.0
+                val amount = event.item.amount.replace(",", ".").toDoubleOrNull() ?: 0.0
+                val priceError = validateNumberInput(event.item.unitPrice, "Harga")
+                val amountError = validateNumberInput(event.item.amount, "Jumlah")
+
+                val updatedItem = event.item.copy(
+                    totalPrice = price * amount,
+                    unitPriceError = priceError,
+                    amountError = amountError,
+                )
 
                 newList[event.index] = updatedItem
 
@@ -138,6 +160,13 @@ class AddReportViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
+    private fun validateNumberInput(value: String, fieldName: String): String? {
+        if (value.isBlank()) return "$fieldName wajib diisi"
+        val cleanValue = value.replace(",", ".")
+        val number = cleanValue.toDoubleOrNull()
+        return if (number == null || number <= 0) "$fieldName harus angka > 0" else null
+    }
+
     private fun calculatePlantAge(dateString: String): String {
         return try {
             val format = SimpleDateFormat("dd/MM/yyyy", Locale("id", "ID"))
@@ -160,12 +189,35 @@ class AddReportViewModel @Inject constructor(
 
     private fun submitReport(isAjukan: Boolean) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, error = null) }
             val input = mapStateToInput(isAjukan)
             val validationResult = validateReportInputUseCase.execute(input)
 
             if (!validationResult.successful) {
-                _uiState.update { it.copy(isLoading = false, error = validationResult.errorMessage) }
+                val errors = validationResult.fieldErrors
+                _uiState.update { s ->
+                    s.copy(
+                        isLoading = false,
+                        error = validationResult.errorMessage,
+                        periodError = errors["period"],
+                        monthError = errors["month"],
+                        modalError = errors["modal"],
+                        plantingDetails = s.plantingDetails.mapIndexed { i, item ->
+                            item.copy(
+                                amountError = errors["plant_amount_$i"],
+                                plantAgeError = errors["plant_age_$i"],
+                                plantDateError = errors["plant_date_$i"],
+                            )
+                        },
+                        harvestDetails = s.harvestDetails.mapIndexed { i, item ->
+                            item.copy(
+                                amountError = errors["harvest_amount_$i"],
+                                unitPriceError = errors["harvest_price_$i"],
+                                harvestDateError = errors["harvest_date_$i"]
+                            )
+                        }
+                    )
+                }
                 return@launch
             }
 

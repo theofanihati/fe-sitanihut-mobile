@@ -136,6 +136,7 @@ fun AddReportScreen(
                         options = state.monthList,
                         asteriskAtEnd = true,
                         rounded = 40,
+                        error = state.monthError,
                     )
 
                     CustomOutlinedDropdown(
@@ -146,6 +147,7 @@ fun AddReportScreen(
                         options = state.periodList,
                         asteriskAtEnd = true,
                         rounded = 40,
+                        error = state.periodError
                     )
                 }
 
@@ -160,6 +162,7 @@ fun AddReportScreen(
                     asteriskAtEnd = true,
                     modifier = Modifier.fillMaxWidth(),
                     rounded = 40,
+                    error = state.modalError
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -173,7 +176,7 @@ fun AddReportScreen(
                         item = item,
                         commodityList = state.commodityList,
                         plantTypes = state.plantTypes,
-                        onEvent = onEvent
+                        onEvent = onEvent,
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                 }
@@ -205,6 +208,7 @@ fun AddReportScreen(
                     isEnabled = false,
                     modifier = Modifier.fillMaxWidth(),
                     rounded = 40,
+                    error = state.nteError
                 )
 
                 CustomOutlinedTextArea(
@@ -297,7 +301,7 @@ fun PlantingItemCard(
     item: PlantingDetailUiState,
     commodityList: List<Commodity>,
     plantTypes: List<String>,
-    onEvent: (AddReportEvent) -> Unit
+    onEvent: (AddReportEvent) -> Unit,
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
@@ -316,6 +320,7 @@ fun PlantingItemCard(
                     },
                     options = commodityList,
                     label = "Komoditas",
+                    errorMessage = item.commodityError
                 )
                 CustomOutlinedDropdown(
                     value = item.plantType,
@@ -370,7 +375,8 @@ fun PlantingItemCard(
                     },
                     label = "Usia Tanaman (Tahun)",
                     keyboardType = KeyboardType.Number,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    error = item.plantAgeError
                 )
                 CustomOutlinedTextField(
                     value = item.amount,
@@ -380,7 +386,8 @@ fun PlantingItemCard(
                     asteriskAtEnd = true,
                     label = "Jumlah (${item.unit.ifEmpty { "-" }})",
                     keyboardType = KeyboardType.Number,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    error = item.amountError
                 )
             }
             Row(horizontalArrangement = Arrangement.End) {
@@ -429,6 +436,7 @@ fun HarvestItemCard(
                 modifier = Modifier.fillMaxWidth(),
                 rounded = 40,
                 asteriskAtEnd = true,
+                error = item.harvestDateError
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -445,6 +453,7 @@ fun HarvestItemCard(
                 label = "Komoditas",
                 modifier = Modifier.fillMaxWidth(),
                 rounded = 40,
+                errorMessage = item.commodityError
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -459,7 +468,8 @@ fun HarvestItemCard(
                 keyboardType = KeyboardType.Number,
                 modifier = Modifier.fillMaxWidth(),
                 rounded = 40,
-                placeholder = "Contoh: 20"
+                placeholder = "Contoh: 20",
+                error = item.amountError
             )
 
             CustomOutlinedTextField(
@@ -472,7 +482,8 @@ fun HarvestItemCard(
                 keyboardType = KeyboardType.Number,
                 modifier = Modifier.fillMaxWidth(),
                 rounded = 40,
-                placeholder = "Contoh: 2000"
+                placeholder = "Contoh: 2000",
+                error = item.unitPriceError
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -487,6 +498,7 @@ fun HarvestItemCard(
                 asteriskAtEnd = true,
                 modifier = Modifier.fillMaxWidth(),
                 rounded = 40,
+                error = item.totalPriceError
             )
 
             Row(horizontalArrangement = Arrangement.End) {

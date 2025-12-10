@@ -1,72 +1,64 @@
 package com.dishut_lampung.sitanihut.domain.usecase.report
 
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
+import com.dishut_lampung.sitanihut.domain.validator.ListValidationResult
 import com.dishut_lampung.sitanihut.domain.validator.ValidationResult
 import javax.inject.Inject
 
 class ValidateReportInputUseCase @Inject constructor() {
-    fun execute(input: CreateReportInput): ValidationResult {
-        if (input.period <= 0) {
-            return ValidationResult(false, "Periode (Tahun) wajib dipilih")
-        }
-        if (input.month.isBlank()) {
-            return ValidationResult(false, "Periode (Bulan) wajib dipilih")
-        }
+    fun execute(input: CreateReportInput): ListValidationResult {
+        val errors = mutableMapOf<String, String>()
+
+        if (input.period <= 0) errors["period"] = "Tahun wajib dipilih"
+        if (input.month.isBlank()) errors["month"] = "Bulan wajib dipilih"
         if (!isValidNumber(input.modal)) {
-            return ValidationResult(false, "Modal harus terisi dan lebih dari 0")
+            errors["modal"] = "Modal harus angka lebih dari 0"
         }
-        val nteString = input.nte.toString()
         if (input.nte <= 0) {
-            return ValidationResult(false, "NTE harus terisi")
+            return ListValidationResult(false, "NTE harus terisi")
         }
 
         if (input.plantingDetails.isEmpty()) {
-            return ValidationResult(successful = false, errorMessage = "Minimal isi satu data masa tanam")
+            return ListValidationResult(false, "Minimal isi satu data masa tanam")
         }
-        input.plantingDetails.forEach { detail ->
-            if (detail.commodityId.isBlank()) {
-                return ValidationResult(false, "Komoditas wajib dipilih")
-            }
-            if (detail.plantType.isBlank()) {
-                return ValidationResult(false, "Jenis tanaman wajib dipilih")
-            }
+
+        input.plantingDetails.forEachIndexed { index, detail ->
+            if (detail.commodityId.isBlank()) errors["plant_comm_$index"] = "Komoditas wajib dipilih"
             if (detail.plantType.equals("tahunan", ignoreCase = true)) {
-                if (detail.plantAge <= 0) {
-                    return ValidationResult(false, "Usia tanam wajib diisi untuk tanaman tahunan")
-                }
+                if (detail.plantAge <= 0) errors["plant_age_$index"] = "Usia tanam wajib diisi untuk tanaman tahunan"
                 if (!isValidNumber(detail.amount)) {
-                    return ValidationResult(false, "Jumlah tanam (batang) wajib diisi")
+                    errors["plant_amount_$index"] ="Jumlah tanam (batang) wajib diisi"
                 }
             }
+
             else if (detail.plantType.equals("semusim", ignoreCase = true)) {
-                if (detail.plantDate.isBlank()) {
-                    return ValidationResult(false, "Tanggal wajib diisi untuk tanaman semusim")
-                }
+                if (detail.plantDate.isBlank()) errors["plant_date_$index"] ="Tanggal wajib diisi untuk tanaman semusim"
                 if (!isValidNumber(detail.amount)) {
-                    return ValidationResult(false, "Jumlah tanam (kg) wajib diisi")
+                    errors["plant_amount_$index"] ="Jumlah tanam (kg) wajib diisi"
                 }
+            } else {
+                errors["plant_type_$index"] = "Wajib pilih"
             }
         }
 
         if (input.harvestDetails.isEmpty()) {
-             return ValidationResult(successful = false, errorMessage = "Minimal isi satu data panen")
+             return ListValidationResult(successful = false, errorMessage = "Minimal isi satu data panen")
         }
-        input.harvestDetails.forEach { detail ->
-            if (detail.commodityId.isBlank()) {
-                return ValidationResult(false, "Komoditas wajib dipilih")
-            }
-            if (detail.harvestDate.isBlank()) {
-                return ValidationResult(false, "Tanggal panen wajib diisi")
-            }
+        input.harvestDetails.forEachIndexed { index, detail ->
+            if (detail.commodityId.isBlank()) errors["harvest_comm_$index"] ="Komoditas wajib dipilih"
+            if (detail.harvestDate.isBlank()) errors["harvest_date_$index"] ="Tanggal panen wajib diisi"
             if (!isValidNumber(detail.amount)) {
-                return ValidationResult(false, "Jumlah panen harus lebih besar dari 0")
+                errors["harvest_amount_$index"] ="Jumlah tanam wajib diisi"
             }
             if (!isValidNumber(detail.unitPrice)) {
-                return ValidationResult(false, "Harga satuan harus lebih dari 0")
+                errors["harvest_price_$index"] ="Harga satuan harus lebih dari 0"
             }
         }
 
-        return ValidationResult(successful = true)
+        return ListValidationResult(
+            successful = errors.isEmpty(),
+            fieldErrors = errors
+        )
     }
 
     private fun isValidNumber(value: String): Boolean {

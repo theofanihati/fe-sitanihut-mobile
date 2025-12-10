@@ -17,10 +17,14 @@ data class AddReportState(
     ),
     val plantTypes: List<String> = listOf("Semusim", "Tahunan"),
     val month: String = "",
+    val monthError: String? = null,
     val period: String = "",
+    val periodError: String? = null,
     val modal: String = "",
+    val modalError: String? = null,
     val farmerNotes: String = "",
     val nte: Double = 0.0,
+    val nteError: String? = null,
 
     val plantingDetails: List<PlantingDetailUiState> = emptyList(),
     val harvestDetails: List<HarvestDetailUiState> = emptyList(),
@@ -31,10 +35,14 @@ data class PlantingDetailUiState(
     val id: Long = System.currentTimeMillis(),
     val commodityId: String = "",
     val commodityName: String = "",
+    val commodityError: String? = null,
     val plantType: String = "",
     val plantDate: String = "",
+    val plantDateError: String? = null,
     val plantAge: String = "",
+    val plantAgeError: String? = null,
     val amount: String = "",
+    val amountError: String? = null,
     val unit: String = ""      // kg / batang, kan auto beb
 )
 
@@ -42,10 +50,15 @@ data class HarvestDetailUiState(
     val id: Long = System.currentTimeMillis(),
     val commodityId: String = "",
     val commodityName: String = "",
+    val commodityError: String? = null,
     val harvestDate: String = "",
+    val harvestDateError: String? = null,
     val unitPrice: String = "",
+    val unitPriceError: String? = null,
     val amount: String = "",
-    val totalPrice: Double = 0.0
+    val amountError: String? = null,
+    val totalPrice: Double = 0.0,
+    val totalPriceError: String? = null,
 )
 
 sealed class AddReportEvent {
