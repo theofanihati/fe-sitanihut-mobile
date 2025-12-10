@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "laporan")
 data class ReportEntity(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = false)
     val id: String,
     val userId: String,
     val period: Int,

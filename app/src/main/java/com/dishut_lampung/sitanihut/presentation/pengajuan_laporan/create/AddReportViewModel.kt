@@ -34,6 +34,7 @@ class AddReportViewModel @Inject constructor(
     init {
         loadCommodities()
         onEvent(AddReportEvent.OnAddPlantingDetail)
+        onEvent(AddReportEvent.OnAddHarvestDetail)
         generatePeriodList()
     }
 
@@ -195,6 +196,9 @@ class AddReportViewModel @Inject constructor(
 
             if (!validationResult.successful) {
                 val errors = validationResult.fieldErrors
+                android.util.Log.d("DEBUG_VALIDASI", "Validation Failed! Keys received: ${errors.keys}")
+                android.util.Log.d("DEBUG_VALIDASI", "Content: $errors")
+
                 _uiState.update { s ->
                     s.copy(
                         isLoading = false,

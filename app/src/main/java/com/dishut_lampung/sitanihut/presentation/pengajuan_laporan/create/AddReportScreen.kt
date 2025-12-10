@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -22,6 +23,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,6 +68,7 @@ private fun AddReportScreenPreview() {
         val state = AddReportState(
             monthList = listOf("Januari", "Februari", "Maret",
                 "April", "Mei", "Juni", "Juli", "Agustus", "September",),
+            isAjukan = false,
 
         )
 
@@ -237,13 +240,18 @@ fun AddReportScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OutlinedButton(
+                        enabled = !state.isLoading,
                         onClick = { onEvent(AddReportEvent.OnSubmit(isAjukan = false)) },
                         modifier = Modifier
                             .weight(1f)
                             .height(40.dp),
                         shape = MaterialTheme.shapes.extraLarge
                     ) {
-                        Text("Simpan")
+                        if (state.isLoading && !state.isAjukan) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        } else {
+                            Text("Simpan")
+                        }
                     }
 
                     Button(
@@ -254,7 +262,11 @@ fun AddReportScreen(
                         shape = MaterialTheme.shapes.extraLarge,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                     ) {
-                        Text("Ajukan")
+                        if (state.isLoading && state.isAjukan) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        } else {
+                            Text("Ajukan")
+                        }
                     }
                 }
 
@@ -362,7 +374,7 @@ fun PlantingItemCard(
                         onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(amount = amount)))
                     },
                     label = "Jumlah (${item.unit.ifEmpty { "-" }})",
-                    keyboardType = KeyboardType.Number,
+                    keyboardType = KeyboardType.Decimal,
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = "Contoh: 2"
                 )
@@ -374,7 +386,7 @@ fun PlantingItemCard(
                         onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(plantAge = age)))
                     },
                     label = "Usia Tanaman (Tahun)",
-                    keyboardType = KeyboardType.Number,
+                    keyboardType = KeyboardType.Decimal,
                     modifier = Modifier.fillMaxWidth(),
                     error = item.plantAgeError
                 )
@@ -385,7 +397,7 @@ fun PlantingItemCard(
                     },
                     asteriskAtEnd = true,
                     label = "Jumlah (${item.unit.ifEmpty { "-" }})",
-                    keyboardType = KeyboardType.Number,
+                    keyboardType = KeyboardType.Decimal,
                     modifier = Modifier.fillMaxWidth(),
                     error = item.amountError
                 )
@@ -465,7 +477,7 @@ fun HarvestItemCard(
                 },
                 label = "Jumlah (kg)",
                 asteriskAtEnd = true,
-                keyboardType = KeyboardType.Number,
+                keyboardType = KeyboardType.Decimal,
                 modifier = Modifier.fillMaxWidth(),
                 rounded = 40,
                 placeholder = "Contoh: 20",

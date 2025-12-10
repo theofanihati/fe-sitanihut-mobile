@@ -4,6 +4,7 @@ import com.dishut_lampung.sitanihut.domain.model.Commodity
 import java.io.File
 
 data class AddReportState(
+    val isAjukan: Boolean= false,
     val isLoading: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null,
