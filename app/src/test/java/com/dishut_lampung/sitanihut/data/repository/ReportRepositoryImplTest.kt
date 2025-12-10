@@ -12,15 +12,18 @@ import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.util.Resource
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -138,5 +141,141 @@ class ReportRepositoryImplTest {
         assertEquals("Gagal menyimpan data: Database Full", result.message)
         mockkStatic(WorkManager::class)
         unmockkStatic(WorkManager::class)
+    }
+
+    @Test
+    fun `getReportById should emit Success when data found`() = runTest {
+        val id = "123"
+        val dummyEntity = ReportEntity(
+            id = id,
+            userId = "user1",
+            period = 2024,
+            month = "Februari",
+            date = "2024-02-01",
+            nte = 100000.0,
+            status = "menunggu",
+            syncStatus = SyncStatus.SYNCED,
+            jsonPayload = null,
+            plantingDetailsJson = "[]",
+            harvestDetailsJson = "[]",
+            attachmentPaths = "",
+        )
+        every { reportDao.getReportByIdFlow(id=id) } returns flowOf(dummyEntity)
+
+        val result = repository.getReportById(id).first { it !is Resource.Loading }
+        assertTrue(result is Resource.Success)
+        assertNotNull(result.data)
+        assertEquals("Februari", result.data?.month)
+    }
+
+    @Test
+    fun `getReportById should emit Error when data not found`() = runTest {
+        val id = "999"
+        every { reportDao.getReportByIdFlow(id) } returns flowOf(null)
+
+        val result = repository.getReportById(id).first { it !is Resource.Loading }
+        assertTrue(result is Resource.Error)
+        assertEquals("Laporan tidak ditemukan", result.message)
+    }
+
+    @Test
+    fun `updateReport should keep PENDING_CREATE status when updating unsynced report`() = runTest {
+        val id = "123"
+        val oldEntity = ReportEntity(
+            id = id,
+            userId = "user1",
+            period = 2024,
+            month = "Januari",
+            date = "2024-01-01",
+            nte = 0.0,
+            status = "menunggu",
+            syncStatus = SyncStatus.PENDING_CREATE,
+            jsonPayload = null
+        )
+
+        val input = CreateReportInput(
+            month = "Januari",
+            period = 2024,
+            modal = "5000",
+            farmerNotes = "Catatan",
+            nte = 100000.0,
+            isAjukan = false,
+            attachments = emptyList(),
+            plantingDetails = emptyList(),
+            harvestDetails = emptyList()
+        )
+
+        coEvery { reportDao.getReportById(id) } returns oldEntity
+        coEvery { reportDao.upsertAll(any()) } just Runs
+
+        val result = repository.updateReport(id, input)
+        assertTrue(result is Resource.Success)
+
+        coVerify {
+            reportDao.upsertAll(withArg { list ->
+                val entity = list.first()
+
+                assertEquals(SyncStatus.PENDING_CREATE, entity.syncStatus)
+                assertNotNull(entity.jsonPayload)
+                assertEquals("Catatan", entity.farmerNotes)
+            })
+        }
+    }
+
+    @Test
+    fun `updateReport should change status to PENDING_UPDATE when updating synced report`() = runTest {
+        val id = "123"
+        val oldEntity = ReportEntity(
+            id = id,
+            userId = "user1",
+            period = 2024,
+            month = "Januari",
+            date = "2024-01-01",
+            nte = 100000.0,
+            status = "menunggu",
+            syncStatus = SyncStatus.SYNCED,
+            jsonPayload = null
+        )
+        val input = CreateReportInput(
+            month = "Februari",
+            period = 2024,
+            modal = "6000",
+            farmerNotes = "Edit Catatan",
+            nte = 200000.0,
+            isAjukan = false,
+            attachments = emptyList(),
+            plantingDetails = emptyList(),
+            harvestDetails = emptyList()
+        )
+
+        coEvery { reportDao.getReportById(id) } returns oldEntity
+        coEvery { reportDao.upsertAll(any()) } just Runs
+
+        val result = repository.updateReport(id, input)
+
+        assertTrue(result is Resource.Success)
+
+        coVerify {
+            reportDao.upsertAll(withArg { list ->
+                val entity = list.first()
+                assertEquals(SyncStatus.PENDING_UPDATE, entity.syncStatus)
+                assertNotNull(entity.jsonPayload)
+                assertEquals("Februari", entity.month)
+            })
+        }
+    }
+
+    @Test
+    fun `updateReport should return Error when report not found`() = runTest {
+        val id = "999"
+        val input = mockk<CreateReportInput>(relaxed = true)
+
+        coEvery { reportDao.getReportById(id) } returns null
+        val result = repository.updateReport(id, input)
+
+        assertTrue(result is Resource.Error)
+        assertEquals("Laporan tidak ditemukan", result.message)
+
+        coVerify(exactly = 0) { reportDao.upsertAll(any()) }
     }
 }

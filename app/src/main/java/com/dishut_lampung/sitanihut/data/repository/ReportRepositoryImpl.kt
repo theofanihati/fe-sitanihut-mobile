@@ -15,20 +15,24 @@ import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
 import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
+import com.dishut_lampung.sitanihut.data.mapper.toCreateReportInput
 import com.dishut_lampung.sitanihut.data.mapper.toDbValue
 import com.dishut_lampung.sitanihut.data.mapper.toDomain
 import com.dishut_lampung.sitanihut.data.mapper.toDto
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
+import com.dishut_lampung.sitanihut.data.remote.dto.ReportRequestDto
 import com.dishut_lampung.sitanihut.data.worker.ReportSyncWorker
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import com.dishut_lampung.sitanihut.util.Resource
+import com.dishut_lampung.sitanihut.util.getCurrentDate
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -152,11 +156,11 @@ class ReportRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getReportById(id: String): Flow<Resource<Report>> {
-        TODO("Not yet implemented")
+    override fun getReportById(id: String): Flow<Resource<CreateReportInput>> {
+        return TODO()
     }
 
     override suspend fun updateReport(id: String, input: CreateReportInput): Resource<Boolean> {
-        TODO("Not yet implemented")
+        return TODO()
     }
 }
