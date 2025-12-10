@@ -10,6 +10,12 @@ class UpdateReportUseCase @Inject constructor(
     private val validator: ValidateReportInputUseCase
 ) {
     suspend operator fun invoke(id: String, input: CreateReportInput): Resource<Boolean> {
-        return TODO()
+        val validationResult = validator.execute(input)
+
+        if (!validationResult.successful) {
+            return Resource.Error(validationResult.errorMessage ?: "Mohon periksa inputan anda")
+        }
+
+        return repository.updateReport(id, input)
     }
 }

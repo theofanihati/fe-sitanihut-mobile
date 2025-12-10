@@ -151,4 +151,12 @@ class ReportRepositoryImpl @Inject constructor(
             Resource.Error("Gagal menyimpan data: ${e.message}")
         }
     }
+
+    override fun getReportById(id: String): Flow<Resource<Report>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateReport(id: String, input: CreateReportInput): Resource<Boolean> {
+        TODO("Not yet implemented")
+    }
 }
