@@ -13,7 +13,7 @@ data class ReportEntity(
     val date: String,
     val nte: Double,
     val status: String,
-    val capital: Double? = null,
+    val modal: Double? = null,
     val farmerNotes: String? = null,
     val jsonPayload: String? = null,
     val plantingDetailsJson: String? = null,

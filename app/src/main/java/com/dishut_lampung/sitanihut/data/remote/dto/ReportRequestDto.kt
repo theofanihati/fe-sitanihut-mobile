@@ -8,7 +8,7 @@ data class ReportRequestDto(
     @SerializedName("periode") val period: Int,
     @SerializedName("bulan") val month: String,
     @SerializedName("modal") val modal: Double,
-    @SerializedName("nte") val totalNte: Double,
+    @SerializedName("nte") val nte: Double,
     @SerializedName("catatan_petani") val farmerNotes: String,
     @SerializedName("status") val status: String,
     @SerializedName("masa_tanam") val plantingDetails: List<PlantingRequestDto>,
