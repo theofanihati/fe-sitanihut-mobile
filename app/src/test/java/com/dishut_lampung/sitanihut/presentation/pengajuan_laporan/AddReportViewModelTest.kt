@@ -5,6 +5,7 @@ import com.dishut_lampung.sitanihut.domain.model.Commodity
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.GetCommoditiesUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.CreateReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.ValidateReportInputUseCase
+import com.dishut_lampung.sitanihut.domain.validator.ListValidationResult
 import com.dishut_lampung.sitanihut.domain.validator.ValidationResult
 import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create.AddReportEvent
 import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create.AddReportViewModel
@@ -109,7 +110,7 @@ class AddReportViewModelTest {
 
     @Test
     fun `OnSubmit should show error if validation fails`() = runTest {
-        every { validateReportInputUseCase.execute(any()) } returns ValidationResult(false, "Form tidak valid")
+        every { validateReportInputUseCase.execute(any()) } returns ListValidationResult(false, "Form tidak valid")
 
         viewModel.onEvent(AddReportEvent.OnSubmit(isAjukan = true))
         advanceUntilIdle()
@@ -121,7 +122,7 @@ class AddReportViewModelTest {
 
     @Test
     fun `OnSubmit should call CreateReportUseCase if validation passes`() = runTest {
-        every { validateReportInputUseCase.execute(any()) } returns ValidationResult(true)
+        every { validateReportInputUseCase.execute(any()) } returns ListValidationResult(true)
         coEvery { createReportUseCase(any()) } returns Resource.Success(Unit)
 
         viewModel.onEvent(AddReportEvent.OnModalChange("5000"))
