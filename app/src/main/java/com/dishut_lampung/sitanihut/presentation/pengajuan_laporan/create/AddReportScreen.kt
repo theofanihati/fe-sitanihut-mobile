@@ -324,6 +324,7 @@ fun PlantingItemCard(
                 CustomSearchableOutlinedDropdown(
                     modifier = Modifier.weight(1f),
                     value = item.commodityName,
+                    asteriskAtEnd = true,
                     onValueChange = { name ->
                         onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(commodityName = name)))
                     },
@@ -343,6 +344,7 @@ fun PlantingItemCard(
                     label = "Jenis Tanaman",
                     options = plantTypes,
                     modifier = Modifier.weight(1f),
+                    error = item.plantTypeError
                 )
             }
 
@@ -463,6 +465,7 @@ fun HarvestItemCard(
                 },
                 options = commodityList,
                 label = "Komoditas",
+                asteriskAtEnd = true,
                 modifier = Modifier.fillMaxWidth(),
                 rounded = 40,
                 errorMessage = item.commodityError

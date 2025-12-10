@@ -38,6 +38,7 @@ data class PlantingDetailUiState(
     val commodityName: String = "",
     val commodityError: String? = null,
     val plantType: String = "",
+    val plantTypeError: String? = null,
     val plantDate: String = "",
     val plantDateError: String? = null,
     val plantAge: String = "",

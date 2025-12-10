@@ -208,6 +208,8 @@ class AddReportViewModel @Inject constructor(
                         modalError = errors["modal"],
                         plantingDetails = s.plantingDetails.mapIndexed { i, item ->
                             item.copy(
+                                commodityError = errors["plant_comm_$i"],
+                                plantTypeError = errors["plant_type_$i"],
                                 amountError = errors["plant_amount_$i"],
                                 plantAgeError = errors["plant_age_$i"],
                                 plantDateError = errors["plant_date_$i"],
@@ -215,6 +217,7 @@ class AddReportViewModel @Inject constructor(
                         },
                         harvestDetails = s.harvestDetails.mapIndexed { i, item ->
                             item.copy(
+                                commodityError = errors["harvest_comm_$i"],
                                 amountError = errors["harvest_amount_$i"],
                                 unitPriceError = errors["harvest_price_$i"],
                                 harvestDateError = errors["harvest_date_$i"]
