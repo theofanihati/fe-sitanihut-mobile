@@ -1,9 +1,14 @@
 package com.dishut_lampung.sitanihut.presentation.pengajuan_laporan
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.domain.model.Commodity
+import com.dishut_lampung.sitanihut.domain.model.ReportDetail
+import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.GetCommoditiesUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.CreateReportUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.report.UpdateReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.ValidateReportInputUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ListValidationResult
 import com.dishut_lampung.sitanihut.domain.validator.ValidationResult
@@ -34,17 +39,28 @@ class AddReportViewModelTest {
     private val getCommoditiesUseCase: GetCommoditiesUseCase = mockk()
     private val createReportUseCase: CreateReportUseCase = mockk()
     private val validateReportInputUseCase: ValidateReportInputUseCase = mockk()
-
-    private lateinit var viewModel: AddReportViewModel
+    private val getReportDetailUseCase: GetReportDetailUseCase = mockk()
+    private val updateReportUseCase: UpdateReportUseCase = mockk()
+    private val savedStateHandle: SavedStateHandle = mockk()
 
     @Before
     fun setUp() {
         every { getCommoditiesUseCase(any()) } returns flowOf(Resource.Success(emptyList()))
+        every { savedStateHandle.get<String>("reportId") } returns null
+    }
 
-        viewModel = AddReportViewModel(
+    private fun createViewModel(
+        customSavedState: SavedStateHandle? = null
+    ): AddReportViewModel {
+        val stateHandle = customSavedState ?: savedStateHandle
+
+        return AddReportViewModel(
             getCommoditiesUseCase,
             createReportUseCase,
-            validateReportInputUseCase
+            validateReportInputUseCase,
+            getReportDetailUseCase,
+            updateReportUseCase,
+            stateHandle
         )
     }
 
@@ -52,8 +68,8 @@ class AddReportViewModelTest {
     fun `init should load commodities, generate years, and add default planting item`() = runTest {
         val commodities = listOf(Commodity("1", "jg-01", "Jagung", "buah buahan"))
         every { getCommoditiesUseCase("") } returns flowOf(Resource.Success(commodities))
-        viewModel = AddReportViewModel(getCommoditiesUseCase, createReportUseCase, validateReportInputUseCase)
 
+        var viewModel = createViewModel()
         viewModel.uiState.test {
             val state = awaitItem()
             assertEquals(commodities, state.commodityList)
@@ -66,13 +82,14 @@ class AddReportViewModelTest {
 
     @Test
     fun `OnModalChange should update modal state`() = runTest {
+        var viewModel = createViewModel()
         viewModel.onEvent(AddReportEvent.OnModalChange("1.000.000"))
-
         assertEquals("1.000.000", viewModel.uiState.value.modal)
     }
 
     @Test
     fun `OnAddPlantingDetail should add new item to list`() = runTest {
+        var viewModel = createViewModel()
         assertEquals(1, viewModel.uiState.value.plantingDetails.size)
 
         viewModel.onEvent(AddReportEvent.OnAddPlantingDetail)
@@ -80,7 +97,20 @@ class AddReportViewModelTest {
     }
 
     @Test
+    fun `OnRemovePlantingDetail should remove item at specific index`() = runTest {
+        var viewModel = createViewModel()
+
+        viewModel.onEvent(AddReportEvent.OnAddPlantingDetail)
+        viewModel.onEvent(AddReportEvent.OnAddPlantingDetail)
+        assertEquals(3, viewModel.uiState.value.plantingDetails.size)
+
+        viewModel.onEvent(AddReportEvent.OnRemovePlantingDetail(1))
+        assertEquals(2, viewModel.uiState.value.plantingDetails.size)
+    }
+
+    @Test
     fun `OnPlantingItemChange should update item and auto-set unit`() = runTest {
+        var viewModel = createViewModel()
         val initialItem = viewModel.uiState.value.plantingDetails[0]
         val updatedItem = initialItem.copy(plantType = "tahunan", amount = "100")
         viewModel.onEvent(AddReportEvent.OnPlantingItemChange(0, updatedItem))
@@ -91,7 +121,38 @@ class AddReportViewModelTest {
     }
 
     @Test
+    fun `OnPlantingItemChange with type Semusim and Date should calculate plant age`() = runTest {
+        var viewModel = createViewModel()
+        val dateString = "01/01/2020" // Tanggal lampau agar umur > 0
+        val item = com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create.PlantingDetailUiState(
+            plantType = "semusim",
+            plantDate = dateString,
+            amount = "10"
+        )
+
+        // Act
+        viewModel.onEvent(AddReportEvent.OnPlantingItemChange(0, item))
+
+        // Assert
+        val updatedItem = viewModel.uiState.value.plantingDetails[0]
+        val age = updatedItem.plantAge.toDoubleOrNull() ?: 0.0
+
+        assertEquals("kg", updatedItem.unit) // Semusim unit harus kg
+        assert(age > 1.0) // Pastikan umur terhitung (lebih dari 1 tahun karena 2020)
+    }
+
+    @Test
+    fun `OnAddHarvestDetail should add new item to list`() = runTest {
+        var viewModel = createViewModel()
+        assertEquals(1, viewModel.uiState.value.harvestDetails.size)
+
+        viewModel.onEvent(AddReportEvent.OnAddHarvestDetail)
+        assertEquals(2, viewModel.uiState.value.harvestDetails.size)
+    }
+
+    @Test
     fun `OnHarvestItemChange should calculate total price per item and total NTE`() = runTest {
+        var viewModel = createViewModel()
         viewModel.onEvent(AddReportEvent.OnAddHarvestDetail)
         viewModel.onEvent(AddReportEvent.OnAddHarvestDetail)
 
@@ -109,33 +170,110 @@ class AddReportViewModelTest {
     }
 
     @Test
-    fun `OnSubmit should show error if validation fails`() = runTest {
-        every { validateReportInputUseCase.execute(any()) } returns ListValidationResult(false, "Form tidak valid")
+    fun `OnRemoveHarvestDetail should remove item and recalculate NTE`() = runTest {
+        var viewModel = createViewModel()
+        viewModel.onEvent(AddReportEvent.OnAddHarvestDetail)
+        viewModel.onEvent(AddReportEvent.OnAddHarvestDetail)
 
-        viewModel.onEvent(AddReportEvent.OnSubmit(isAjukan = true))
-        advanceUntilIdle()
+        viewModel.onEvent(AddReportEvent.OnHarvestItemChange(0,
+            HarvestDetailUiState(unitPrice = "5000", amount = "10")
+        ))
+        viewModel.onEvent(AddReportEvent.OnHarvestItemChange(1,
+            HarvestDetailUiState(unitPrice = "2000", amount = "10")
+        ))
 
-        assertFalse(viewModel.uiState.value.isLoading)
-        assertEquals("Form tidak valid", viewModel.uiState.value.error)
-        coVerify(exactly = 0) { createReportUseCase(any()) }
+        assertEquals(70000.0, viewModel.uiState.value.nte, 0.0)
+
+        viewModel.onEvent(AddReportEvent.OnRemoveHarvestDetail(0))
+        assertEquals(2, viewModel.uiState.value.harvestDetails.size)
+        assertEquals(20000.0, viewModel.uiState.value.nte, 0.0)
     }
 
     @Test
-    fun `OnSubmit should call CreateReportUseCase if validation passes`() = runTest {
+    fun `OnSubmit should fail validation and map errors to specific fields`() = runTest {
+        var viewModel = createViewModel()
+        val fieldErrors = mapOf(
+            "modal" to "Modal harus angka",
+            "plant_amount_0" to "Jumlah wajib diisi"
+        )
+
+        every { validateReportInputUseCase.execute(any()) } returns
+                ListValidationResult(successful = false, errorMessage = "Cek Input", fieldErrors = fieldErrors)
+
+        viewModel.onEvent(AddReportEvent.OnSubmit(true))
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+
+        assertFalse(state.isLoading)
+        assertEquals("Cek Input", state.error)
+        coVerify(exactly = 0) { createReportUseCase(any()) }
+
+        assertEquals("Modal harus angka", state.modalError)
+        assertEquals("Jumlah wajib diisi", state.plantingDetails[0].amountError)
+    }
+
+    @Test
+    fun `OnSubmit in Create Mode should call CreateReportUseCase if validation passes`() = runTest {
         every { validateReportInputUseCase.execute(any()) } returns ListValidationResult(true)
         coEvery { createReportUseCase(any()) } returns Resource.Success(Unit)
 
+        var viewModel = createViewModel()
         viewModel.onEvent(AddReportEvent.OnModalChange("5000"))
         viewModel.onEvent(AddReportEvent.OnSubmit(isAjukan = true))
         advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.isLoading)
-        assertEquals("Laporan berhasil disimpan!", viewModel.uiState.value.successMessage)
+        assertEquals("Berhasil disimpan!", viewModel.uiState.value.successMessage)
 
         coVerify(exactly = 1) {
             createReportUseCase(match { input ->
                 input.modal == "5000" && input.isAjukan
             })
         }
+    }
+
+    @Test
+    fun `init in Edit Mode with reportId should load existing report data`() = runTest {
+        val reportId = "report-123"
+        val editStateHandle = SavedStateHandle(mapOf("reportId" to reportId))
+
+        val dummy = ReportDetail(
+            id = reportId,
+            modal = "999",
+            month = "Januari",
+            period = 2024,
+            farmerNotes = "Catatan",
+            nte = 0.0,
+            status = ReportStatus.DRAFT,
+            attachments = emptyList(),
+            plantingDetails = emptyList(),
+            harvestDetails = emptyList()
+        )
+
+        every { getReportDetailUseCase(reportId) } returns flowOf(Resource.Success(dummy))
+
+        val viewModel = createViewModel(customSavedState = editStateHandle)
+        advanceUntilIdle()
+        coVerify { getReportDetailUseCase(reportId) }
+        assertEquals("999", viewModel.uiState.value.modal)
+    }
+
+    @Test
+    fun `OnSubmit in Edit Mode should call UpdateReportUseCase`() = runTest {
+        val reportId = "report-123"
+        val editStateHandle = SavedStateHandle(mapOf("reportId" to reportId))
+        every { getReportDetailUseCase(reportId) } returns flowOf(Resource.Success(mockk(relaxed = true)))
+        every { validateReportInputUseCase.execute(any()) } returns ListValidationResult(true)
+        coEvery { updateReportUseCase(any(), any()) } returns Resource.Success(true)
+
+        val viewModel = createViewModel(customSavedState = editStateHandle)
+        advanceUntilIdle()
+
+        viewModel.onEvent(AddReportEvent.OnSubmit(true))
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { updateReportUseCase(eq(reportId), any()) }
+        assertEquals("Perubahan disimpan!", viewModel.uiState.value.successMessage)
     }
 }

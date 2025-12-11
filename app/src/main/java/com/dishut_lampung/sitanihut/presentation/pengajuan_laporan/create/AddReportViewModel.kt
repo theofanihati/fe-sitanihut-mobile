@@ -1,5 +1,6 @@
 package com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
@@ -7,6 +8,8 @@ import com.dishut_lampung.sitanihut.domain.model.MasaPanen
 import com.dishut_lampung.sitanihut.domain.model.MasaTanam
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.GetCommoditiesUseCase // Reuse yg ada
 import com.dishut_lampung.sitanihut.domain.usecase.report.CreateReportUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.report.UpdateReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.ValidateReportInputUseCase
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,17 +28,20 @@ import javax.inject.Inject
 class AddReportViewModel @Inject constructor(
     private val getCommoditiesUseCase: GetCommoditiesUseCase,
     private val createReportUseCase: CreateReportUseCase,
-    private val validateReportInputUseCase: ValidateReportInputUseCase
+    private val validateReportInputUseCase: ValidateReportInputUseCase,
+    private val getReportDetailUseCase: GetReportDetailUseCase,
+    private val updateReportUseCase: UpdateReportUseCase,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-
+    private var currentReportId: String? = null
     private val _uiState = MutableStateFlow(AddReportState())
     val uiState = _uiState.asStateFlow()
 
     init {
         loadCommodities()
+        generatePeriodList()
         onEvent(AddReportEvent.OnAddPlantingDetail)
         onEvent(AddReportEvent.OnAddHarvestDetail)
-        generatePeriodList()
     }
 
     fun onEvent(event: AddReportEvent) {
@@ -96,7 +102,8 @@ class AddReportViewModel @Inject constructor(
             }
             is AddReportEvent.OnRemoveHarvestDetail -> {
                 val newHarvestList = _uiState.value.harvestDetails.toMutableList().apply { removeAt(event.index) }
-                _uiState.update { it.copy(harvestDetails = newHarvestList) }
+                val newNte = newHarvestList.sumOf { it.totalPrice }
+                _uiState.update { it.copy(harvestDetails = newHarvestList, nte = newNte) }
             }
             is AddReportEvent.OnHarvestItemChange -> {
                 val newList = _uiState.value.harvestDetails.toMutableList()
@@ -205,8 +212,8 @@ class AddReportViewModel @Inject constructor(
 
             if (!validationResult.successful) {
                 val errors = validationResult.fieldErrors
-                android.util.Log.d("DEBUG_VALIDASI", "Validation Failed! Keys received: ${errors.keys}")
-                android.util.Log.d("DEBUG_VALIDASI", "Content: $errors")
+//                android.util.Log.d("DEBUG_VALIDASI", "Validation Failed! Keys received: ${errors.keys}")
+//                android.util.Log.d("DEBUG_VALIDASI", "Content: $errors")
 
                 _uiState.update { s ->
                     s.copy(
@@ -260,10 +267,10 @@ class AddReportViewModel @Inject constructor(
             isAjukan = isAjukan,
             attachments = s.attachments,
             plantingDetails = s.plantingDetails.map {
-                MasaTanam(it.commodityId, it.plantType, it.plantDate, it.plantAge.toDoubleOrNull() ?: 0.0, it.amount)
+                MasaTanam(it.commodityId, it.commodityName, it.plantType, it.plantDate, it.plantAge.toDoubleOrNull() ?: 0.0, it.amount)
             },
             harvestDetails = s.harvestDetails.map {
-                MasaPanen(it.harvestDate, it.commodityId, it.unitPrice, it.amount)
+                MasaPanen(it.harvestDate, it.commodityName, it.commodityId, it.unitPrice, it.amount)
             }
         )
     }
