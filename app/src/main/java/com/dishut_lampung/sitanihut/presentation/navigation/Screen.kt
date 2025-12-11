@@ -29,9 +29,17 @@ sealed class Screen(val route: String) {
         data object ProfilePetani : Petani("profile_petani_screen")
 
         object ReportSubmission : Petani("report-submission")
-        object AddReportSubmission : Petani("report-submission-add")
+        object ReportForm : Petani("report_form?reportId={reportId}") {
+            fun createRoute(reportId: String? = null): String {
+                return if (reportId != null) {
+                    "report_form?reportId=$reportId"
+                } else {
+                    "report_form"
+                }
+            }
+        }
+
         data class DetailReportSubmission(val id : String) : Petani("report-submission-detail/$id")
-        data class EditReportSubmission(val id : String) : Petani("report-submission-edit/$id")
     }
 
     sealed class  Penyuluh(route: String) : Screen(route) {

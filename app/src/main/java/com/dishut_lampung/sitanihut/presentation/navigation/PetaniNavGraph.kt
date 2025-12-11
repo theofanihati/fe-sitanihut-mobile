@@ -3,7 +3,9 @@ package com.dishut_lampung.sitanihut.presentation.navigation
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.dishut_lampung.sitanihut.presentation.commodity.CommodityRoute
 import com.dishut_lampung.sitanihut.presentation.home_page.petani.HomePagePetaniRoute
@@ -54,21 +56,31 @@ fun NavGraphBuilder.petaniNavGraph(
         composable(route = Screen.Petani.ReportSubmission.route){
             PengajuanLaporanRoute(
                 onNavigateToAddReport = {
-                    navController.navigateSingleTop("report-submission-add")
+                    navController.navigateSingleTop(
+                        Screen.Petani.ReportForm.createRoute(reportId = null))
                 },
                 onNavigateToDetail = {
                     navController.navigateSingleTop("report-submission-detail/$id")
                 },
-                onNavigateToEdit = {
-                    navController.navigateSingleTop("report-submission-edit/$id")
+                onNavigateToEdit = { id ->
+                    navController.navigateSingleTop(
+                        Screen.Petani.ReportForm.createRoute(reportId = id)
+                    )
                 },
             )
         }
-        composable(route = Screen.Petani.AddReportSubmission.route){
-            AddReportRoute(
-                onNavigateUp = {
-                    navController.navigateSingleTop("report-submission")
+        composable(
+            route = Screen.Petani.ReportForm.route,
+            arguments = listOf(
+                navArgument("reportId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
                 }
+            )
+        ){
+            AddReportRoute(
+                onNavigateUp = { navController.popBackStack() }
             )
         }
 

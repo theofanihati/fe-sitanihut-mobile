@@ -44,7 +44,7 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         Screen.Contact.route,
         Screen.DataCommodity.route,
         Screen.Petani.ReportSubmission.route,
-        Screen.Petani.AddReportSubmission.route-> ScaffoldConfig(
+        Screen.Petani.ReportForm.route-> ScaffoldConfig(
             showMainNav = false,
             showBackNav = true,
             topBarTheme = TopBarTheme.LIGHT_BACKGROUND
