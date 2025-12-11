@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create
 
 import com.dishut_lampung.sitanihut.domain.model.Commodity
+import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
 import java.io.File
 
 data class AddReportState(
@@ -31,7 +32,7 @@ data class AddReportState(
 
     val plantingDetails: List<PlantingDetailUiState> = emptyList(),
     val harvestDetails: List<HarvestDetailUiState> = emptyList(),
-    val attachments: List<String> = emptyList()
+    val attachments: List<ReportAttachment> = emptyList()
 )
 
 data class PlantingDetailUiState(

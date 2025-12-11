@@ -18,7 +18,7 @@ data class ReportEntity(
     val jsonPayload: String? = null,
     val plantingDetailsJson: String? = null,
     val harvestDetailsJson: String? = null,
-    val attachmentPaths: String? = null,
+    val attachmentsJson: String? = null,
     val syncStatus: SyncStatus = SyncStatus.SYNCED,
 )
 

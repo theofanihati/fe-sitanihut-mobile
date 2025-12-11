@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.MasaPanen
 import com.dishut_lampung.sitanihut.domain.model.MasaTanam
+import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.GetCommoditiesUseCase // Reuse yg ada
 import com.dishut_lampung.sitanihut.domain.usecase.report.CreateReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
@@ -143,24 +144,21 @@ class AddReportViewModel @Inject constructor(
             }
 
             is AddReportEvent.OnAddAttachment -> {
-                val currentFiles = _uiState.value.attachments
-                val newFiles = currentFiles + event.filePath
-                _uiState.update { it.copy(attachments = newFiles) }
+                val currentList = _uiState.value.attachments.toMutableList()
+                currentList.add(
+                    ReportAttachment(
+                        id = null,
+                        filePath = event.filePath,
+                        isLocal = true
+                    )
+                )
+                _uiState.update { it.copy(attachments = currentList) }
             }
             is AddReportEvent.OnRemoveAttachment -> {
-                val currentFiles = _uiState.value.attachments.toMutableList()
-                if (event.index in currentFiles.indices) {
-                    val pathToRemove = currentFiles[event.index]
-                    try {
-                        val file = java.io.File(pathToRemove)
-                        if (file.exists()) {
-                            file.delete()
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                    currentFiles.removeAt(event.index)
-                    _uiState.update { it.copy(attachments = currentFiles) }
+                val currentList = _uiState.value.attachments.toMutableList()
+                if (event.index in currentList.indices) {
+                    currentList.removeAt(event.index)
+                    _uiState.update { it.copy(attachments = currentList) }
                 }
             }
             is AddReportEvent.OnShowConfirmDialog -> {
@@ -356,6 +354,13 @@ class AddReportViewModel @Inject constructor(
 
     private fun mapStateToInput(isAjukan: Boolean): CreateReportInput {
         val s = _uiState.value
+        val newFiles = s.attachments
+            .filter { it.isLocal }
+            .map { it.filePath }
+        val existingIds = s.attachments
+            .filter { !it.isLocal && it.id != null }
+            .map { it.id!! }
+
         return CreateReportInput(
             month = s.month,
             period = s.period.toIntOrNull() ?: 0,
@@ -363,7 +368,8 @@ class AddReportViewModel @Inject constructor(
             farmerNotes = s.farmerNotes,
             nte = s.nte,
             isAjukan = isAjukan,
-            attachments = s.attachments,
+            newAttachments = newFiles,
+            existingAttachmentIds = existingIds,
             plantingDetails = s.plantingDetails.map {
                 val cleanAmount = it.amount.replace(".", "").toLongOrNull() ?: 0L
                 MasaTanam(

@@ -19,7 +19,7 @@ data class ReportDetail(
     val farmerNotes: String,
     val nte: Double,
     val status: ReportStatus,
-    val attachments: List<String>,
+    val attachments: List<ReportAttachment>,
     val plantingDetails: List<MasaTanam>,
     val harvestDetails: List<MasaPanen>,
 )
@@ -31,7 +31,9 @@ data class CreateReportInput(
     val plantingDetails: List<MasaTanam>,
     val harvestDetails: List<MasaPanen>,
     val farmerNotes: String,
-    val attachments: List<String>,
+//    val attachments: List<String>,
+    val newAttachments: List<String>,
+    val existingAttachmentIds: List<String>,
     val isAjukan: Boolean,
     val nte: Double,
 )
@@ -51,4 +53,11 @@ data class MasaPanen(
     val commodityName: String = "",
     val unitPrice: String,
     val amount: String,
+)
+
+data class ReportAttachment(
+    val id: String? = null,
+    val filePath: String,
+    val isLocal: Boolean,
+    val fileName: String? = null
 )

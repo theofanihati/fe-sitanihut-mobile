@@ -11,8 +11,10 @@ import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.ConflictResponseDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportRequestDto
+import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
 import com.dishut_lampung.sitanihut.util.getMimeType
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -52,16 +54,19 @@ class ReportSyncWorker @AssistedInject constructor(
         if (report.jsonPayload == null) return false
         val dataPart = report.jsonPayload.toRequestBody("application/json".toMediaTypeOrNull())
 
-        val attachmentParts = report.attachmentPaths?.split(",")
-            ?.filter { it.isNotEmpty() }
-            ?.mapNotNull { path ->
-                val file = File(path)
+        val attachmentListType = object : TypeToken<List<ReportAttachment>>() {}.type
+        val attachments: List<ReportAttachment> = Gson().fromJson(report.attachmentsJson, attachmentListType) ?: emptyList()
+        val attachmentParts = attachments
+            .filter { it.isLocal } // Ambil file lokal
+            .mapNotNull { item ->
+                val file = File(item.filePath)
                 if (file.exists()) {
                     val mimeType = getMimeType(file)
                     val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())
+                    // Key disesuaikan dengan backend Create: biasanya "lampiran[]"
                     MultipartBody.Part.createFormData("lampiran[]", file.name, requestFile)
                 } else null
-            } ?: emptyList()
+            }
 
             try {
                 val response = apiService.createReport(
@@ -159,13 +164,32 @@ class ReportSyncWorker @AssistedInject constructor(
                 addText("masa_panen[$i][harga_satuan]", item.unitPrice)
             }
 
-            report.attachmentPaths?.split(",")?.filter { it.isNotEmpty() }?.forEach { path ->
-                val file = File(path)
+            val attachmentListType = object : TypeToken<List<ReportAttachment>>() {}.type
+            val attachments: List<ReportAttachment> = Gson().fromJson(report.attachmentsJson, attachmentListType) ?: emptyList()
+            val existingIds = attachments.filter { !it.isLocal && !it.id.isNullOrEmpty() }.map { it.id!! }
+
+            if (existingIds.isEmpty() && attachments.none { it.isLocal }) {
+                addText("lampiran_existing[]", "")
+            } else {
+                existingIds.forEach { id ->
+                    addText("lampiran_existing[]", id)
+                }
+            }
+            attachments.filter { it.isLocal }.forEach { item ->
+                val file = File(item.filePath)
                 if (file.exists()) {
                     val requestFile = file.asRequestBody(getMimeType(file).toMediaTypeOrNull())
                     parts.add(MultipartBody.Part.createFormData("lampiran_new[]", file.name, requestFile))
                 }
             }
+
+//            report.attachmentPaths?.split(",")?.filter { it.isNotEmpty() }?.forEach { path ->
+//                val file = File(path)
+//                if (file.exists()) {
+//                    val requestFile = file.asRequestBody(getMimeType(file).toMediaTypeOrNull())
+//                    parts.add(MultipartBody.Part.createFormData("lampiran_new[]", file.name, requestFile))
+//                }
+//            }
 
             val response = apiService.updateReport(report.id, parts)
             if (response.isSuccessful) {

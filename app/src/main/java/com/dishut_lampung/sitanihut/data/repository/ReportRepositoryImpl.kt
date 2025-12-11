@@ -16,7 +16,7 @@ import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
 import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
-import com.dishut_lampung.sitanihut.data.mapper.toCreateReportInput
+//import com.dishut_lampung.sitanihut.data.mapper.toCreateReportInput
 import com.dishut_lampung.sitanihut.data.mapper.toDbValue
 import com.dishut_lampung.sitanihut.data.mapper.toDomain
 import com.dishut_lampung.sitanihut.data.mapper.toDto
@@ -28,6 +28,7 @@ import com.dishut_lampung.sitanihut.data.remote.dto.ReportRequestDto
 import com.dishut_lampung.sitanihut.data.worker.ReportSyncWorker
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.Report
+import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
 import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
@@ -136,7 +137,15 @@ class ReportRepositoryImpl @Inject constructor(
         val plantingJsonLocal = gson.toJson(input.plantingDetails)
         val harvestJsonLocal = gson.toJson(input.harvestDetails)
 
-        val filePathsString = input.attachments.joinToString(",")
+        val attachmentObjects = input.newAttachments.map { path ->
+            ReportAttachment(
+                id = null,
+                filePath = path,
+                isLocal = true
+            )
+        }
+        val attachmentsJsonString = gson.toJson(attachmentObjects)
+
         val currentUserId = userPreferences.userId.first() ?: ""
 
         val newReport = ReportEntity(
@@ -157,7 +166,7 @@ class ReportRepositoryImpl @Inject constructor(
             syncStatus = SyncStatus.PENDING_CREATE,
 
             jsonPayload = jsonPayloadString,
-            attachmentPaths = filePathsString
+            attachmentsJson = attachmentsJsonString
         )
         return try {
             reportDao.upsertAll(listOf(newReport))
@@ -242,6 +251,16 @@ class ReportRepositoryImpl @Inject constructor(
             val plantingJsonForEntity = Gson().toJson(input.plantingDetails)
             val harvestJsonForEntity = Gson().toJson(input.harvestDetails)
 
+
+            val attachmentsForEntity = mutableListOf<ReportAttachment>()
+            input.existingAttachmentIds.forEach { id ->
+                attachmentsForEntity.add(ReportAttachment(id = id, filePath = "", isLocal = false))
+            }
+            input.newAttachments.forEach { path ->
+                attachmentsForEntity.add(ReportAttachment(id = null, filePath = path, isLocal = true))
+            }
+            val attachmentsJsonString = Gson().toJson(attachmentsForEntity)
+
             // room db update
             val updatedEntity = oldReport.copy(
                 period = input.period,
@@ -249,7 +268,7 @@ class ReportRepositoryImpl @Inject constructor(
                 modal = input.modal.replace(".", "").toDoubleOrNull(),
                 farmerNotes = input.farmerNotes,
                 nte = input.nte,
-                attachmentPaths = input.attachments.joinToString(","),
+                attachmentsJson = attachmentsJsonString,
                 status = statusLaporan,
                 jsonPayload = jsonPayload,
                 plantingDetailsJson = plantingJsonForEntity,

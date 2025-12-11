@@ -21,6 +21,7 @@ import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.MasaPanen
 import com.dishut_lampung.sitanihut.domain.model.MasaTanam
 import com.dishut_lampung.sitanihut.domain.model.Report
+import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
 import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
@@ -141,44 +142,44 @@ fun ReportEntity.toDomain(): Report {
     )
 }
 
-fun ReportEntity.toCreateReportInput(): CreateReportInput {
-    val gson = Gson()
-    val plantingList: List<MasaTanam> = try {
-        if (!this.plantingDetailsJson.isNullOrEmpty()) {
-            val type = object : TypeToken<List<MasaTanam>>() {}.type
-            gson.fromJson(this.plantingDetailsJson, type)
-        } else emptyList()
-    } catch (e: Exception) { emptyList() }
-
-    val harvestList: List<MasaPanen> = try {
-        if (!this.harvestDetailsJson.isNullOrEmpty()) {
-            val type = object : TypeToken<List<MasaPanen>>() {}.type
-            gson.fromJson(this.harvestDetailsJson, type)
-        } else emptyList()
-    } catch (e: Exception) { emptyList() }
-
-    val attachmentList = if (!this.attachmentPaths.isNullOrEmpty()) {
-        this.attachmentPaths.split(",").filter { it.isNotBlank() }
-    } else {
-        emptyList()
-    }
-
-    val modalString = this.modal?.let {
-        if (it % 1.0 == 0.0) it.toLong().toString() else it.toString()
-    } ?: ""
-
-    return CreateReportInput(
-        month = this.month,
-        period = this.period,
-        modal = modalString,
-        farmerNotes = this.farmerNotes ?: "",
-        nte = this.nte,
-        isAjukan = false,
-        attachments = attachmentList,
-        plantingDetails = plantingList,
-        harvestDetails = harvestList
-    )
-}
+//fun ReportEntity.toCreateReportInput(): CreateReportInput {
+//    val gson = Gson()
+//    val plantingList: List<MasaTanam> = try {
+//        if (!this.plantingDetailsJson.isNullOrEmpty()) {
+//            val type = object : TypeToken<List<MasaTanam>>() {}.type
+//            gson.fromJson(this.plantingDetailsJson, type)
+//        } else emptyList()
+//    } catch (e: Exception) { emptyList() }
+//
+//    val harvestList: List<MasaPanen> = try {
+//        if (!this.harvestDetailsJson.isNullOrEmpty()) {
+//            val type = object : TypeToken<List<MasaPanen>>() {}.type
+//            gson.fromJson(this.harvestDetailsJson, type)
+//        } else emptyList()
+//    } catch (e: Exception) { emptyList() }
+//
+//    val attachmentList = if (!this.attachmentPaths.isNullOrEmpty()) {
+//        this.attachmentPaths.split(",").filter { it.isNotBlank() }
+//    } else {
+//        emptyList()
+//    }
+//
+//    val modalString = this.modal?.let {
+//        if (it % 1.0 == 0.0) it.toLong().toString() else it.toString()
+//    } ?: ""
+//
+//    return CreateReportInput(
+//        month = this.month,
+//        period = this.period,
+//        modal = modalString,
+//        farmerNotes = this.farmerNotes ?: "",
+//        nte = this.nte,
+//        isAjukan = false,
+//        attachments = attachmentList,
+//        plantingDetails = plantingList,
+//        harvestDetails = harvestList
+//    )
+//}
 
 fun ReportEntity.toReportDetail(): ReportDetail {
     val gson = Gson()
@@ -196,11 +197,12 @@ fun ReportEntity.toReportDetail(): ReportDetail {
         } else emptyList()
     } catch (e: Exception) { emptyList() }
 
-    val attachmentList = if (!this.attachmentPaths.isNullOrEmpty()) {
-        this.attachmentPaths.split(",").filter { it.isNotBlank() }
-    } else {
-        emptyList()
-    }
+    val attachmentList: List<ReportAttachment> = try {
+        if (!this.attachmentsJson.isNullOrEmpty()) {
+            val type = object : TypeToken<List<ReportAttachment>>() {}.type
+            gson.fromJson(this.attachmentsJson, type)
+        } else emptyList()
+    } catch (e: Exception) { emptyList() }
 
     val modalString = this.modal?.let {
         if (it % 1.0 == 0.0) it.toLong().toString() else it.toString()
@@ -269,7 +271,14 @@ fun ReportDetailDto.toEntity(): ReportEntity {
         gson.toJson(harvestDetails.map { it.toDomain() })
     } else null
 
-    val attachmentPathString = attachments?.joinToString(",") { it.url }
+    val attachmentList = this.attachments?.map { dto ->
+        ReportAttachment(
+            id = dto.attachmentId,
+            filePath = dto.url,
+            isLocal = false
+        )
+    } ?: emptyList()
+    val attachmentsJsonString = gson.toJson(attachmentList)
 
     return ReportEntity(
         id = this.id,
@@ -283,7 +292,7 @@ fun ReportDetailDto.toEntity(): ReportEntity {
         farmerNotes = this.farmerNotes,
         plantingDetailsJson = plantingJson,
         harvestDetailsJson = harvestJson,
-        attachmentPaths = attachmentPathString,
+        attachmentsJson = attachmentsJsonString,
         syncStatus = SyncStatus.SYNCED,
         jsonPayload = null
     )

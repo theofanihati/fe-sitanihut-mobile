@@ -36,12 +36,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
 import java.io.File
 
 @Composable
 fun FileUploader(
     modifier: Modifier = Modifier,
-    files: List<String>,
+    files: List<ReportAttachment>,
     onAddFileClick: () -> Unit,
     onRemoveFileClick: (Int) -> Unit,
     maxFiles: Int = 10,
@@ -66,9 +67,9 @@ fun FileUploader(
             )
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                files.forEachIndexed { index, filePath ->
+                files.forEachIndexed { index, attachment ->
                     SelectedFileItem(
-                        filePath = filePath,
+                        attachment = attachment,
                         onRemove = { onRemoveFileClick(index) }
                     )
                 }
@@ -143,10 +144,21 @@ private fun SmallAddFileButton(
 
 @Composable
 private fun SelectedFileItem(
-    filePath: String,
+    attachment: ReportAttachment,
     onRemove: () -> Unit
 ) {
-    val file = File(filePath)
+    val fileName = if (attachment.isLocal) {
+        File(attachment.filePath).name
+    } else {
+        attachment.filePath.substringAfterLast("/")
+    }
+
+    val fileSizeString = if (attachment.isLocal) {
+        val file = File(attachment.filePath)
+        if (file.exists()) "${file.length() / 1024} KB" else "File tidak ditemukan"
+    } else {
+        "File Server"
+    }
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -167,14 +179,13 @@ private fun SelectedFileItem(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = file.name,
+                    text = fileName,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     maxLines = 1
                 )
-                val fileSizeInKb = file.length() / 1024
                 Text(
-                    text = "$fileSizeInKb KB", //TODO hitung ukuran asli
+                    text = fileSizeString,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
