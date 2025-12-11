@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.data.remote.api
 
 import com.dishut_lampung.sitanihut.data.remote.dto.AuthDto
+import com.dishut_lampung.sitanihut.data.remote.dto.ReportDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
 import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
@@ -25,6 +26,11 @@ interface ReportApiService {
         @Query("search") search: String? = null,
         @Query("status") status: String? = null,
     ): ApiResponse<PaginatedData<ReportListItemDto>>
+
+    @GET("v1/laporan/{id}")
+    suspend fun getReportDetail(
+        @Path("id") id: String
+    ): ApiResponse<ReportDetailDto>
 
     @DELETE("v1/laporan/{id}")
     suspend fun deleteReport(

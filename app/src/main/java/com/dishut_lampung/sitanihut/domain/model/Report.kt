@@ -25,6 +25,7 @@ data class CreateReportInput(
 
 data class MasaTanam(
     val commodityId: String,
+    val commodityName: String = "",
     val plantType: String,
     val plantDate: String,
     val plantAge: Double,
@@ -34,6 +35,7 @@ data class MasaTanam(
 data class MasaPanen(
     val harvestDate: String,
     val commodityId: String,
+    val commodityName: String = "",
     val unitPrice: String,
     val amount: String,
 )

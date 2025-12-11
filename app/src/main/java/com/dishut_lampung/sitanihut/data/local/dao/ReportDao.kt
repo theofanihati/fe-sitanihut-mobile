@@ -6,8 +6,10 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
+import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
 import kotlinx.coroutines.flow.Flow
 
 data class ReportCountTuple(
@@ -36,6 +38,21 @@ interface ReportDao {
 
     @Upsert
     suspend fun upsertAll(reports: List<ReportEntity>)
+
+    @Transaction
+    suspend fun insertOrIgnorePending(newReports: List<ReportEntity>) {
+        newReports.forEach { report ->
+            val localReport = getReportById(report.id)
+
+            if (localReport == null) {
+                upsertAll(listOf(report))
+            } else {
+                if (localReport.syncStatus == SyncStatus.SYNCED) {
+                    upsertAll(listOf(report))
+                }
+            }
+        }
+    }
 
     @Query("SELECT * FROM laporan WHERE userId = :userId ORDER BY date DESC LIMIT 10")
     fun getLatestReports(userId: String): Flow<List<ReportEntity>>
@@ -68,6 +85,9 @@ interface ReportDao {
 
     @Query("UPDATE laporan SET status = 'menunggu', syncStatus = 'pending_upload' WHERE id = :reportId")
     suspend fun submitReportById(reportId: String)
+
+    @Query("DELETE FROM laporan WHERE syncStatus = 'SYNCED'")
+    suspend fun clearSyncedReports()
 
     @Query("DELETE FROM laporan")
     fun clearAllLaporan()

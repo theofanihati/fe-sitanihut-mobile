@@ -58,7 +58,7 @@ class ReportRemoteMediator(
                 val isFullRefresh = (loadType == LoadType.REFRESH) && query.isBlank() && status == null
                 if (isFullRefresh) {
                     db.remoteKeysDao().clearRemoteKeys()
-                    db.reportDao().clearAllLaporan()
+                    db.reportDao().clearSyncedReports()
                 }
 
                 val prevKey = if (page == 1) null else page - 1
@@ -70,7 +70,7 @@ class ReportRemoteMediator(
                 db.remoteKeysDao().insertAll(keys)
 
                 val entities = reportsDto.map { it.toEntity() }
-                db.reportDao().insertAll(entities)
+                db.reportDao().insertOrIgnorePending(entities)
             }
             return MediatorResult.Success(endOfPaginationReached = isEndOfList)
         } catch (exception: Exception) {

@@ -7,7 +7,10 @@ import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
 import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
 import com.dishut_lampung.sitanihut.data.remote.dto.CommodityDto
 import com.dishut_lampung.sitanihut.data.remote.dto.HarvestRequestDto
+import com.dishut_lampung.sitanihut.data.remote.dto.HarvestResponseDto
 import com.dishut_lampung.sitanihut.data.remote.dto.PlantingRequestDto
+import com.dishut_lampung.sitanihut.data.remote.dto.PlantingResponseDto
+import com.dishut_lampung.sitanihut.data.remote.dto.ReportDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportRequestDto
 import com.dishut_lampung.sitanihut.data.remote.dto.RoleDto
@@ -202,6 +205,61 @@ fun ReportListItemDto.toDomain(): Report {
         submissionDate = formattedDate,
         totalTransaction = this.nte ?: 0.0,
         status = statusEnum
+    )
+}
+
+fun ReportDetailDto.toEntity(): ReportEntity {
+    val gson = Gson()
+
+    val plantingJson = if (!plantingDetails.isEmpty()) {
+        gson.toJson(plantingDetails.map { it.toDomain() })
+    } else null
+
+    val harvestJson = if (!harvestDetails.isEmpty()) {
+        gson.toJson(harvestDetails.map { it.toDomain() })
+    } else null
+
+    val attachmentPathString = attachments?.joinToString(",") { it.url }
+
+    return ReportEntity(
+        id = this.id,
+        userId = this.userId,
+        period = this.period,
+        month = this.month,
+        date = this.date,
+        nte = this.nte,
+        status = this.status,
+        modal = this.modal,
+        farmerNotes = this.farmerNotes,
+        plantingDetailsJson = plantingJson,
+        harvestDetailsJson = harvestJson,
+        attachmentPaths = attachmentPathString,
+        syncStatus = SyncStatus.SYNCED,
+        jsonPayload = null
+    )
+}
+
+fun PlantingResponseDto.toDomain(): MasaTanam {
+    val hasDate = !this.date.isNullOrEmpty() && this.date != "-"
+    val inferredType = if (hasDate) "Semusim" else "Tahunan"
+
+    return MasaTanam(
+        commodityId = this.commodityId,
+        commodityName = this.commodityName ?: "",
+        plantType = inferredType,
+        plantDate = if (hasDate) this.date else "",
+        plantAge = this.plantAge,
+        amount = this.amount.toString()
+    )
+}
+
+fun HarvestResponseDto.toDomain(): MasaPanen {
+    return MasaPanen(
+        harvestDate = this.date,
+        commodityId = this.commodityId,
+        commodityName = this.commodityName ?: "",
+        unitPrice = this.unitPrice.toString(),
+        amount = this.amount.toString()
     )
 }
 
