@@ -19,6 +19,7 @@ import com.dishut_lampung.sitanihut.data.mapper.toCreateReportInput
 import com.dishut_lampung.sitanihut.data.mapper.toDbValue
 import com.dishut_lampung.sitanihut.data.mapper.toDomain
 import com.dishut_lampung.sitanihut.data.mapper.toDto
+import com.dishut_lampung.sitanihut.data.mapper.toEntity
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportRequestDto
 import com.dishut_lampung.sitanihut.data.worker.ReportSyncWorker
@@ -36,6 +37,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.HttpException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -112,10 +114,13 @@ class ReportRepositoryImpl @Inject constructor(
         val isoDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
             timeZone = TimeZone.getTimeZone("UTC")
         }.format(Date())
+        val localDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
         val requestDto = input.toDto(id = reportId, updatedAt = isoDate)
         val gson = Gson()
         val jsonPayloadString = gson.toJson(requestDto)
+        val plantingJsonLocal = gson.toJson(input.plantingDetails)
+        val harvestJsonLocal = gson.toJson(input.harvestDetails)
 
         val filePathsString = input.attachments.joinToString(",")
         val currentUserId = userPreferences.userId.first() ?: ""
@@ -126,9 +131,14 @@ class ReportRepositoryImpl @Inject constructor(
 
             period = input.period,
             month = input.month,
-            date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
+            date = localDate,
             nte = input.nte,
             status = "menunggu",
+
+            modal = input.modal.replace(".", "").toDoubleOrNull(),
+            farmerNotes = input.farmerNotes,
+            plantingDetailsJson = plantingJsonLocal,
+            harvestDetailsJson = harvestJsonLocal,
 
             syncStatus = SyncStatus.PENDING_CREATE,
 
@@ -136,7 +146,7 @@ class ReportRepositoryImpl @Inject constructor(
             attachmentPaths = filePathsString
         )
         return try {
-            reportDao.insertAll(listOf(newReport))
+            reportDao.upsertAll(listOf(newReport))
 
             val workRequest = OneTimeWorkRequestBuilder<ReportSyncWorker>()
                 .setConstraints(
@@ -159,6 +169,25 @@ class ReportRepositoryImpl @Inject constructor(
     override fun getReportById(id: String): Flow<Resource<CreateReportInput>> {
         return flow {
             emit(Resource.Loading())
+            try {
+                android.util.Log.d("REPO_DEBUG", "Fetching Detail ID: $id")
+                val response = apiService.getReportDetail(id)
+                if (response.statusCode == 200 && response.data != null) {
+                    val detailDto = response.data
+                    val entity = detailDto.toEntity()
+                    reportDao.upsertAll(listOf(entity))
+                    android.util.Log.d("DEBUG_EDIT_REPO", "Berhasil fetch detail. Tanam: ${entity.plantingDetailsJson}")
+                }else {
+                    android.util.Log.e("DEBUG_EDIT_REPO", "Gagal fetch detail: ${response.message}")
+                }
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                android.util.Log.e("DEBUG_EDIT_REPO", "Server Error 500 Body: $errorBody")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                android.util.Log.e("DEBUG_EDIT_REPO", "Error network: ${e.message}")
+            }
+
             reportDao.getReportByIdFlow(id).collect { entity ->
                 if (entity != null) {
                     emit(Resource.Success(entity.toCreateReportInput()))
