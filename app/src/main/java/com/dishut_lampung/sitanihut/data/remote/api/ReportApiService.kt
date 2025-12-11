@@ -15,6 +15,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
+import retrofit2.http.PartMap
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -53,10 +54,11 @@ interface ReportApiService {
     ): Response<ApiResponse<Any?>>
 
     @Multipart
-    @PUT("laporan/{id}")
+    @POST("v1/laporan/{id}")
     suspend fun updateReport(
         @Path("id") id: String,
-        @Part("data") data: RequestBody,
+        @Part("_method") method: RequestBody,
+        @PartMap data: Map<String, @JvmSuppressWildcards RequestBody>,
         @Part attachments: List<MultipartBody.Part>
     ): Response<ApiResponse<Unit>>
 }

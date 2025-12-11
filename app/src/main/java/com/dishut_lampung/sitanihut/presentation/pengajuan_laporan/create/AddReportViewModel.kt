@@ -218,13 +218,13 @@ class AddReportViewModel @Inject constructor(
                                     )
                                 },
                                 harvestDetails = data.harvestDetails.map { domain ->
-                                    val SEMENTARA = state.commodityList.find { it.id == domain.commodityId }?.name
-                                        ?: "Memuat..."
+//                                    val SEMENTARA = state.commodityList.find { it.id == domain.commodityId }?.name
+//                                        ?: "Memuat..."
                                     HarvestDetailUiState(
                                         harvestDate = domain.harvestDate,
                                         commodityId = domain.commodityId,
 //                                        commodityName = state.commodityList.find { it.id == domain.commodityId }?.name ?: "",
-                                        commodityName = SEMENTARA,
+                                        commodityName = domain.commodityName,
                                         unitPrice = domain.unitPrice,
                                         amount = domain.amount,
                                         totalPrice = (domain.unitPrice.toDoubleOrNull() ?: 0.0) * (domain.amount.toDoubleOrNull() ?: 0.0)

@@ -80,8 +80,14 @@ interface ReportDao {
     @Query("SELECT * FROM laporan WHERE id = :id")
     fun getReportByIdFlow(id: String): Flow<ReportEntity?>
 
+    @Query("SELECT * FROM laporan WHERE syncStatus != 'SYNCED'")
+    suspend fun getAllUnsyncedReports(): List<ReportEntity>
+
     @Query("DELETE FROM laporan WHERE id = :reportId")
     suspend fun deleteReportById(reportId: String)
+
+    @Query("UPDATE laporan SET syncStatus = 'PENDING_DELETE' WHERE id = :reportId")
+    suspend fun markReportForDeletion(reportId: String)
 
     @Query("UPDATE laporan SET status = 'menunggu', syncStatus = 'pending_upload' WHERE id = :reportId")
     suspend fun submitReportById(reportId: String)

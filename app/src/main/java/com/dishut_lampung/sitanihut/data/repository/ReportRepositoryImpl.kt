@@ -228,6 +228,7 @@ class ReportRepositoryImpl @Inject constructor(
             val plantingJsonForEntity = Gson().toJson(input.plantingDetails)
             val harvestJsonForEntity = Gson().toJson(input.harvestDetails)
 
+            // room db update
             val updatedEntity = oldReport.copy(
                 period = input.period,
                 month = input.month,
@@ -242,6 +243,18 @@ class ReportRepositoryImpl @Inject constructor(
                 date = getCurrentDate()
             )
             reportDao.upsertAll(listOf(updatedEntity))
+
+            // trigger worker, handled on syncWorker ye
+            val workRequest = OneTimeWorkRequestBuilder<ReportSyncWorker>()
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+                )
+                .build()
+
+            WorkManager.getInstance(context).enqueue(workRequest)
+
             Resource.Success(true)
         } catch (e: Exception) {
             e.printStackTrace()

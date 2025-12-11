@@ -10,21 +10,22 @@ class AuthInterceptor @Inject constructor(
     private val userPreferences: UserPreferences
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        val originalRequest = chain.request()
+        val original = chain.request()
 
         val token = runBlocking {
             userPreferences.getAuthToken()
         }
 
-        val newRequest = if (!token.isNullOrBlank()) {
-            originalRequest.newBuilder()
-                .addHeader("Accept", "application/json")
-                .header("Authorization", "Bearer $token")
-                .build()
-        } else {
-            originalRequest
+        val builder = original.newBuilder()
+            .addHeader("Accept", "application/json")
+            .addHeader("X-Requested-With", "XMLHttpRequest")
+
+        if (!token.isNullOrBlank()) {
+            builder.addHeader("Authorization", "Bearer $token")
+        }else {
+            original
         }
 
-        return chain.proceed(newRequest)
+        return chain.proceed(builder.build())
     }
 }
