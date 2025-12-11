@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.di
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.ui.semantics.Role
 import androidx.room.Room
 import com.dishut_lampung.sitanihut.BuildConfig

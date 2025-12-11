@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.data.repository
 
 import android.content.Context
+import android.util.Log
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -22,6 +23,7 @@ import com.dishut_lampung.sitanihut.data.mapper.toDto
 import com.dishut_lampung.sitanihut.data.mapper.toEntity
 import com.dishut_lampung.sitanihut.data.mapper.toReportDetail
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
+import com.dishut_lampung.sitanihut.data.remote.dto.ConflictResponseDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportRequestDto
 import com.dishut_lampung.sitanihut.data.worker.ReportSyncWorker
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
@@ -31,6 +33,7 @@ import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import com.dishut_lampung.sitanihut.util.Resource
 import com.dishut_lampung.sitanihut.util.getCurrentDate
+import com.dishut_lampung.sitanihut.util.getMimeType
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -38,8 +41,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -118,7 +124,13 @@ class ReportRepositoryImpl @Inject constructor(
         }.format(Date())
         val localDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
-        val requestDto = input.toDto(id = reportId, updatedAt = isoDate)
+        val statusLaporan = if (input.isAjukan) "menunggu" else "belum diajukan"
+        val requestDto = input.toDto(
+            id = reportId,
+            updatedAt = isoDate
+        ).copy(
+            status = statusLaporan
+        )
         val gson = Gson()
         val jsonPayloadString = gson.toJson(requestDto)
         val plantingJsonLocal = gson.toJson(input.plantingDetails)
@@ -135,7 +147,7 @@ class ReportRepositoryImpl @Inject constructor(
             month = input.month,
             date = localDate,
             nte = input.nte,
-            status = "menunggu",
+            status = statusLaporan,
 
             modal = input.modal.replace(".", "").toDoubleOrNull(),
             farmerNotes = input.farmerNotes,
@@ -205,6 +217,8 @@ class ReportRepositoryImpl @Inject constructor(
             val oldReport = reportDao.getReportById(id)
                 ?: return Resource.Error("Laporan tidak ditemukan")
 
+            val statusLaporan = if (input.isAjukan) "menunggu" else "belum diajukan"
+
             val newStatus = when (oldReport.syncStatus) {
                 SyncStatus.PENDING_CREATE -> SyncStatus.PENDING_CREATE
                 else -> SyncStatus.PENDING_UPDATE
@@ -220,7 +234,7 @@ class ReportRepositoryImpl @Inject constructor(
                 nte = input.nte,
                 plantingDetails = input.plantingDetails.map { it.toDto() },
                 harvestDetails = input.harvestDetails.map { it.toDto() },
-                status = oldReport.status
+                status = statusLaporan
 
                 )
             val jsonPayload = Gson().toJson(requestDto)
@@ -236,6 +250,7 @@ class ReportRepositoryImpl @Inject constructor(
                 farmerNotes = input.farmerNotes,
                 nte = input.nte,
                 attachmentPaths = input.attachments.joinToString(","),
+                status = statusLaporan,
                 jsonPayload = jsonPayload,
                 plantingDetailsJson = plantingJsonForEntity,
                 harvestDetailsJson = harvestJsonForEntity,
@@ -244,7 +259,7 @@ class ReportRepositoryImpl @Inject constructor(
             )
             reportDao.upsertAll(listOf(updatedEntity))
 
-            // trigger worker, handled on syncWorker ye
+//             trigger worker, handled on syncWorker ye
             val workRequest = OneTimeWorkRequestBuilder<ReportSyncWorker>()
                 .setConstraints(
                     Constraints.Builder()

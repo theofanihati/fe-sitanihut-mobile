@@ -12,6 +12,9 @@ import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.UpdateReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.ValidateReportInputUseCase
 import com.dishut_lampung.sitanihut.util.Resource
+import com.dishut_lampung.sitanihut.util.changeDateFormat
+import com.dishut_lampung.sitanihut.util.convertUiDateToApiDate
+import com.dishut_lampung.sitanihut.util.parseIndonesianNumber
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -115,8 +118,8 @@ class AddReportViewModel @Inject constructor(
                 val newList = _uiState.value.harvestDetails.toMutableList()
 
                 //total Price (Harga * Jumlah)
-                val price = event.item.unitPrice.replace(",", ".").toDoubleOrNull() ?: 0.0
-                val amount = event.item.amount.replace(",", ".").toDoubleOrNull() ?: 0.0
+                val price = event.item.unitPrice.parseIndonesianNumber()
+                val amount = event.item.amount.parseIndonesianNumber()
                 val priceError = validateNumberInput(event.item.unitPrice, "Harga")
                 val amountError = validateNumberInput(event.item.amount, "Jumlah")
 
@@ -212,8 +215,8 @@ class AddReportViewModel @Inject constructor(
 //                                        commodityName = state.commodityList.find { it.id == domain.commodityId }?.name ?: "",
                                         commodityName = domain.commodityName,
                                         plantType = domain.plantType,
-                                        plantDate = domain.plantDate,
-                                        plantAge = if(domain.plantAge == 0.0) "" else domain.plantAge.toString(),
+                                        plantDate = changeDateFormat(domain.plantDate),
+                                        plantAge = calculatePlantAge(changeDateFormat(domain.plantDate)),
                                         amount = domain.amount
                                     )
                                 },
@@ -243,8 +246,7 @@ class AddReportViewModel @Inject constructor(
 
     private fun validateNumberInput(value: String, fieldName: String): String? {
         if (value.isBlank()) return "$fieldName wajib diisi"
-        val cleanValue = value.replace(",", ".")
-        val number = cleanValue.toDoubleOrNull()
+        val number = value.replace(".", "").replace(",", ".").toDoubleOrNull()
         return if (number == null || number <= 0) "$fieldName harus angka > 0" else null
     }
 
@@ -338,10 +340,22 @@ class AddReportViewModel @Inject constructor(
             isAjukan = isAjukan,
             attachments = s.attachments,
             plantingDetails = s.plantingDetails.map {
-                MasaTanam(it.commodityId, it.commodityName, it.plantType, it.plantDate, it.plantAge.toDoubleOrNull() ?: 0.0, it.amount)
+                MasaTanam(
+                    commodityId = it.commodityId,
+                    commodityName = it.commodityName,
+                    it.plantType,
+                    plantDate = convertUiDateToApiDate(it.plantDate),
+                    plantAge = it.plantAge.toDoubleOrNull() ?: 0.0,
+                    amount =  it.amount)
             },
             harvestDetails = s.harvestDetails.map {
-                MasaPanen(it.harvestDate, it.commodityName, it.commodityId, it.unitPrice, it.amount)
+                MasaPanen(
+                   harvestDate =  convertUiDateToApiDate(it.harvestDate),
+                   commodityName = it.commodityName,
+                   commodityId =  it.commodityId,
+                   unitPrice =  it.unitPrice,
+                   amount =  it.amount
+                )
             }
         )
     }

@@ -126,65 +126,58 @@ class ReportSyncWorker @AssistedInject constructor(
         Log.d("SYNC_WORKER", "Payload JSON Content: ${report.jsonPayload}")
 
         if (report.jsonPayload == null) return false
-        val reportDto = Gson().fromJson(report.jsonPayload, ReportRequestDto::class.java)
-        val partMap = HashMap<String, RequestBody>()
-        val mediaType = "text/plain".toMediaTypeOrNull()
-
-        partMap["periode"] = reportDto.period.toString().toRequestBody(mediaType)
-        partMap["bulan"] = (reportDto.month ?: "").toRequestBody(mediaType)
-        partMap["modal"] = (reportDto.modal ?: 0.0).toString().toRequestBody(mediaType)
-        partMap["nte"] = (reportDto.nte ?: 0.0).toString().toRequestBody(mediaType)
-        partMap["catatan_petani"] = (reportDto.farmerNotes ?: "").toRequestBody(mediaType)
-        partMap["status"] = (reportDto.status ?: "menunggu").toRequestBody(mediaType)
-
-        reportDto.plantingDetails?.forEachIndexed { index, item ->
-            item.date?.let { partMap["masa_tanam[$index][tanggal]"] = it.toRequestBody(mediaType) }
-            item.commodityId?.let { partMap["masa_tanam[$index][id_komoditas]"] = it.toRequestBody(mediaType) }
-            partMap["masa_tanam[$index][usia_tanam]"] = (item.plantAge ?: 0.0).toString().toRequestBody(mediaType)
-            partMap["masa_tanam[$index][jumlah]"] = (item.amount ?: 0.0).toString().toRequestBody(mediaType)
-        }
-
-        reportDto.harvestDetails?.forEachIndexed { index, item ->
-            item.date?.let { partMap["masa_panen[$index][tanggal]"] = it.toRequestBody(mediaType) }
-            item.commodityId?.let { partMap["masa_panen[$index][id_komoditas]"] = it.toRequestBody(mediaType) }
-            partMap["masa_panen[$index][jumlah]"] = (item.amount ?: 0.0).toString().toRequestBody(mediaType)
-            partMap["masa_panen[$index][harga_satuan]"] = (item.unitPrice ?: 0.0).toString().toRequestBody(mediaType)
-        }
-
-        val attachmentParts = report.attachmentPaths?.split(",")
-            ?.filter { it.isNotEmpty() }
-            ?.mapNotNull { path ->
-                val file = File(path)
-                if (file.exists()) {
-                    val mimeType = getMimeType(file)
-                    val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())
-                    MultipartBody.Part.createFormData("lampiran[]", file.name, requestFile)
-                } else null
-            } ?: emptyList()
-
-        val methodPart = "PATCH".toRequestBody(mediaType)
 
         try {
-            val response = apiService.updateReport(
-                id = report.id,
-                method = methodPart,
-                data = partMap,
-                attachments = attachmentParts
-            )
+            val dto = Gson().fromJson(report.jsonPayload, ReportRequestDto::class.java)
+            val parts = mutableListOf<MultipartBody.Part>()
 
+            fun addText(key: String, value: Any?) {
+                if (value != null) {
+                    val body = value.toString().toRequestBody(null)
+                    parts.add(MultipartBody.Part.createFormData(key, null, body))
+                }
+            }
+
+            addText("_method", "PATCH") // Spoofing
+            addText("bulan", dto.month?.lowercase())
+            addText("periode", dto.period)
+            addText("modal", dto.modal?.toLong()) // Kirim integer string
+            addText("nte", dto.nte?.toLong())
+            addText("catatan_petani", dto.farmerNotes ?: "")
+            addText("status", dto.status)
+
+            dto.plantingDetails?.forEachIndexed { i, item ->
+                addText("masa_tanam[$i][tanggal]", item.date)
+                addText("masa_tanam[$i][id_komoditas]", item.commodityId)
+                addText("masa_tanam[$i][jumlah]", item.amount)
+                addText("masa_tanam[$i][usia_tanam]", item.plantAge)
+            }
+            dto.harvestDetails?.forEachIndexed { i, item ->
+                addText("masa_panen[$i][tanggal]", item.date)
+                addText("masa_panen[$i][id_komoditas]", item.commodityId)
+                addText("masa_panen[$i][jumlah]", item.amount)
+                addText("masa_panen[$i][harga_satuan]", item.unitPrice)
+            }
+
+            report.attachmentPaths?.split(",")?.filter { it.isNotEmpty() }?.forEach { path ->
+                val file = File(path)
+                if (file.exists()) {
+                    val requestFile = file.asRequestBody(getMimeType(file).toMediaTypeOrNull())
+                    parts.add(MultipartBody.Part.createFormData("lampiran_new[]", file.name, requestFile))
+                }
+            }
+
+            val response = apiService.updateReport(report.id, parts)
             if (response.isSuccessful) {
+                val updated = report.copy(syncStatus = SyncStatus.SYNCED, jsonPayload = null)
+                reportDao.upsertAll(listOf(updated))
                 Log.d("SYNC_WORKER_SUCCESS", "Server Response: ${response.body()}")
-                val updatedReport = report.copy(
-                    syncStatus = SyncStatus.SYNCED,
-                    jsonPayload = null
-                )
-                reportDao.upsertAll(listOf(updatedReport))
                 return true
             } else {
-                Log.e("SYNC_WORKER_ERROR", "Update failed: ${response.code()} ${response.errorBody()?.string()}")
+                Log.e("SYNC_WORKER", "Gagal Update: ${response.code()}")
                 return false
             }
-        } catch (e: Exception) {
+        }catch (e: Exception) {
             e.printStackTrace()
             return false
         }

@@ -57,8 +57,6 @@ interface ReportApiService {
     @POST("v1/laporan/{id}")
     suspend fun updateReport(
         @Path("id") id: String,
-        @Part("_method") method: RequestBody,
-        @PartMap data: Map<String, @JvmSuppressWildcards RequestBody>,
-        @Part attachments: List<MultipartBody.Part>
+        @Part parts: List<MultipartBody.Part>
     ): Response<ApiResponse<Unit>>
 }
