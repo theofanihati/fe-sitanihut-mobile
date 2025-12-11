@@ -208,11 +208,8 @@ class AddReportViewModel @Inject constructor(
                                 nte = data.nte,
                                 attachments = data.attachments,
                                 plantingDetails = data.plantingDetails.map { domain ->
-//                                    val SEMENTARA = state.commodityList.find { it.id == domain.commodityId }?.name
-//                                        ?: "Memuat..."
                                     PlantingDetailUiState(
                                         commodityId = domain.commodityId,
-//                                        commodityName = state.commodityList.find { it.id == domain.commodityId }?.name ?: "",
                                         commodityName = domain.commodityName,
                                         plantType = domain.plantType,
                                         plantDate = changeDateFormat(domain.plantDate),
@@ -221,12 +218,9 @@ class AddReportViewModel @Inject constructor(
                                     )
                                 },
                                 harvestDetails = data.harvestDetails.map { domain ->
-//                                    val SEMENTARA = state.commodityList.find { it.id == domain.commodityId }?.name
-//                                        ?: "Memuat..."
                                     HarvestDetailUiState(
                                         harvestDate = domain.harvestDate,
                                         commodityId = domain.commodityId,
-//                                        commodityName = state.commodityList.find { it.id == domain.commodityId }?.name ?: "",
                                         commodityName = domain.commodityName,
                                         unitPrice = domain.unitPrice,
                                         amount = domain.amount,
