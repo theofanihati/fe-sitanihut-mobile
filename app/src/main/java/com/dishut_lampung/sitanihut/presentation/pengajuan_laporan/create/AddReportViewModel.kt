@@ -40,8 +40,14 @@ class AddReportViewModel @Inject constructor(
     init {
         loadCommodities()
         generatePeriodList()
-        onEvent(AddReportEvent.OnAddPlantingDetail)
-        onEvent(AddReportEvent.OnAddHarvestDetail)
+
+        currentReportId = savedStateHandle.get<String>("reportId")
+        if (currentReportId != null) {
+            loadExistingReportData(currentReportId!!)
+        } else {
+            onEvent(AddReportEvent.OnAddPlantingDetail)
+            onEvent(AddReportEvent.OnAddHarvestDetail)
+        }
     }
 
     fun onEvent(event: AddReportEvent) {
@@ -177,6 +183,64 @@ class AddReportViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
+    private fun loadExistingReportData(id: String) {
+        getReportDetailUseCase(id).onEach { result ->
+            when (result) {
+                is Resource.Loading -> {
+                    _uiState.update { it.copy(isLoading = true) }
+                }
+                is Resource.Success -> {
+                    val data = result.data
+                    if (data != null) {
+//                        android.util.Log.d("DEBUG_EDIT", "Planting JSON Size: ${data.plantingDetails.size}")
+//                        android.util.Log.d("DEBUG_EDIT", "Harvest JSON Size: ${data.harvestDetails.size}")
+
+                        _uiState.update { state ->
+                            state.copy(
+                                isLoading = false,
+                                month = data.month,
+                                period = data.period.toString(),
+                                modal = data.modal,
+                                farmerNotes = data.farmerNotes,
+                                nte = data.nte,
+                                attachments = data.attachments,
+                                plantingDetails = data.plantingDetails.map { domain ->
+//                                    val SEMENTARA = state.commodityList.find { it.id == domain.commodityId }?.name
+//                                        ?: "Memuat..."
+                                    PlantingDetailUiState(
+                                        commodityId = domain.commodityId,
+//                                        commodityName = state.commodityList.find { it.id == domain.commodityId }?.name ?: "",
+                                        commodityName = domain.commodityName,
+                                        plantType = domain.plantType,
+                                        plantDate = domain.plantDate,
+                                        plantAge = if(domain.plantAge == 0.0) "" else domain.plantAge.toString(),
+                                        amount = domain.amount
+                                    )
+                                },
+                                harvestDetails = data.harvestDetails.map { domain ->
+                                    val SEMENTARA = state.commodityList.find { it.id == domain.commodityId }?.name
+                                        ?: "Memuat..."
+                                    HarvestDetailUiState(
+                                        harvestDate = domain.harvestDate,
+                                        commodityId = domain.commodityId,
+//                                        commodityName = state.commodityList.find { it.id == domain.commodityId }?.name ?: "",
+                                        commodityName = SEMENTARA,
+                                        unitPrice = domain.unitPrice,
+                                        amount = domain.amount,
+                                        totalPrice = (domain.unitPrice.toDoubleOrNull() ?: 0.0) * (domain.amount.toDoubleOrNull() ?: 0.0)
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+                is Resource.Error -> {
+                    _uiState.update { it.copy(isLoading = false, error = result.message) }
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
     private fun validateNumberInput(value: String, fieldName: String): String? {
         if (value.isBlank()) return "$fieldName wajib diisi"
         val cleanValue = value.replace(",", ".")
@@ -244,9 +308,16 @@ class AddReportViewModel @Inject constructor(
                 return@launch
             }
 
-            when (val result = createReportUseCase(input)) {
+            val result = if (currentReportId == null) {
+                createReportUseCase(input)
+            } else {
+                updateReportUseCase(currentReportId!!, input)
+            }
+
+            when (result) {
                 is Resource.Success -> {
-                    _uiState.update { it.copy(isLoading = false, successMessage = "Laporan berhasil disimpan!") }
+                    val message = if (currentReportId == null) "Berhasil disimpan!" else "Perubahan disimpan!"
+                    _uiState.update { it.copy(isLoading = false, successMessage = message) }
                 }
                 is Resource.Error -> {
                     _uiState.update { it.copy(isLoading = false, error = result.message) }
