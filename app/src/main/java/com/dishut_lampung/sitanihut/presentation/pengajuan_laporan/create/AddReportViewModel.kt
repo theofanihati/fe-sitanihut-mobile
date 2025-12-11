@@ -14,6 +14,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.report.ValidateReportInputUse
 import com.dishut_lampung.sitanihut.util.Resource
 import com.dishut_lampung.sitanihut.util.changeDateFormat
 import com.dishut_lampung.sitanihut.util.convertUiDateToApiDate
+import com.dishut_lampung.sitanihut.util.formatApiToUiString
 import com.dishut_lampung.sitanihut.util.parseIndonesianNumber
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,10 +69,12 @@ class AddReportViewModel @Inject constructor(
                 val newList = _uiState.value.plantingDetails + PlantingDetailUiState()
                 _uiState.update { it.copy(plantingDetails = newList) }
             }
+
             is AddReportEvent.OnRemovePlantingDetail -> {
                 val newList = _uiState.value.plantingDetails.toMutableList().apply { removeAt(event.index) }
                 _uiState.update { it.copy(plantingDetails = newList) }
             }
+
             is AddReportEvent.OnPlantingItemChange -> {
                 val newList = _uiState.value.plantingDetails.toMutableList()
                 var updatedItem = event.item
@@ -86,7 +89,7 @@ class AddReportViewModel @Inject constructor(
                     updatedItem = updatedItem.copy(plantAge = calculatePlantAge(updatedItem.plantDate))
                 }
 
-                val amountError = validateNumberInput(updatedItem.amount, "Jumlah")
+                val amountError = validateIntegerInput(updatedItem.amount, "Jumlah")
                 val ageError = if (updatedItem.plantType.equals("tahunan", true)) {
                     validateNumberInput(updatedItem.plantAge, "Usia")
                 } else null
@@ -109,11 +112,13 @@ class AddReportViewModel @Inject constructor(
                 val newList = _uiState.value.harvestDetails + HarvestDetailUiState()
                 _uiState.update { it.copy(harvestDetails = newList) }
             }
+
             is AddReportEvent.OnRemoveHarvestDetail -> {
                 val newHarvestList = _uiState.value.harvestDetails.toMutableList().apply { removeAt(event.index) }
                 val newNte = newHarvestList.sumOf { it.totalPrice }
                 _uiState.update { it.copy(harvestDetails = newHarvestList, nte = newNte) }
             }
+
             is AddReportEvent.OnHarvestItemChange -> {
                 val newList = _uiState.value.harvestDetails.toMutableList()
 
@@ -121,7 +126,7 @@ class AddReportViewModel @Inject constructor(
                 val price = event.item.unitPrice.parseIndonesianNumber()
                 val amount = event.item.amount.parseIndonesianNumber()
                 val priceError = validateNumberInput(event.item.unitPrice, "Harga")
-                val amountError = validateNumberInput(event.item.amount, "Jumlah")
+                val amountError = validateIntegerInput(event.item.amount, "Jumlah")
 
                 val updatedItem = event.item.copy(
                     totalPrice = price * amount,
@@ -158,8 +163,21 @@ class AddReportViewModel @Inject constructor(
                     _uiState.update { it.copy(attachments = currentFiles) }
                 }
             }
-
-            is AddReportEvent.OnSubmit -> submitReport(event.isAjukan)
+            is AddReportEvent.OnShowConfirmDialog -> {
+                _uiState.update {
+                    it.copy(
+                        showConfirmDialog = true,
+                        pendingActionIsAjukan = event.isAjukan
+                    )
+                }
+            }
+            is AddReportEvent.OnDismissConfirmDialog -> {
+                _uiState.update { it.copy(showConfirmDialog = false) }
+            }
+            is AddReportEvent.OnSubmit -> {
+                _uiState.update { it.copy(showConfirmDialog = false) }
+                submitReport(event.isAjukan)
+            }
             AddReportEvent.OnDismissMessage -> _uiState.update { it.copy(error = null, successMessage = null) }
 
             else -> {}
@@ -208,13 +226,15 @@ class AddReportViewModel @Inject constructor(
                                 nte = data.nte,
                                 attachments = data.attachments,
                                 plantingDetails = data.plantingDetails.map { domain ->
+                                    val loadedUnit = if (domain.plantType.equals("semusim", true)) "kg" else "batang"
                                     PlantingDetailUiState(
                                         commodityId = domain.commodityId,
                                         commodityName = domain.commodityName,
                                         plantType = domain.plantType,
+                                        unit = loadedUnit,
                                         plantDate = changeDateFormat(domain.plantDate),
                                         plantAge = calculatePlantAge(changeDateFormat(domain.plantDate)),
-                                        amount = domain.amount
+                                        amount = domain.amount.formatApiToUiString()
                                     )
                                 },
                                 harvestDetails = data.harvestDetails.map { domain ->
@@ -222,8 +242,8 @@ class AddReportViewModel @Inject constructor(
                                         harvestDate = domain.harvestDate,
                                         commodityId = domain.commodityId,
                                         commodityName = domain.commodityName,
-                                        unitPrice = domain.unitPrice,
-                                        amount = domain.amount,
+                                        unitPrice = domain.unitPrice.formatApiToUiString(),
+                                        amount = domain.amount.formatApiToUiString(),
                                         totalPrice = (domain.unitPrice.toDoubleOrNull() ?: 0.0) * (domain.amount.toDoubleOrNull() ?: 0.0)
                                     )
                                 }
@@ -242,6 +262,17 @@ class AddReportViewModel @Inject constructor(
         if (value.isBlank()) return "$fieldName wajib diisi"
         val number = value.replace(".", "").replace(",", ".").toDoubleOrNull()
         return if (number == null || number <= 0) "$fieldName harus angka > 0" else null
+    }
+
+    private fun validateIntegerInput(value: String, fieldName: String): String? {
+        if (value.isBlank()) return "$fieldName wajib diisi"
+        val hasIllegalChar = value.any { !it.isDigit() && it != '.' }
+        if (hasIllegalChar) return "$fieldName hanya boleh angka (bulat)"
+
+        val cleanValue = value.replace(".", "")
+        val number = cleanValue.toLongOrNull()
+
+        return if (number == null || number <= 0) "$fieldName harus lebih dari 0" else null
     }
 
     private fun calculatePlantAge(dateString: String): String {
@@ -334,21 +365,25 @@ class AddReportViewModel @Inject constructor(
             isAjukan = isAjukan,
             attachments = s.attachments,
             plantingDetails = s.plantingDetails.map {
+                val cleanAmount = it.amount.replace(".", "").toLongOrNull() ?: 0L
                 MasaTanam(
                     commodityId = it.commodityId,
                     commodityName = it.commodityName,
                     it.plantType,
                     plantDate = convertUiDateToApiDate(it.plantDate),
                     plantAge = it.plantAge.toDoubleOrNull() ?: 0.0,
-                    amount =  it.amount)
+                    amount = cleanAmount.toString()
+                )
             },
             harvestDetails = s.harvestDetails.map {
+                val cleanAmount = it.amount.replace(".", "").toLongOrNull() ?: 0L
+
                 MasaPanen(
-                   harvestDate =  convertUiDateToApiDate(it.harvestDate),
-                   commodityName = it.commodityName,
-                   commodityId =  it.commodityId,
-                   unitPrice =  it.unitPrice,
-                   amount =  it.amount
+                    harvestDate =  convertUiDateToApiDate(it.harvestDate),
+                    commodityName = it.commodityName,
+                    commodityId =  it.commodityId,
+                    unitPrice =  it.unitPrice.parseIndonesianNumber().toString(),
+                    amount = cleanAmount.toString()
                 )
             }
         )

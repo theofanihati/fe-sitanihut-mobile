@@ -8,7 +8,9 @@ data class AddReportState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null,
-    val isFormValid: Boolean = false,
+    val isFormValid: Boolean = false,val
+    showConfirmDialog: Boolean = false,
+    val pendingActionIsAjukan: Boolean = false,
 
     val commodityList: List<Commodity> = emptyList(),
     val periodList: List<String> = emptyList(),
@@ -82,4 +84,6 @@ sealed class AddReportEvent {
 
     data class OnSubmit(val isAjukan: Boolean) : AddReportEvent() // True=Ajukan, False=Simpan
     object OnDismissMessage : AddReportEvent()
+    data class OnShowConfirmDialog(val isAjukan: Boolean) : AddReportEvent()
+    object OnDismissConfirmDialog : AddReportEvent()
 }

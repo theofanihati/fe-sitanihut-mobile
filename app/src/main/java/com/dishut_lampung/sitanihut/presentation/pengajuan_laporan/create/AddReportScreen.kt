@@ -55,6 +55,7 @@ import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgre
 import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
 import com.dishut_lampung.sitanihut.presentation.components.date_picker.CustomDatePicker
+import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirmationDialog
 import com.dishut_lampung.sitanihut.presentation.components.dropdown.CustomOutlinedDropdown
 import com.dishut_lampung.sitanihut.presentation.components.dropdown.CustomSearchableOutlinedDropdown
 import com.dishut_lampung.sitanihut.presentation.components.file_uploader.FileUploader
@@ -150,183 +151,203 @@ fun AddReportScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    CustomOutlinedDropdown(
-                        modifier = Modifier.weight(1f),
-                        value = state.month,
-                        onValueChange = { onEvent(AddReportEvent.OnMonthChange(it)) },
-                        label = "Bulan",
-                        options = state.monthList,
-                        asteriskAtEnd = true,
-                        rounded = 40,
-                        error = state.monthError,
-                    )
-
-                    CustomOutlinedDropdown(
-                        modifier = Modifier.weight(1f),
-                        value = state.period,
-                        onValueChange = { onEvent(AddReportEvent.OnPeriodChange(it)) },
-                        label = "Tahun",
-                        options = state.periodList,
-                        asteriskAtEnd = true,
-                        rounded = 40,
-                        error = state.periodError
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                CustomOutlinedTextField(
-                    value = state.modal,
-                    onValueChange = { onEvent(AddReportEvent.OnModalChange(it)) },
-                    label = "Modal",
-                    placeholder = "Contoh: 6000",
-                    keyboardType = KeyboardType.Number,
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                CustomOutlinedDropdown(
+                    modifier = Modifier.weight(1f),
+                    value = state.month,
+                    onValueChange = { onEvent(AddReportEvent.OnMonthChange(it)) },
+                    label = "Bulan",
+                    options = state.monthList,
                     asteriskAtEnd = true,
-                    modifier = Modifier.fillMaxWidth(),
                     rounded = 40,
-                    error = state.modalError
+                    error = state.monthError,
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // --- SECTION MASA TANAM ---
-                SectionHeader("Masa Tanam", onAddClick = { onEvent(AddReportEvent.OnAddPlantingDetail) })
-
-                state.plantingDetails.forEachIndexed { index, item ->
-                    PlantingItemCard(
-                        index = index,
-                        item = item,
-                        commodityList = state.commodityList,
-                        plantTypes = state.plantTypes,
-                        onEvent = onEvent,
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // --- SECTION MASA PANEN ---
-                SectionHeader("Masa Panen", onAddClick = { onEvent(AddReportEvent.OnAddHarvestDetail) })
-
-                state.harvestDetails.forEachIndexed { index, item ->
-                    HarvestItemCard(
-                        index = index,
-                        item = item,
-                        commodityList = state.commodityList,
-                        onEvent = onEvent
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Total NTE
-                val nteFormatted = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(state.nte)
-                CustomOutlinedTextField(
-                    value = nteFormatted,
-                    onValueChange = {},
-                    label = "Total Nilai Transaksi Ekonomi (NTE)",
-                    readOnly = true,
-                    isEnabled = false,
-                    modifier = Modifier.fillMaxWidth(),
+                CustomOutlinedDropdown(
+                    modifier = Modifier.weight(1f),
+                    value = state.period,
+                    onValueChange = { onEvent(AddReportEvent.OnPeriodChange(it)) },
+                    label = "Tahun",
+                    options = state.periodList,
+                    asteriskAtEnd = true,
                     rounded = 40,
-                    error = state.nteError
+                    error = state.periodError
                 )
-
-                CustomOutlinedTextArea(
-                    value = state.farmerNotes,
-                    onValueChange = { onEvent(AddReportEvent.OnFarmerNotesChange(it)) },
-                    label = "Catatan Penyuluh",
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = "Beri catatan untuk penyuluh",
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // --- LAMPIRAN ---
-                FileUploader(
-                    files = state.attachments,
-                    onAddFileClick = onPickFile,
-                    onRemoveFileClick = { index -> onEvent(AddReportEvent.OnRemoveAttachment(index)) },
-                    label = "Unggah lampiran (jika ada)"
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // --- BUTTONS ---
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedButton(
-                        enabled = !state.isLoading,
-                        onClick = { onEvent(AddReportEvent.OnSubmit(isAjukan = false)) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp),
-                        shape = MaterialTheme.shapes.extraLarge
-                    ) {
-                        if (state.isLoading && !state.isAjukan) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                        } else {
-                            Text("Simpan")
-                        }
-                    }
-
-                    Button(
-                        onClick = { onEvent(AddReportEvent.OnSubmit(isAjukan = true)) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp),
-                        shape = MaterialTheme.shapes.extraLarge,
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                    ) {
-                        if (state.isLoading && state.isAjukan) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                        } else {
-                            Text("Ajukan")
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(48.dp))
             }
 
-            if (state.isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f))
-                        .clickable(enabled = false) {},
-                    contentAlignment = Alignment.Center
-                ) {
-                    CustomCircularProgressIndicator()
-                }
-            }
+            Spacer(modifier = Modifier.height(4.dp))
 
-            AnimatedMessage(
-                isVisible = state.successMessage != null,
-                message = state.successMessage ?: "",
-                messageType = MessageType.Success,
-                onDismiss = {
-                    onEvent(AddReportEvent.OnDismissMessage)
-                    if (state.successMessage != null) onNavigateUp()
-                },
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp)
+            CustomOutlinedTextField(
+                value = state.modal,
+                onValueChange = { onEvent(AddReportEvent.OnModalChange(it)) },
+                label = "Modal",
+                placeholder = "Contoh: 6000",
+                keyboardType = KeyboardType.Number,
+                asteriskAtEnd = true,
+                modifier = Modifier.fillMaxWidth(),
+                rounded = 40,
+                error = state.modalError
             )
 
-            AnimatedMessage(
-                isVisible = state.error != null,
-                message = state.error ?: "",
-                messageType = MessageType.Error,
-                onDismiss = { onEvent(AddReportEvent.OnDismissMessage) },
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- SECTION MASA TANAM ---
+            SectionHeader(
+                "Masa Tanam",
+                onAddClick = { onEvent(AddReportEvent.OnAddPlantingDetail) })
+
+            state.plantingDetails.forEachIndexed { index, item ->
+                PlantingItemCard(
+                    index = index,
+                    item = item,
+                    commodityList = state.commodityList,
+                    plantTypes = state.plantTypes,
+                    onEvent = onEvent,
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // --- SECTION MASA PANEN ---
+            SectionHeader("Masa Panen", onAddClick = { onEvent(AddReportEvent.OnAddHarvestDetail) })
+
+            state.harvestDetails.forEachIndexed { index, item ->
+                HarvestItemCard(
+                    index = index,
+                    item = item,
+                    commodityList = state.commodityList,
+                    onEvent = onEvent
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Total NTE
+            val nteFormatted =
+                NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(state.nte)
+            CustomOutlinedTextField(
+                value = nteFormatted,
+                onValueChange = {},
+                label = "Total Nilai Transaksi Ekonomi (NTE)",
+                readOnly = true,
+                isEnabled = false,
+                modifier = Modifier.fillMaxWidth(),
+                rounded = 40,
+                error = state.nteError
+            )
+
+            CustomOutlinedTextArea(
+                value = state.farmerNotes,
+                onValueChange = { onEvent(AddReportEvent.OnFarmerNotesChange(it)) },
+                label = "Catatan Penyuluh",
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = "Beri catatan untuk penyuluh",
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- LAMPIRAN ---
+            FileUploader(
+                files = state.attachments,
+                onAddFileClick = onPickFile,
+                onRemoveFileClick = { index -> onEvent(AddReportEvent.OnRemoveAttachment(index)) },
+                label = "Unggah lampiran (jika ada)"
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // --- BUTTONS ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    enabled = !state.isLoading,
+                    onClick = { onEvent(AddReportEvent.OnShowConfirmDialog(isAjukan = false)) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp),
+                    shape = MaterialTheme.shapes.extraLarge
+                ) {
+                    if (state.isLoading && !state.isAjukan) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    } else {
+                        Text("Simpan")
+                    }
+                }
+
+                Button(
+                    onClick = { onEvent(AddReportEvent.OnShowConfirmDialog(isAjukan = true)) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                ) {
+                    if (state.isLoading && state.isAjukan) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    } else {
+                        Text("Ajukan")
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(48.dp))
+        }
+
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f))
+                    .clickable(enabled = false) {},
+                contentAlignment = Alignment.Center
+            ) {
+                CustomCircularProgressIndicator()
+            }
+        }
+
+        AnimatedMessage(
+            isVisible = state.successMessage != null,
+            message = state.successMessage ?: "",
+            messageType = MessageType.Success,
+            onDismiss = {
+                onEvent(AddReportEvent.OnDismissMessage)
+                if (state.successMessage != null) onNavigateUp()
+            },
+            modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp)
+        )
+
+        AnimatedMessage(
+            isVisible = state.error != null,
+            message = state.error ?: "",
+            messageType = MessageType.Error,
+            onDismiss = { onEvent(AddReportEvent.OnDismissMessage) },
+            modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp)
+        )
+        if (state.showConfirmDialog) {
+            val dialogTitle = if (state.pendingActionIsAjukan) "Mengajukan?" else "Menyimpan?"
+            val confirmText = if (state.pendingActionIsAjukan) "Ajukan" else "Simpan"
+            val confirmColor = MaterialTheme.colorScheme.tertiary
+
+            CustomConfirmationDialog(
+                title = dialogTitle,
+                supportingText = "Periksa kembali kelengkapan data anda",
+                confirmButtonText = confirmText,
+                dismissButtonText = "Batal",
+                onDismiss = { onEvent(AddReportEvent.OnDismissConfirmDialog) },
+                onConfirm = {
+                    onEvent(AddReportEvent.OnSubmit(isAjukan = state.pendingActionIsAjukan))
+                },
+                confirmColor = confirmColor
             )
         }
+    }
 
 }
 
@@ -515,7 +536,7 @@ fun HarvestItemCard(
                 onValueChange = {
                     onEvent(AddReportEvent.OnHarvestItemChange(index, item.copy(unitPrice = it)))
                 },
-                label = "Harga Satuan (/kg)",
+                label = "Harga Satuan (Rp per kg)",
                 asteriskAtEnd = true,
                 keyboardType = KeyboardType.Number,
                 modifier = Modifier.fillMaxWidth(),

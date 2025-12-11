@@ -26,6 +26,11 @@ fun String.parseIndonesianNumber(): Double {
     return cleanString.toDoubleOrNull() ?: 0.0
 }
 
+fun String.formatApiToUiString(): String {
+    val doubleVal = this.toDoubleOrNull() ?: return this
+    return java.text.NumberFormat.getNumberInstance(java.util.Locale("id", "ID")).format(doubleVal)
+}
+
 fun convertUiDateToApiDate(uiDate: String): String {
     return try {
         if (uiDate.contains("/")) {
