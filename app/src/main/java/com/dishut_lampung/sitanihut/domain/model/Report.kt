@@ -11,6 +11,19 @@ data class Report(
     val status: ReportStatus
 )
 
+data class ReportDetail(
+    val id: String,
+    val month: String,
+    val period: Int,
+    val modal: String,
+    val farmerNotes: String,
+    val nte: Double,
+    val status: ReportStatus,
+    val attachments: List<String>,
+    val plantingDetails: List<MasaTanam>,
+    val harvestDetails: List<MasaPanen>,
+)
+
 data class CreateReportInput(
     val month: String,
     val period: Int,

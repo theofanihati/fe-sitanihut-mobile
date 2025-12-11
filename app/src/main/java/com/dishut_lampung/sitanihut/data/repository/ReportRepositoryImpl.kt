@@ -20,11 +20,13 @@ import com.dishut_lampung.sitanihut.data.mapper.toDbValue
 import com.dishut_lampung.sitanihut.data.mapper.toDomain
 import com.dishut_lampung.sitanihut.data.mapper.toDto
 import com.dishut_lampung.sitanihut.data.mapper.toEntity
+import com.dishut_lampung.sitanihut.data.mapper.toReportDetail
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportRequestDto
 import com.dishut_lampung.sitanihut.data.worker.ReportSyncWorker
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.Report
+import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import com.dishut_lampung.sitanihut.util.Resource
@@ -166,7 +168,7 @@ class ReportRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getReportById(id: String): Flow<Resource<CreateReportInput>> {
+    override fun getReportById(id: String): Flow<Resource<ReportDetail>> {
         return flow {
             emit(Resource.Loading())
             try {
@@ -190,7 +192,7 @@ class ReportRepositoryImpl @Inject constructor(
 
             reportDao.getReportByIdFlow(id).collect { entity ->
                 if (entity != null) {
-                    emit(Resource.Success(entity.toCreateReportInput()))
+                    emit(Resource.Success(entity.toReportDetail()))
                 } else {
                     emit(Resource.Error("Laporan tidak ditemukan"))
                 }

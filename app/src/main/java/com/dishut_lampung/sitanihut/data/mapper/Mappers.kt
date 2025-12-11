@@ -21,6 +21,7 @@ import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.MasaPanen
 import com.dishut_lampung.sitanihut.domain.model.MasaTanam
 import com.dishut_lampung.sitanihut.domain.model.Report
+import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
 import com.dishut_lampung.sitanihut.domain.model.UserProfile
@@ -173,6 +174,55 @@ fun ReportEntity.toCreateReportInput(): CreateReportInput {
         farmerNotes = this.farmerNotes ?: "",
         nte = this.nte,
         isAjukan = false,
+        attachments = attachmentList,
+        plantingDetails = plantingList,
+        harvestDetails = harvestList
+    )
+}
+
+fun ReportEntity.toReportDetail(): ReportDetail {
+    val gson = Gson()
+    val plantingList: List<MasaTanam> = try {
+        if (!this.plantingDetailsJson.isNullOrEmpty()) {
+            val type = object : TypeToken<List<MasaTanam>>() {}.type
+            gson.fromJson(this.plantingDetailsJson, type)
+        } else emptyList()
+    } catch (e: Exception) { emptyList() }
+
+    val harvestList: List<MasaPanen> = try {
+        if (!this.harvestDetailsJson.isNullOrEmpty()) {
+            val type = object : TypeToken<List<MasaPanen>>() {}.type
+            gson.fromJson(this.harvestDetailsJson, type)
+        } else emptyList()
+    } catch (e: Exception) { emptyList() }
+
+    val attachmentList = if (!this.attachmentPaths.isNullOrEmpty()) {
+        this.attachmentPaths.split(",").filter { it.isNotBlank() }
+    } else {
+        emptyList()
+    }
+
+    val modalString = this.modal?.let {
+        if (it % 1.0 == 0.0) it.toLong().toString() else it.toString()
+    } ?: ""
+
+    val statusEnum = when (this.status?.lowercase(Locale.ROOT)) {
+        "disetujui" -> ReportStatus.APPROVED
+        "ditolak" -> ReportStatus.REJECTED
+        "diverifikasi" -> ReportStatus.VERIFIED
+        "menunggu" -> ReportStatus.PENDING
+        "belum diajukan" -> ReportStatus.DRAFT
+        else -> ReportStatus.DRAFT
+    }
+
+    return ReportDetail(
+        id = this.id,
+        month = this.month,
+        period = this.period,
+        modal = modalString,
+        farmerNotes = this.farmerNotes ?: "",
+        nte = this.nte,
+        status = statusEnum,
         attachments = attachmentList,
         plantingDetails = plantingList,
         harvestDetails = harvestList

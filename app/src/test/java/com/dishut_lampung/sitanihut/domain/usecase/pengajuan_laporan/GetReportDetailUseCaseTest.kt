@@ -2,6 +2,7 @@ package com.dishut_lampung.sitanihut.domain.usecase.pengajuan_laporan
 
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.Report
+import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
 import com.dishut_lampung.sitanihut.util.Resource
@@ -29,7 +30,7 @@ class GetReportDetailUseCaseTest {
     @Test
     fun `invoke should return report data when repository success`() = runTest {
         val reportId = "123"
-        val expectedReport = mockk<CreateReportInput>()
+        val expectedReport = mockk<ReportDetail>()
         every { repository.getReportById(reportId) } returns flowOf(Resource.Success(expectedReport))
 
         val result = getReportDetailUseCase(reportId).first()

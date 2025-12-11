@@ -4,6 +4,7 @@ import androidx.paging.PagingData
 import com.dishut_lampung.sitanihut.domain.model.Commodity
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.Report
+import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.util.Resource
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +14,6 @@ interface ReportRepository {
     suspend fun deleteReport(reportId: String): Resource<Unit>
     suspend fun submitReport(reportId: String): Resource<Unit>
     suspend fun createReport(input: CreateReportInput): Resource<Unit>
-    fun getReportById(id: String): Flow<Resource<CreateReportInput>>
+    fun getReportById(id: String): Flow<Resource<ReportDetail>>
     suspend fun updateReport(id: String, input: CreateReportInput): Resource<Boolean>
 }
