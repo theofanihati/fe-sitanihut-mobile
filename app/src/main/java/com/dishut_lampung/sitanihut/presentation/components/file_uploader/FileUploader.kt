@@ -31,12 +31,14 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
+import com.dishut_lampung.sitanihut.util.openFileOrUrl
 import java.io.File
 
 @Composable
@@ -45,9 +47,11 @@ fun FileUploader(
     files: List<ReportAttachment>,
     onAddFileClick: () -> Unit,
     onRemoveFileClick: (Int) -> Unit,
+    onFileClick: (ReportAttachment) -> Unit,
     maxFiles: Int = 10,
     label: String = "Lampiran"
 ) {
+    val context = LocalContext.current
     val dashedColor = MaterialTheme.colorScheme.secondary
 
     Column(
@@ -70,7 +74,8 @@ fun FileUploader(
                 files.forEachIndexed { index, attachment ->
                     SelectedFileItem(
                         attachment = attachment,
-                        onRemove = { onRemoveFileClick(index) }
+                        onRemove = { onRemoveFileClick(index) },
+                        onClick = { onFileClick(attachment) }
                     )
                 }
 
@@ -145,7 +150,8 @@ private fun SmallAddFileButton(
 @Composable
 private fun SelectedFileItem(
     attachment: ReportAttachment,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    onClick: () -> Unit
 ) {
     val fileName = if (attachment.isLocal) {
         File(attachment.filePath).name
@@ -161,7 +167,9 @@ private fun SelectedFileItem(
     }
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLowest,
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)

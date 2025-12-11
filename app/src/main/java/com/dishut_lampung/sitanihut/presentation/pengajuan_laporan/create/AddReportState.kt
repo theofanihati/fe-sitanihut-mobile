@@ -2,6 +2,7 @@ package com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create
 
 import com.dishut_lampung.sitanihut.domain.model.Commodity
 import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
+import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
 import java.io.File
 
 data class AddReportState(
@@ -87,4 +88,5 @@ sealed class AddReportEvent {
     object OnDismissMessage : AddReportEvent()
     data class OnShowConfirmDialog(val isAjukan: Boolean) : AddReportEvent()
     object OnDismissConfirmDialog : AddReportEvent()
+    data class OnShowUserMessage(val message: String, val type: MessageType) : AddReportEvent()
 }

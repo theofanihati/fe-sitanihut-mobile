@@ -64,6 +64,7 @@ import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomOutl
 import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
 import com.dishut_lampung.sitanihut.util.copyUriToInternalStorage
+import com.dishut_lampung.sitanihut.util.openFileOrUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -127,6 +128,7 @@ fun AddReportScreen(
     onNavigateUp: () -> Unit,
     onPickFile: () -> Unit
 ) {
+    val context = LocalContext.current
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -256,6 +258,15 @@ fun AddReportScreen(
                 files = state.attachments,
                 onAddFileClick = onPickFile,
                 onRemoveFileClick = { index -> onEvent(AddReportEvent.OnRemoveAttachment(index)) },
+                onFileClick = { attachment ->
+                    openFileOrUrl(
+                        context = context,
+                        attachment = attachment,
+                        onMessage = { msg, type ->
+                            onEvent(AddReportEvent.OnShowUserMessage(msg, type))
+                        }
+                    )
+                },
                 label = "Unggah lampiran (jika ada)"
             )
 
@@ -318,7 +329,9 @@ fun AddReportScreen(
             messageType = MessageType.Success,
             onDismiss = {
                 onEvent(AddReportEvent.OnDismissMessage)
-                if (state.successMessage != null) onNavigateUp()
+                if (state.successMessage == "Berhasil disimpan!" || state.successMessage == "Perubahan disimpan!") {
+                    onNavigateUp()
+                }
             },
             modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp)
         )
@@ -348,7 +361,6 @@ fun AddReportScreen(
             )
         }
     }
-
 }
 
 @Composable

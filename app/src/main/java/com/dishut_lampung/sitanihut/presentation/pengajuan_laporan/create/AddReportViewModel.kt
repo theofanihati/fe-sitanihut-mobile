@@ -12,6 +12,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.report.CreateReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.UpdateReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.ValidateReportInputUseCase
+import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.Resource
 import com.dishut_lampung.sitanihut.util.changeDateFormat
 import com.dishut_lampung.sitanihut.util.convertUiDateToApiDate
@@ -177,7 +178,13 @@ class AddReportViewModel @Inject constructor(
                 submitReport(event.isAjukan)
             }
             AddReportEvent.OnDismissMessage -> _uiState.update { it.copy(error = null, successMessage = null) }
-
+            is AddReportEvent.OnShowUserMessage -> {
+                if (event.type == MessageType.Success) {
+                    _uiState.update { it.copy(successMessage = event.message, error = null) }
+                } else {
+                    _uiState.update { it.copy(error = event.message, successMessage = null) }
+                }
+            }
             else -> {}
         }
     }
