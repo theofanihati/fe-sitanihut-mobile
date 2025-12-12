@@ -86,17 +86,25 @@ class ReportRepositoryImpl @Inject constructor(
 
     override suspend fun deleteReport(reportId: String): Resource<Unit> {
         return try {
-            reportDao.deleteReportById(reportId)
-
-            val token = userPreferences.getAuthToken()
-            if (token != null) {
-                apiService.deleteReport(reportId)
+            val currentStatus = reportDao.getSyncStatus(reportId)
+            if (currentStatus == SyncStatus.PENDING_CREATE) {
+                reportDao.deleteReportById(reportId)
+            } else {
+                reportDao.markAsPendingDelete(reportId)
+                val workRequest = OneTimeWorkRequestBuilder<ReportSyncWorker>()
+                    .setConstraints(
+                        Constraints.Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build()
+                    )
+                    .build()
+                WorkManager.getInstance(context).enqueue(workRequest)
             }
 
             Resource.Success(Unit)
         } catch (e: Exception) {
             e.printStackTrace()
-            Resource.Success(Unit)
+            Resource.Error("Gagal menghapus data: ${e.message}")
         }
     }
 

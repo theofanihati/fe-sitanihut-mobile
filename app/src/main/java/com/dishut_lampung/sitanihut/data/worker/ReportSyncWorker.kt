@@ -209,6 +209,23 @@ class ReportSyncWorker @AssistedInject constructor(
 
     private suspend fun syncDelete(report: ReportEntity): Boolean {
         Log.d("SYNC_WORKER", "Deleting report: ${report.id}")
-        return TODO("apiService.deleteReport(report.id)")
+        try {
+            val response = apiService.deleteReport(report.id)
+            if (response.isSuccessful || response.code() == 404) {
+                Log.d(
+                    "SYNC_WORKER",
+                    "Delete success/already deleted on server. Removing local data."
+                )
+                reportDao.deleteReportById(report.id)
+                return true
+            } else {
+                Log.e("SYNC_WORKER", "Failed to delete. Code: ${response.code()}")
+                return false
+            }
+        } catch (e: Exception) {
+             e.printStackTrace()
+             Log.e("SYNC_WORKER", "Exception during delete: ${e.message}")
+             return false
+        }
     }
 }

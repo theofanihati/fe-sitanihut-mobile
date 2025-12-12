@@ -31,6 +31,9 @@ sealed class PengajuanLaporanEvent {
 //    data class OnEditClick(val reportId: String) : PengajuanLaporanEvent()
 
     object OnSubmitClick : PengajuanLaporanEvent()
+    object OnSubmitConfirm : PengajuanLaporanEvent()
+    object OnDismissSubmitDialog : PengajuanLaporanEvent()
+
     object OnDeleteClick : PengajuanLaporanEvent()
 //    object OnDeleteCancel : PengajuanLaporanEvent()
     object OnDeleteConfirm : PengajuanLaporanEvent()

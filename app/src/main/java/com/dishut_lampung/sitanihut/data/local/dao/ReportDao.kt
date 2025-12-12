@@ -23,7 +23,7 @@ data class ReportCountTuple(
 interface ReportDao {
     @Query("""
         SELECT * FROM laporan 
-        WHERE (
+        WHERE syncStatus != 'PENDING_DELETE' AND (
             month LIKE '%' || :query || '%'
             OR period LIKE '%' || :query || '%'
             OR status LIKE '%' || :query || '%'
@@ -83,11 +83,14 @@ interface ReportDao {
     @Query("SELECT * FROM laporan WHERE syncStatus != 'SYNCED'")
     suspend fun getAllUnsyncedReports(): List<ReportEntity>
 
+    @Query("SELECT syncStatus FROM laporan WHERE id = :id")
+    suspend fun getSyncStatus(id: String): SyncStatus?
+
     @Query("DELETE FROM laporan WHERE id = :reportId")
     suspend fun deleteReportById(reportId: String)
 
     @Query("UPDATE laporan SET syncStatus = 'PENDING_DELETE' WHERE id = :reportId")
-    suspend fun markReportForDeletion(reportId: String)
+    suspend fun markAsPendingDelete(reportId: String)
 
     @Query("UPDATE laporan SET status = 'menunggu', syncStatus = 'pending_upload' WHERE id = :reportId")
     suspend fun submitReportById(reportId: String)

@@ -361,8 +361,8 @@ fun PengajuanLaporanScreen(
                 messageType = MessageType.Success,
                 onDismiss = { onEvent(PengajuanLaporanEvent.OnDismissSuccessMessage) },
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 16.dp)
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 80.dp)
             )
 
             AnimatedMessage(
@@ -371,8 +371,8 @@ fun PengajuanLaporanScreen(
                 messageType = MessageType.Error,
                 onDismiss = { onEvent(PengajuanLaporanEvent.OnDismissError) },
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 16.dp)
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 80.dp)
             )
         }
     }
@@ -414,13 +414,24 @@ fun PengajuanLaporanScreen(
 
     if (state.isDeleteDialogVisible) {
         CustomConfirmationDialog(
-            title = "Yakin ingin menghapus laporan ini?",
+            title = "Hapus laporan?",
             supportingText = "Data yang dihapus tidak dapat dikembalikan.",
             onConfirm = { onEvent(PengajuanLaporanEvent.OnDeleteConfirm) },
             onDismiss = { onEvent(PengajuanLaporanEvent.OnDismissDeleteDialog) },
             confirmButtonText = "Hapus",
             dismissButtonText = "Batal",
             confirmColor = MaterialTheme.colorScheme.error
+        )
+    }
+    if (state.isSubmitDialogVisible) {
+        CustomConfirmationDialog(
+            title = "Mengajukan?",
+            supportingText = "Periksa kembali data anda, pastikan sudah benar",
+            confirmButtonText = "Ajukan",
+            dismissButtonText = "Batal",
+            confirmColor = MaterialTheme.colorScheme.tertiary,
+            onConfirm = { onEvent(PengajuanLaporanEvent.OnSubmitConfirm) },
+            onDismiss = { onEvent(PengajuanLaporanEvent.OnDismissSubmitDialog) }
         )
     }
 }

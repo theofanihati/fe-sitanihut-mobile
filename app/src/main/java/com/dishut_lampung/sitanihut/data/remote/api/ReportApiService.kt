@@ -36,7 +36,7 @@ interface ReportApiService {
     @DELETE("v1/laporan/{id}")
     suspend fun deleteReport(
         @Path("id") id: String
-    ): ApiResponse<Any?>
+    ): Response<ApiResponse<Any?>>
 
     @Multipart
     @POST("v1/laporan/{id}")

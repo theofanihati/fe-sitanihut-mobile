@@ -62,7 +62,14 @@ class PengajuanLaporanViewModel @Inject constructor(
                 _uiState.update { it.copy(isDeleteDialogVisible = false) }
             }
             PengajuanLaporanEvent.OnDeleteConfirm -> deleteReport()
-            PengajuanLaporanEvent.OnSubmitClick -> submitReport()
+
+            PengajuanLaporanEvent.OnSubmitClick -> {
+                _uiState.update { it.copy(isOptionSheetVisible = false, isSubmitDialogVisible = true) }
+            }
+            PengajuanLaporanEvent.OnDismissSubmitDialog -> {
+                _uiState.update { it.copy(isSubmitDialogVisible = false) }
+            }
+            PengajuanLaporanEvent.OnSubmitConfirm -> submitReport()
 
             PengajuanLaporanEvent.OnDismissError -> {
                 _uiState.update { it.copy(errorMessage = null) }
