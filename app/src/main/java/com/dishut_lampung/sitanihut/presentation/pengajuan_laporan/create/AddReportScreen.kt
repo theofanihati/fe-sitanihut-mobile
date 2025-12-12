@@ -35,6 +35,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -46,6 +47,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dishut_lampung.sitanihut.domain.model.Commodity
@@ -128,6 +130,15 @@ fun AddReportScreen(
     onNavigateUp: () -> Unit,
     onPickFile: () -> Unit
 ) {
+    LaunchedEffect(state.successMessage) {
+        val msg = state.successMessage
+        if (msg == "Berhasil disimpan!" || msg == "Perubahan disimpan!") {
+            kotlinx.coroutines.delay(1500)
+            onNavigateUp()
+            onEvent(AddReportEvent.OnDismissMessage)
+        }
+    }
+
     val context = LocalContext.current
     Box(
         modifier = Modifier
@@ -311,7 +322,7 @@ fun AddReportScreen(
             Spacer(modifier = Modifier.height(48.dp))
         }
 
-        if (state.isLoading) {
+        if (state.isLoading && !state.showConfirmDialog) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -329,11 +340,14 @@ fun AddReportScreen(
             messageType = MessageType.Success,
             onDismiss = {
                 onEvent(AddReportEvent.OnDismissMessage)
-                if (state.successMessage == "Berhasil disimpan!" || state.successMessage == "Perubahan disimpan!") {
-                    onNavigateUp()
-                }
+//                if (state.successMessage == "Berhasil disimpan!" || state.successMessage == "Perubahan disimpan!") {
+//                    onNavigateUp()
+//                }
             },
-            modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp)
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp)
+                .zIndex(10f)
         )
 
         AnimatedMessage(
@@ -341,8 +355,12 @@ fun AddReportScreen(
             message = state.error ?: "",
             messageType = MessageType.Error,
             onDismiss = { onEvent(AddReportEvent.OnDismissMessage) },
-            modifier = Modifier.align(Alignment.TopCenter).padding(top = 16.dp)
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp)
+                .zIndex(10f)
         )
+
         if (state.showConfirmDialog) {
             val dialogTitle = if (state.pendingActionIsAjukan) "Mengajukan?" else "Menyimpan?"
             val confirmText = if (state.pendingActionIsAjukan) "Ajukan" else "Simpan"
@@ -353,7 +371,8 @@ fun AddReportScreen(
                 supportingText = "Periksa kembali kelengkapan data anda",
                 confirmButtonText = confirmText,
                 dismissButtonText = "Batal",
-                onDismiss = { onEvent(AddReportEvent.OnDismissConfirmDialog) },
+                isLoading = state.isLoading,
+                onDismiss = {if (!state.isLoading) onEvent(AddReportEvent.OnDismissConfirmDialog) },
                 onConfirm = {
                     onEvent(AddReportEvent.OnSubmit(isAjukan = state.pendingActionIsAjukan))
                 },

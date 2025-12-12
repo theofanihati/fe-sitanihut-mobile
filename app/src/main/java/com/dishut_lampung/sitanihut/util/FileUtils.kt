@@ -127,13 +127,8 @@ fun downloadFile(
 }
 
 fun getMimeType(file: File): String {
-    // 1. Ambil ekstensi dan ubah ke huruf kecil
     val extension = file.extension.lowercase(Locale.ROOT)
-
-    // 2. Coba cari MimeType resmi dari Android
     var type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-
-    // 3. (PENTING) Kalau Android gagal nemu (return null), kita paksa manual
     if (type == null) {
         type = when (extension) {
             "jpg", "jpeg" -> "image/jpeg"
@@ -144,6 +139,5 @@ fun getMimeType(file: File): String {
             else -> "*/*"
         }
     }
-
     return type
 }

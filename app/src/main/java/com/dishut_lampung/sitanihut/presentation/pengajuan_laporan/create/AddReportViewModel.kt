@@ -174,15 +174,19 @@ class AddReportViewModel @Inject constructor(
                 _uiState.update { it.copy(showConfirmDialog = false) }
             }
             is AddReportEvent.OnSubmit -> {
-                _uiState.update { it.copy(showConfirmDialog = false) }
+//                _uiState.update { it.copy(showConfirmDialog = false) }
                 submitReport(event.isAjukan)
             }
             AddReportEvent.OnDismissMessage -> _uiState.update { it.copy(error = null, successMessage = null) }
             is AddReportEvent.OnShowUserMessage -> {
-                if (event.type == MessageType.Success) {
-                    _uiState.update { it.copy(successMessage = event.message, error = null) }
-                } else {
-                    _uiState.update { it.copy(error = event.message, successMessage = null) }
+                viewModelScope.launch {
+                    _uiState.update { it.copy(successMessage = null, error = null) }
+                    kotlinx.coroutines.delay(100)
+                    if (event.type == MessageType.Success) {
+                        _uiState.update { it.copy(successMessage = event.message, error = null) }
+                    } else {
+                        _uiState.update { it.copy(error = event.message, successMessage = null) }
+                    }
                 }
             }
             else -> {}
@@ -349,10 +353,17 @@ class AddReportViewModel @Inject constructor(
             when (result) {
                 is Resource.Success -> {
                     val message = if (currentReportId == null) "Berhasil disimpan!" else "Perubahan disimpan!"
-                    _uiState.update { it.copy(isLoading = false, successMessage = message) }
+                    _uiState.update { it.copy(
+                        isLoading = false,
+                        successMessage = message,
+                        showConfirmDialog = false,
+                        ) }
                 }
                 is Resource.Error -> {
-                    _uiState.update { it.copy(isLoading = false, error = result.message) }
+                    _uiState.update { it.copy(
+                        isLoading = false,
+                        error = result.message
+                    ) }
                 }
                 else -> {}
             }

@@ -219,7 +219,8 @@ fun Report.toUiModel(): ReportUiModel {
 
     val isEditable = this.status == ReportStatus.DRAFT || this.status == ReportStatus.REJECTED
     val isDeletable = this.status == ReportStatus.DRAFT || this.status == ReportStatus.REJECTED
-    val periodTitle = "Laporan Periode ${this.monthPeriod} ${this.period}"
+    val monthSentenceCase = this.monthPeriod.replaceFirstChar { it.titlecase() }
+    val periodTitle = "Laporan Periode ${monthSentenceCase} ${this.period}"
 
     return ReportUiModel(
         id = this.id,

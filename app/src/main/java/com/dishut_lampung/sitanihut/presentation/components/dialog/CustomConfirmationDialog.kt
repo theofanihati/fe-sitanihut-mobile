@@ -14,6 +14,7 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonElevation
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,7 +36,8 @@ fun CustomConfirmationDialog(
     supportingText : String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-    confirmColor : androidx.compose.ui.graphics.Color
+    confirmColor : androidx.compose.ui.graphics.Color,
+    isLoading: Boolean = false
 ) {
     BasicAlertDialog(onDismissRequest = onDismiss) {
         Column(
@@ -70,6 +72,7 @@ fun CustomConfirmationDialog(
             ) {
                 Button(
                     onClick = onDismiss,
+                    enabled = !isLoading,
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
@@ -89,6 +92,7 @@ fun CustomConfirmationDialog(
 
                 Button(
                     onClick = onConfirm,
+                    enabled = !isLoading,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = confirmColor,
                     ),
@@ -98,11 +102,15 @@ fun CustomConfirmationDialog(
                     ),
                     modifier = Modifier.defaultMinSize(minWidth = 100.dp)
                 ) {
-                    Text(
-                        text = confirmButtonText,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onError
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator()
+                    } else {
+                        Text(
+                            text = confirmButtonText,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onError
+                        )
+                    }
                 }
             }
         }
