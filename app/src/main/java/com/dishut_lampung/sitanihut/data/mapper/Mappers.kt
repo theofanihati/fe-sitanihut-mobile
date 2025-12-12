@@ -142,45 +142,6 @@ fun ReportEntity.toDomain(): Report {
     )
 }
 
-//fun ReportEntity.toCreateReportInput(): CreateReportInput {
-//    val gson = Gson()
-//    val plantingList: List<MasaTanam> = try {
-//        if (!this.plantingDetailsJson.isNullOrEmpty()) {
-//            val type = object : TypeToken<List<MasaTanam>>() {}.type
-//            gson.fromJson(this.plantingDetailsJson, type)
-//        } else emptyList()
-//    } catch (e: Exception) { emptyList() }
-//
-//    val harvestList: List<MasaPanen> = try {
-//        if (!this.harvestDetailsJson.isNullOrEmpty()) {
-//            val type = object : TypeToken<List<MasaPanen>>() {}.type
-//            gson.fromJson(this.harvestDetailsJson, type)
-//        } else emptyList()
-//    } catch (e: Exception) { emptyList() }
-//
-//    val attachmentList = if (!this.attachmentPaths.isNullOrEmpty()) {
-//        this.attachmentPaths.split(",").filter { it.isNotBlank() }
-//    } else {
-//        emptyList()
-//    }
-//
-//    val modalString = this.modal?.let {
-//        if (it % 1.0 == 0.0) it.toLong().toString() else it.toString()
-//    } ?: ""
-//
-//    return CreateReportInput(
-//        month = this.month,
-//        period = this.period,
-//        modal = modalString,
-//        farmerNotes = this.farmerNotes ?: "",
-//        nte = this.nte,
-//        isAjukan = false,
-//        attachments = attachmentList,
-//        plantingDetails = plantingList,
-//        harvestDetails = harvestList
-//    )
-//}
-
 fun ReportEntity.toReportDetail(): ReportDetail {
     val gson = Gson()
     val plantingList: List<MasaTanam> = try {
@@ -219,10 +180,20 @@ fun ReportEntity.toReportDetail(): ReportDetail {
 
     return ReportDetail(
         id = this.id,
+        userName = this.userName ?: "-",
+        userNik = this.userNik ?: "-",
+        userGender = this.userGender ?: "-",
+        userAddress = this.userAddress ?: "-",
+        userKphName = this.userKphName ?: "-",
+        userKthName = this.userKthName ?: "-",
         month = this.month,
         period = this.period,
         modal = modalString,
         farmerNotes = this.farmerNotes ?: "",
+        penyuluhNotes = this.penyuluhNotes ?: "",
+        createdAt = this.createdAt ?: "-",
+        verifiedAt = this.verifiedAt ?: "-",
+        acceptedAt = this.acceptedAt ?: "-",
         nte = this.nte,
         status = statusEnum,
         attachments = attachmentList,
@@ -283,6 +254,12 @@ fun ReportDetailDto.toEntity(): ReportEntity {
     return ReportEntity(
         id = this.id,
         userId = this.userId,
+        userName = this.userName,
+        userNik = this.userNik,
+        userGender = this.userGender,
+        userAddress = this.userAddress,
+        userKphName = this.userKphName,
+        userKthName = this.userKthName,
         period = this.period,
         month = this.month,
         date = this.date,
@@ -290,6 +267,10 @@ fun ReportDetailDto.toEntity(): ReportEntity {
         status = this.status,
         modal = this.modal,
         farmerNotes = this.farmerNotes,
+        penyuluhNotes = this.penyuluhNotes,
+        createdAt = this.createdAt,
+        verifiedAt = this.verifiedAt,
+        acceptedAt = this.acceptedAt,
         plantingDetailsJson = plantingJson,
         harvestDetailsJson = harvestJson,
         attachmentsJson = attachmentsJsonString,

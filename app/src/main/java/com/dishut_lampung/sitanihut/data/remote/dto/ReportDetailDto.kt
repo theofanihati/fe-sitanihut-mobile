@@ -17,6 +17,12 @@ data class ReportDetailDto(
     @SerializedName("lampiran") val attachments: List<AttachmentDto>?,
     @SerializedName("catatan_petani") val farmerNotes: String?,
     @SerializedName("catatan_penyuluh") val penyuluhNotes: String?,
+    @SerializedName("nama_user") val userName: String?,
+    @SerializedName("nomor_induk") val userNik: String?,
+    @SerializedName("jenis_kelamin") val userGender: String?,
+    @SerializedName("alamat") val userAddress: String?,
+    @SerializedName("nama_kph") val userKphName: String?,
+    @SerializedName("nama_kth") val userKthName: String?,
     @SerializedName("masa_tanam") val plantingDetails: List<PlantingResponseDto>,
     @SerializedName("masa_panen") val harvestDetails: List<HarvestResponseDto>,
 )
