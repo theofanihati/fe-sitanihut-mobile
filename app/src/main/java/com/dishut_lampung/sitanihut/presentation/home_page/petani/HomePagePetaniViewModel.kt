@@ -56,6 +56,7 @@ class HomePagePetaniViewModel @Inject constructor(
             successMessage = currentTemporary.successMessage,
             isLogoutConfirmationVisible = currentTemporary.isLogoutConfirmationVisible,
             reportIdToDelete = currentTemporary.reportIdToDelete,
+            reportIdToSubmit = currentTemporary.reportIdToSubmit,
             reportIdForOptionSheet = currentTemporary.reportIdForOptionSheet,
         )
     }.stateIn(
@@ -83,8 +84,11 @@ class HomePagePetaniViewModel @Inject constructor(
 
             is HomeEvent.OnDeleteClick -> showDeleteConfirmation(event.reportId)
             HomeEvent.OnDeleteCancel -> updateTemporaryState { it.copy(reportIdToDelete = null) }
-            is HomeEvent.OnDeleteConfirm -> deleteReport(event.reportId)
-            is HomeEvent.OnSubmitClick -> submitReport(event.reportId)
+            is HomeEvent.OnDeleteConfirm -> deleteReport()
+
+            is HomeEvent.OnSubmitClick -> showSubmitConfirmation(event.reportId)
+            HomeEvent.OnSubmitCancel -> updateTemporaryState { it.copy(reportIdToSubmit = null) }
+            is HomeEvent.OnSubmitConfirm -> submitReport()
 
             HomeEvent.OnDismissError -> updateTemporaryState { it.copy(generalError = null) }
             HomeEvent.OnDismissSuccessMessage -> updateTemporaryState { it.copy(successMessage = null) }
@@ -129,7 +133,16 @@ class HomePagePetaniViewModel @Inject constructor(
         )}
     }
 
-    private fun deleteReport(reportId: String){
+    private fun showSubmitConfirmation(reportId: String){
+        updateTemporaryState{it.copy(
+            reportIdToSubmit = reportId,
+            reportIdForOptionSheet = null,
+        )}
+    }
+
+    private fun deleteReport(){
+        val reportId = _temporatyUiState.value.reportIdToDelete ?: return
+
         updateTemporaryState{it.copy(
             isLoading = true,
             reportIdToDelete = null,
@@ -141,19 +154,21 @@ class HomePagePetaniViewModel @Inject constructor(
                         isLoading=false,
                         successMessage = "Laporan berhasil dihapus"
                     )}
+                    onEvent(HomeEvent.OnRefreshData)
                 } is Resource.Error -> {
-                updateTemporaryState {
-                    it.copy(
-                        isLoading = false,
-                        generalError = result.message
-                    )
-                }
-            } else -> updateTemporaryState{it.copy(isLoading = false)}
+                    updateTemporaryState {
+                        it.copy(
+                            isLoading = false,
+                            generalError = result.message
+                        )
+                    }
+                } else -> updateTemporaryState{it.copy(isLoading = false)}
             }
         }
     }
 
-    private fun submitReport(reportId: String){
+    private fun submitReport(){
+        val reportId = _temporatyUiState.value.reportIdToSubmit ?: return
         updateTemporaryState{it.copy(
             isLoading = true,
             reportIdForOptionSheet = null,
@@ -165,6 +180,7 @@ class HomePagePetaniViewModel @Inject constructor(
                         isLoading=false,
                         successMessage = "Laporan berhasil diajukan"
                     )}
+                    onEvent(HomeEvent.OnRefreshData)
                 } is Resource.Error -> {
                 updateTemporaryState {
                     it.copy(

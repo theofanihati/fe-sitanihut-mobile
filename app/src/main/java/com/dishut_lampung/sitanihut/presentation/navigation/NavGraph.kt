@@ -3,8 +3,10 @@ package com.dishut_lampung.sitanihut.presentation.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.dishut_lampung.sitanihut.presentation.home_page.kkph.HomePagePenanggungJawabScreen
 import com.dishut_lampung.sitanihut.presentation.home_page.kkph.HomePagePenanggungJawabRoute
 import com.dishut_lampung.sitanihut.presentation.home_page.penyuluh.HomePagePenyuluhRoute
@@ -35,8 +37,8 @@ fun NavGraph(
         composable(route = Screen.HomePetani.route) {
             HomePagePetaniRoute(
                 modifier = modifier,
-                onNavigateToDetail = {
-                    navController.navigate("report-submission/$id")
+                onNavigateToDetail = { id ->
+                    navController.navigateSingleTop("report-submission-detail/$id")
                 },
                 onNavigateToInfo = {
                     navController.navigate("information")
@@ -46,7 +48,13 @@ fun NavGraph(
                 },
                 onNavigateToReportSubmission = {
                     navController.navigate("report-submission")
-                }
+                },
+                onNavigateToEdit = { id: String ->
+                    navController.navigateSingleTop(
+                        Screen.Petani.ReportForm.createRoute(reportId = id)
+                )
+            }
+
             )
         }
         composable(route = Screen.HomePenyuluh.route) {

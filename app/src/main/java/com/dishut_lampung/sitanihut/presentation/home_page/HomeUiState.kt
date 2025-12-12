@@ -17,6 +17,7 @@ data class HomeUiState(
 
     val isLogoutConfirmationVisible: Boolean = false,
     val reportIdToDelete: String? = null,
+    val reportIdToSubmit: String? = null,
     val reportIdForOptionSheet: String? = null,
 )
 
@@ -33,11 +34,13 @@ sealed class HomeEvent {
 
     data class OnViewDetailClick(val reportId: String) : HomeEvent()
     data class OnEditClick(val reportId: String) : HomeEvent()
-    data class OnDeleteClick(val reportId: String) : HomeEvent()
     data class OnSubmitClick(val reportId: String) : HomeEvent() // Ajukan/Submit
+    object OnSubmitCancel : HomeEvent()
+    object OnSubmitConfirm : HomeEvent()
 
+    data class OnDeleteClick(val reportId: String) : HomeEvent()
     object OnDeleteCancel : HomeEvent()
-    data class OnDeleteConfirm(val reportId: String) : HomeEvent()
+    object OnDeleteConfirm : HomeEvent()
 
     object OnDismissError : HomeEvent()
     object OnDismissSuccessMessage : HomeEvent()

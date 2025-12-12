@@ -47,9 +47,11 @@ import com.dishut_lampung.sitanihut.presentation.components.card.HomeMenuGrid
 import com.dishut_lampung.sitanihut.presentation.components.card.HomeMenuItem
 import com.dishut_lampung.sitanihut.presentation.components.card.ReportCard
 import com.dishut_lampung.sitanihut.presentation.components.bottomsheet.ReportOptionBottomSheet
+import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirmationDialog
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiState
+import com.dishut_lampung.sitanihut.presentation.report_submission.list.ReportListEvent
 import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens
 import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
 import com.dishut_lampung.sitanihut.presentation.ui.theme.lightGreen
@@ -75,7 +77,8 @@ fun HomePagePetaniScreenPreview() {
             state = HomeUiState(
                 isLoading = false,
                 latestReports = dummyReports
-            )
+            ),
+            onEvent = {},
         )
     }
 }
@@ -87,6 +90,7 @@ fun HomePagePetaniRoute(
     onNavigateToReportSubmission: () -> Unit,
     onNavigateToCommodity: () -> Unit,
     onNavigateToInfo: () -> Unit,
+    onNavigateToEdit: (String) -> Unit,
     viewModel: HomePagePetaniViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -97,6 +101,9 @@ fun HomePagePetaniRoute(
                 is HomeUiEvent.NavigateToReportDetail -> {
                     onNavigateToDetail(event.reportId)
                 }
+                is HomeUiEvent.NavigateToEditReport -> {
+                    onNavigateToEdit(event.reportId)
+                }
                 else -> {}
             }
         }
@@ -104,6 +111,7 @@ fun HomePagePetaniRoute(
 
     HomePagePetaniScreen(
         state = state,
+        onEvent = viewModel::onEvent,
         modifier = modifier,
         onReportClick = { reportId -> onNavigateToDetail(reportId) },
         onActionClick = { reportId ->
@@ -135,6 +143,7 @@ fun HomePagePetaniRoute(
 fun HomePagePetaniScreen(
     modifier: Modifier = Modifier,
     state: HomeUiState,
+    onEvent: (HomeEvent) -> Unit,
     onReportClick: (String) -> Unit,
     onActionClick: (String) -> Unit,
     onNavigateToCommodity: () -> Unit = {},
@@ -221,7 +230,7 @@ fun HomePagePetaniScreen(
 
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.surface,
+                    color = MaterialTheme.colorScheme.surfaceContainerLowest,
                     shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
                     shadowElevation = 4.dp
                 ) {
@@ -315,6 +324,37 @@ fun HomePagePetaniScreen(
                     onSubmitReportClick(selectedReportId)
                 },
                 isEditable = isEditable
+            )
+        }
+        if (state.reportIdToDelete != null) {
+            CustomConfirmationDialog(
+                title = "Hapus laporan?",
+                supportingText = "Data yang dihapus tidak dapat dikembalikan.",
+                confirmButtonText = "Hapus",
+                dismissButtonText = "Batal",
+                confirmColor = MaterialTheme.colorScheme.error,
+                onConfirm = {
+                    onEvent(HomeEvent.OnDeleteConfirm)
+                },
+                onDismiss = {
+                    onEvent(HomeEvent.OnDeleteCancel)
+                }
+            )
+        }
+
+        if (state.reportIdToSubmit != null) {
+            CustomConfirmationDialog(
+                title = "Mengajukan?",
+                supportingText = "Periksa kembali data anda, pastikan sudah benar",
+                confirmButtonText = "Ajukan",
+                dismissButtonText = "Batal",
+                confirmColor = MaterialTheme.colorScheme.tertiary,
+                onConfirm = {
+                    onEvent(HomeEvent.OnSubmitConfirm)
+                },
+                onDismiss = {
+                    onEvent(HomeEvent.OnSubmitCancel)
+                }
             )
         }
     }

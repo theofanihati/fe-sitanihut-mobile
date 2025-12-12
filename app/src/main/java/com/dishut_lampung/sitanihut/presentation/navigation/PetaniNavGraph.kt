@@ -36,13 +36,19 @@ fun NavGraphBuilder.petaniNavGraph(
             val onNavigateInfo = {
                 navController.navigateSingleTop("information")
             }
+            val onNavigateToEdit = { id: String ->
+                navController.navigateSingleTop(
+                    Screen.Petani.ReportForm.createRoute(reportId = id)
+                )
+            }
 
             HomePagePetaniRoute(
                 modifier = modifier,
                 onNavigateToDetail = onNavigateToDetail,
                 onNavigateToCommodity = onNavigateToCommodity,
                 onNavigateToReportSubmission = onNavigateToReportSubmission,
-                onNavigateToInfo = onNavigateInfo
+                onNavigateToInfo = onNavigateInfo,
+                onNavigateToEdit = onNavigateToEdit,
             )
         }
 
