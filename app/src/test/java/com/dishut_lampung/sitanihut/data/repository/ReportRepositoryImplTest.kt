@@ -51,6 +51,8 @@ class ReportRepositoryImplTest {
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
         repository = ReportRepositoryImpl(apiService, db, reportDao, userPreferences, context)
+
+        every { db.reportDao() } returns reportDao
     }
 
     @After
@@ -85,6 +87,7 @@ class ReportRepositoryImplTest {
     fun `submitReport should update local AND call API when token exists`() = runTest {
         val id = "123"
         coEvery { userPreferences.getAuthToken() } returns "fake_token"
+        coEvery { reportDao.submitReportById(id) } just Runs
         val result = repository.submitReport(id)
 
         assertTrue(result is Resource.Success)
@@ -101,14 +104,15 @@ class ReportRepositoryImplTest {
             plantingDetails = emptyList(),
             harvestDetails = emptyList(),
             farmerNotes = "Catatan",
-            attachments = emptyList(),
+            newAttachments = listOf("/local/path/img.jpg"),
+            existingAttachmentIds = emptyList(),
             isAjukan = true,
             nte = 5000.0
         )
         coEvery { userPreferences.userId } returns flowOf("user-123")
 
         val reportSlot = slot<List<ReportEntity>>()
-        coEvery { reportDao.insertAll(capture(reportSlot)) } returns Unit
+        coEvery { reportDao.upsertAll(capture(reportSlot)) } just Runs
 
         mockkStatic(WorkManager::class)
         val mockWorkManager = mockk<WorkManager>()
@@ -158,7 +162,6 @@ class ReportRepositoryImplTest {
             jsonPayload = null,
             plantingDetailsJson = "[]",
             harvestDetailsJson = "[]",
-            attachmentPaths = "",
         )
         every { reportDao.getReportByIdFlow(id=id) } returns flowOf(dummyEntity)
 
@@ -200,7 +203,8 @@ class ReportRepositoryImplTest {
             farmerNotes = "Catatan",
             nte = 100000.0,
             isAjukan = false,
-            attachments = emptyList(),
+            newAttachments = emptyList(),
+            existingAttachmentIds = emptyList(),
             plantingDetails = emptyList(),
             harvestDetails = emptyList()
         )
@@ -243,7 +247,8 @@ class ReportRepositoryImplTest {
             farmerNotes = "Edit Catatan",
             nte = 200000.0,
             isAjukan = false,
-            attachments = emptyList(),
+            newAttachments = emptyList(),
+            existingAttachmentIds = emptyList(),
             plantingDetails = emptyList(),
             harvestDetails = emptyList()
         )
