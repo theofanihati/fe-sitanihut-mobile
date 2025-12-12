@@ -46,7 +46,8 @@ class ValidateReportUseCaseTest {
         plantingDetails = listOf(validPlantingSemusim),
         harvestDetails = listOf(validHarvest),
         farmerNotes = "",
-        attachments = emptyList(),
+        newAttachments = emptyList(),
+        existingAttachmentIds = emptyList(),
         isAjukan = true,
         nte = 50000.0
     )
