@@ -18,6 +18,8 @@ class ReportDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    private val reportId: String = checkNotNull(savedStateHandle["reportId"])
+
     private val _uiState = MutableStateFlow<ReportDetailUiState>(ReportDetailUiState.Loading)
     val uiState = _uiState.asStateFlow()
 
@@ -26,6 +28,27 @@ class ReportDetailViewModel @Inject constructor(
     }
 
     fun getReportDetail() {
-        TODO()
+        viewModelScope.launch {
+            getReportDetailUseCase(reportId).collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        if (_uiState.value !is ReportDetailUiState.Success) {
+                            _uiState.value = ReportDetailUiState.Loading
+                        }
+                    }
+                    is Resource.Success -> {
+                        result.data?.let { detailData ->
+                            _uiState.value = ReportDetailUiState.Success(data = detailData)
+                        }
+                    }
+                    is Resource.Error -> {
+                        if (_uiState.value !is ReportDetailUiState.Success) {
+                            _uiState.value = ReportDetailUiState.Error(result.message ?: "Terjadi kesalahan")
+                        } else {
+                        }
+                    }
+                }
+            }
+        }
     }
 }
