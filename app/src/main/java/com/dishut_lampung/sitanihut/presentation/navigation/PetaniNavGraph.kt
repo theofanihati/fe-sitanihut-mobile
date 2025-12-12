@@ -13,11 +13,9 @@ import com.dishut_lampung.sitanihut.presentation.information.InformationRoute
 import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScreen
 import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutRoute
-import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.PengajuanLaporanRoute
-import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.PengajuanLaporanScreen
-import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create.AddReportRoute
 import com.dishut_lampung.sitanihut.presentation.profile.petani.PetaniProfileRoute
-import com.dishut_lampung.sitanihut.presentation.profile.petani.PetaniProfileScreen
+import com.dishut_lampung.sitanihut.presentation.report_submission.form.ReportFormRoute
+import com.dishut_lampung.sitanihut.presentation.report_submission.list.ReportListRoute
 
 fun NavGraphBuilder.petaniNavGraph(
     modifier : Modifier,
@@ -54,7 +52,7 @@ fun NavGraphBuilder.petaniNavGraph(
             CommodityRoute()
         }
         composable(route = Screen.Petani.ReportSubmission.route){
-            PengajuanLaporanRoute(
+            ReportListRoute(
                 onNavigateToAddReport = {
                     navController.navigateSingleTop(
                         Screen.Petani.ReportForm.createRoute(reportId = null))
@@ -79,7 +77,7 @@ fun NavGraphBuilder.petaniNavGraph(
                 }
             )
         ){
-            AddReportRoute(
+            ReportFormRoute(
                 onNavigateUp = { navController.popBackStack() }
             )
         }

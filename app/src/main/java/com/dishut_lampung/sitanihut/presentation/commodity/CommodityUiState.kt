@@ -1,7 +1,6 @@
 package com.dishut_lampung.sitanihut.presentation.commodity
 
 import com.dishut_lampung.sitanihut.domain.model.Commodity
-import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.PengajuanLaporanEvent
 
 data class CommodityUiState (
     val items: List<Commodity> = emptyList(),

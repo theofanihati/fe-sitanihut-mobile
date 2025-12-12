@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create
+package com.dishut_lampung.sitanihut.presentation.report_submission.form
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -18,21 +18,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -51,8 +43,6 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dishut_lampung.sitanihut.domain.model.Commodity
-import com.dishut_lampung.sitanihut.presentation.commodity.CommodityScreen
-import com.dishut_lampung.sitanihut.presentation.commodity.CommodityUiState
 import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
 import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
@@ -75,16 +65,16 @@ import java.util.Locale
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun AddReportScreenPreview() {
+private fun ReportFormScreenPreview() {
     SitanihutTheme {
-        val state = AddReportState(
+        val state = ReportFormState(
             monthList = listOf("Januari", "Februari", "Maret",
                 "April", "Mei", "Juni", "Juli", "Agustus", "September",),
             isAjukan = false,
 
         )
 
-        AddReportScreen(
+        ReportFormScreen(
             state = state,
             onEvent = {},
             onNavigateUp = {},
@@ -93,9 +83,9 @@ private fun AddReportScreenPreview() {
     }
 }
 @Composable
-fun AddReportRoute(
+fun ReportFormRoute(
     onNavigateUp: () -> Unit,
-    viewModel: AddReportViewModel = hiltViewModel()
+    viewModel: ReportFormViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -109,13 +99,13 @@ fun AddReportRoute(
                 val filePath = copyUriToInternalStorage(context, uri)
 
                 if (filePath != null) {
-                    viewModel.onEvent(AddReportEvent.OnAddAttachment(filePath))
+                    viewModel.onEvent(ReportFormEvent.OnAddAttachment(filePath))
                 }
             }
         }
     }
 
-    AddReportScreen(
+    ReportFormScreen(
         state = state,
         onEvent = viewModel::onEvent,
         onNavigateUp = onNavigateUp,
@@ -124,9 +114,9 @@ fun AddReportRoute(
 }
 
 @Composable
-fun AddReportScreen(
-    state: AddReportState,
-    onEvent: (AddReportEvent) -> Unit,
+fun ReportFormScreen(
+    state: ReportFormState,
+    onEvent: (ReportFormEvent) -> Unit,
     onNavigateUp: () -> Unit,
     onPickFile: () -> Unit
 ) {
@@ -135,7 +125,7 @@ fun AddReportScreen(
         if (msg == "Berhasil disimpan!" || msg == "Perubahan disimpan!") {
             kotlinx.coroutines.delay(1500)
             onNavigateUp()
-            onEvent(AddReportEvent.OnDismissMessage)
+            onEvent(ReportFormEvent.OnDismissMessage)
         }
     }
 
@@ -171,7 +161,7 @@ fun AddReportScreen(
                 CustomOutlinedDropdown(
                     modifier = Modifier.weight(1f),
                     value = state.month,
-                    onValueChange = { onEvent(AddReportEvent.OnMonthChange(it)) },
+                    onValueChange = { onEvent(ReportFormEvent.OnMonthChange(it)) },
                     label = "Bulan",
                     options = state.monthList,
                     asteriskAtEnd = true,
@@ -182,7 +172,7 @@ fun AddReportScreen(
                 CustomOutlinedDropdown(
                     modifier = Modifier.weight(1f),
                     value = state.period,
-                    onValueChange = { onEvent(AddReportEvent.OnPeriodChange(it)) },
+                    onValueChange = { onEvent(ReportFormEvent.OnPeriodChange(it)) },
                     label = "Tahun",
                     options = state.periodList,
                     asteriskAtEnd = true,
@@ -195,7 +185,7 @@ fun AddReportScreen(
 
             CustomOutlinedTextField(
                 value = state.modal,
-                onValueChange = { onEvent(AddReportEvent.OnModalChange(it)) },
+                onValueChange = { onEvent(ReportFormEvent.OnModalChange(it)) },
                 label = "Modal",
                 placeholder = "Contoh: 6000",
                 keyboardType = KeyboardType.Number,
@@ -210,7 +200,7 @@ fun AddReportScreen(
             // --- SECTION MASA TANAM ---
             SectionHeader(
                 "Masa Tanam",
-                onAddClick = { onEvent(AddReportEvent.OnAddPlantingDetail) })
+                onAddClick = { onEvent(ReportFormEvent.OnAddPlantingDetail) })
 
             state.plantingDetails.forEachIndexed { index, item ->
                 PlantingItemCard(
@@ -226,7 +216,7 @@ fun AddReportScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // --- SECTION MASA PANEN ---
-            SectionHeader("Masa Panen", onAddClick = { onEvent(AddReportEvent.OnAddHarvestDetail) })
+            SectionHeader("Masa Panen", onAddClick = { onEvent(ReportFormEvent.OnAddHarvestDetail) })
 
             state.harvestDetails.forEachIndexed { index, item ->
                 HarvestItemCard(
@@ -256,7 +246,7 @@ fun AddReportScreen(
 
             CustomOutlinedTextArea(
                 value = state.farmerNotes,
-                onValueChange = { onEvent(AddReportEvent.OnFarmerNotesChange(it)) },
+                onValueChange = { onEvent(ReportFormEvent.OnFarmerNotesChange(it)) },
                 label = "Catatan Penyuluh",
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = "Beri catatan untuk penyuluh",
@@ -268,13 +258,13 @@ fun AddReportScreen(
             FileUploader(
                 files = state.attachments,
                 onAddFileClick = onPickFile,
-                onRemoveFileClick = { index -> onEvent(AddReportEvent.OnRemoveAttachment(index)) },
+                onRemoveFileClick = { index -> onEvent(ReportFormEvent.OnRemoveAttachment(index)) },
                 onFileClick = { attachment ->
                     openFileOrUrl(
                         context = context,
                         attachment = attachment,
                         onMessage = { msg, type ->
-                            onEvent(AddReportEvent.OnShowUserMessage(msg, type))
+                            onEvent(ReportFormEvent.OnShowUserMessage(msg, type))
                         }
                     )
                 },
@@ -290,7 +280,7 @@ fun AddReportScreen(
             ) {
                 OutlinedButton(
                     enabled = !state.isLoading,
-                    onClick = { onEvent(AddReportEvent.OnShowConfirmDialog(isAjukan = false)) },
+                    onClick = { onEvent(ReportFormEvent.OnShowConfirmDialog(isAjukan = false)) },
                     modifier = Modifier
                         .weight(1f)
                         .height(40.dp),
@@ -304,7 +294,7 @@ fun AddReportScreen(
                 }
 
                 Button(
-                    onClick = { onEvent(AddReportEvent.OnShowConfirmDialog(isAjukan = true)) },
+                    onClick = { onEvent(ReportFormEvent.OnShowConfirmDialog(isAjukan = true)) },
                     modifier = Modifier
                         .weight(1f)
                         .height(40.dp),
@@ -339,10 +329,7 @@ fun AddReportScreen(
             message = state.successMessage ?: "",
             messageType = MessageType.Success,
             onDismiss = {
-                onEvent(AddReportEvent.OnDismissMessage)
-//                if (state.successMessage == "Berhasil disimpan!" || state.successMessage == "Perubahan disimpan!") {
-//                    onNavigateUp()
-//                }
+                onEvent(ReportFormEvent.OnDismissMessage)
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -354,7 +341,7 @@ fun AddReportScreen(
             isVisible = state.error != null,
             message = state.error ?: "",
             messageType = MessageType.Error,
-            onDismiss = { onEvent(AddReportEvent.OnDismissMessage) },
+            onDismiss = { onEvent(ReportFormEvent.OnDismissMessage) },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 80.dp)
@@ -372,9 +359,9 @@ fun AddReportScreen(
                 confirmButtonText = confirmText,
                 dismissButtonText = "Batal",
                 isLoading = state.isLoading,
-                onDismiss = {if (!state.isLoading) onEvent(AddReportEvent.OnDismissConfirmDialog) },
+                onDismiss = {if (!state.isLoading) onEvent(ReportFormEvent.OnDismissConfirmDialog) },
                 onConfirm = {
-                    onEvent(AddReportEvent.OnSubmit(isAjukan = state.pendingActionIsAjukan))
+                    onEvent(ReportFormEvent.OnSubmit(isAjukan = state.pendingActionIsAjukan))
                 },
                 confirmColor = confirmColor
             )
@@ -388,7 +375,7 @@ fun PlantingItemCard(
     item: PlantingDetailUiState,
     commodityList: List<Commodity>,
     plantTypes: List<String>,
-    onEvent: (AddReportEvent) -> Unit,
+    onEvent: (ReportFormEvent) -> Unit,
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
@@ -401,10 +388,10 @@ fun PlantingItemCard(
                     value = item.commodityName,
                     asteriskAtEnd = true,
                     onValueChange = { name ->
-                        onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(commodityName = name)))
+                        onEvent(ReportFormEvent.OnPlantingItemChange(index, item.copy(commodityName = name)))
                     },
                     onOptionSelected = { commodity ->
-                        onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(commodityId = commodity.id, commodityName = commodity.name)))
+                        onEvent(ReportFormEvent.OnPlantingItemChange(index, item.copy(commodityId = commodity.id, commodityName = commodity.name)))
                     },
                     options = commodityList,
                     label = "Komoditas",
@@ -413,7 +400,7 @@ fun PlantingItemCard(
                 CustomOutlinedDropdown(
                     value = item.plantType,
                     onValueChange = { type ->
-                        onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(plantType = type)))
+                        onEvent(ReportFormEvent.OnPlantingItemChange(index, item.copy(plantType = type)))
                     },
                     asteriskAtEnd = true,
                     label = "Jenis Tanaman",
@@ -429,7 +416,7 @@ fun PlantingItemCard(
                 CustomDatePicker(
                     value = item.plantDate,
                     onValueChange = { date ->
-                        onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(plantDate = date)))
+                        onEvent(ReportFormEvent.OnPlantingItemChange(index, item.copy(plantDate = date)))
                     },
                     asteriskAtEnd = true,
                     label = "Tanggal Tanam",
@@ -448,7 +435,7 @@ fun PlantingItemCard(
                 CustomOutlinedTextField(
                     value = item.amount,
                     onValueChange = { amount ->
-                        onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(amount = amount)))
+                        onEvent(ReportFormEvent.OnPlantingItemChange(index, item.copy(amount = amount)))
                     },
                     label = "Jumlah (${item.unit.ifEmpty { "-" }})",
                     keyboardType = KeyboardType.Decimal,
@@ -460,7 +447,7 @@ fun PlantingItemCard(
                 CustomOutlinedTextField(
                     value = item.plantAge,
                     onValueChange = { age ->
-                        onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(plantAge = age)))
+                        onEvent(ReportFormEvent.OnPlantingItemChange(index, item.copy(plantAge = age)))
                     },
                     label = "Usia Tanaman (Tahun)",
                     keyboardType = KeyboardType.Decimal,
@@ -470,7 +457,7 @@ fun PlantingItemCard(
                 CustomOutlinedTextField(
                     value = item.amount,
                     onValueChange = { amount ->
-                        onEvent(AddReportEvent.OnPlantingItemChange(index, item.copy(amount = amount)))
+                        onEvent(ReportFormEvent.OnPlantingItemChange(index, item.copy(amount = amount)))
                     },
                     asteriskAtEnd = true,
                     label = "Jumlah (${item.unit.ifEmpty { "-" }})",
@@ -486,7 +473,7 @@ fun PlantingItemCard(
                 ){
                 }
                 OutlinedButton(
-                    onClick = { onEvent(AddReportEvent.OnRemovePlantingDetail(index)) },
+                    onClick = { onEvent(ReportFormEvent.OnRemovePlantingDetail(index)) },
                     modifier = Modifier
                         .weight(0.5f)
                         .height(40.dp),
@@ -509,7 +496,7 @@ fun HarvestItemCard(
     index: Int,
     item: HarvestDetailUiState,
     commodityList: List<Commodity>,
-    onEvent: (AddReportEvent) -> Unit
+    onEvent: (ReportFormEvent) -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
@@ -519,7 +506,7 @@ fun HarvestItemCard(
             CustomDatePicker(
                 value = item.harvestDate,
                 onValueChange = { date ->
-                    onEvent(AddReportEvent.OnHarvestItemChange(index, item.copy(harvestDate = date)))
+                    onEvent(ReportFormEvent.OnHarvestItemChange(index, item.copy(harvestDate = date)))
                 },
                 label = "Tanggal Panen",
                 modifier = Modifier.fillMaxWidth(),
@@ -533,10 +520,10 @@ fun HarvestItemCard(
             CustomSearchableOutlinedDropdown(
                 value = item.commodityName,
                 onValueChange = { name ->
-                    onEvent(AddReportEvent.OnHarvestItemChange(index, item.copy(commodityName = name)))
+                    onEvent(ReportFormEvent.OnHarvestItemChange(index, item.copy(commodityName = name)))
                 },
                 onOptionSelected = { commodity ->
-                    onEvent(AddReportEvent.OnHarvestItemChange(index, item.copy(commodityId = commodity.id, commodityName = commodity.name)))
+                    onEvent(ReportFormEvent.OnHarvestItemChange(index, item.copy(commodityId = commodity.id, commodityName = commodity.name)))
                 },
                 options = commodityList,
                 label = "Komoditas",
@@ -551,7 +538,7 @@ fun HarvestItemCard(
             CustomOutlinedTextField(
                 value = item.amount,
                 onValueChange = {
-                    onEvent(AddReportEvent.OnHarvestItemChange(index, item.copy(amount = it)))
+                    onEvent(ReportFormEvent.OnHarvestItemChange(index, item.copy(amount = it)))
                 },
                 label = "Jumlah (kg)",
                 asteriskAtEnd = true,
@@ -565,7 +552,7 @@ fun HarvestItemCard(
             CustomOutlinedTextField(
                 value = item.unitPrice,
                 onValueChange = {
-                    onEvent(AddReportEvent.OnHarvestItemChange(index, item.copy(unitPrice = it)))
+                    onEvent(ReportFormEvent.OnHarvestItemChange(index, item.copy(unitPrice = it)))
                 },
                 label = "Harga Satuan (Rp per kg)",
                 asteriskAtEnd = true,
@@ -598,7 +585,7 @@ fun HarvestItemCard(
                 ){
                 }
                 OutlinedButton(
-                    onClick = { onEvent(AddReportEvent.OnRemoveHarvestDetail(index)) },
+                    onClick = { onEvent(ReportFormEvent.OnRemoveHarvestDetail(index)) },
                     modifier = Modifier
                         .weight(0.5f)
                         .height(40.dp),

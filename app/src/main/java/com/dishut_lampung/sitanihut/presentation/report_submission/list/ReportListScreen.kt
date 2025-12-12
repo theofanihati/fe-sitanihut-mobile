@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.pengajuan_laporan
+package com.dishut_lampung.sitanihut.presentation.report_submission.list
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -71,7 +71,7 @@ import kotlinx.coroutines.launch
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun PengajuanLaporanScreenPreview() {
+private fun ReportListScreenPreview() {
     SitanihutTheme {
         val dummyReports = listOf(
             Report(
@@ -110,13 +110,13 @@ private fun PengajuanLaporanScreenPreview() {
         val pagingFlow = flowOf(PagingData.from(dummyReports))
         val pagingItems = pagingFlow.collectAsLazyPagingItems()
 
-        val state = PengajuanLaporanUiState(
+        val state = ReportListUiState(
             searchQuery = "",
             isFilterSheetVisible = false,
             isLoading = false
         )
 
-        PengajuanLaporanScreen(
+        ReportListScreen(
             state = state,
             pagingItems = pagingItems,
             onEvent = {},
@@ -129,13 +129,13 @@ private fun PengajuanLaporanScreenPreview() {
 
 //@Preview(showBackground = true)
 //@Composable
-//private fun EmptyStatePreview() {
+//private fun ReportListEmptyStatePreview() {
 //    SitanihutTheme {
 //        val pagingFlow = flowOf(PagingData.from(emptyList<Report>()))
 //        val pagingItems = pagingFlow.collectAsLazyPagingItems()
 //
-//        PengajuanLaporanScreen(
-//            state = PengajuanLaporanUiState(),
+//        ReportListScreen(
+//            state = ReportListUiState(),
 //            pagingItems = pagingItems,
 //            onEvent = {},
 //            onNavigateToAddReport = {},
@@ -146,17 +146,17 @@ private fun PengajuanLaporanScreenPreview() {
 //}
 
 @Composable
-fun PengajuanLaporanRoute(
+fun ReportListRoute(
     modifier: Modifier = Modifier,
     onNavigateToAddReport: () -> Unit,
     onNavigateToDetail: (String) -> Unit,
     onNavigateToEdit: (String) -> Unit,
-    viewModel: PengajuanLaporanViewModel = hiltViewModel()
+    viewModel: ReportListViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val pagingItems = viewModel.reportPagingFlow.collectAsLazyPagingItems()
 
-    PengajuanLaporanScreen(
+    ReportListScreen(
         state = state,
         pagingItems = pagingItems,
         modifier = modifier,
@@ -169,11 +169,11 @@ fun PengajuanLaporanRoute(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PengajuanLaporanScreen(
-    state: PengajuanLaporanUiState,
+fun ReportListScreen(
+    state: ReportListUiState,
     pagingItems: androidx.paging.compose.LazyPagingItems<ReportUiModel>,
     modifier: Modifier = Modifier,
-    onEvent: (PengajuanLaporanEvent) -> Unit,
+    onEvent: (ReportListEvent) -> Unit,
     onNavigateToAddReport: () -> Unit,
     onNavigateToDetail: (String) -> Unit,
     onNavigateToEdit: (String) -> Unit
@@ -231,12 +231,12 @@ fun PengajuanLaporanScreen(
                     CustomSearchTextField(
                         modifier = Modifier.weight(1f),
                         query = state.searchQuery,
-                        onQueryChange = { onEvent(PengajuanLaporanEvent.OnSearchQueryChange(it)) },
+                        onQueryChange = { onEvent(ReportListEvent.OnSearchQueryChange(it)) },
                         placeholder = "Cari laporan..."
                     )
 
                     FilterButton(
-                        onClick = { onEvent(PengajuanLaporanEvent.OnFilterClick) },
+                        onClick = { onEvent(ReportListEvent.OnFilterClick) },
                         isActive = state.selectedStatus != null
                     )
                 }
@@ -289,7 +289,7 @@ fun PengajuanLaporanScreen(
                                 isPetani = true,
                                 onCardClick = { onNavigateToDetail(report.id) },
                                 onActionClick = {
-                                    onEvent(PengajuanLaporanEvent.OnReportMoreOptionClick(report.id))
+                                    onEvent(ReportListEvent.OnReportMoreOptionClick(report.id))
                                 }
                             )
                         }
@@ -359,7 +359,7 @@ fun PengajuanLaporanScreen(
                 isVisible = state.successMessage != null,
                 message = state.successMessage ?: "",
                 messageType = MessageType.Success,
-                onDismiss = { onEvent(PengajuanLaporanEvent.OnDismissSuccessMessage) },
+                onDismiss = { onEvent(ReportListEvent.OnDismissSuccessMessage) },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 80.dp)
@@ -369,7 +369,7 @@ fun PengajuanLaporanScreen(
                 isVisible = state.errorMessage != null,
                 message = state.errorMessage ?: "",
                 messageType = MessageType.Error,
-                onDismiss = { onEvent(PengajuanLaporanEvent.OnDismissError) },
+                onDismiss = { onEvent(ReportListEvent.OnDismissError) },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 80.dp)
@@ -380,9 +380,9 @@ fun PengajuanLaporanScreen(
     if (state.isFilterSheetVisible) {
         ReportFilterPengajuanBottomSheet(
             currentFilter = state.selectedStatus,
-            onDismissRequest = { onEvent(PengajuanLaporanEvent.OnReportOptionSheetDismiss) },
+            onDismissRequest = { onEvent(ReportListEvent.OnReportOptionSheetDismiss) },
             onFilterSelected = { status ->
-                onEvent(PengajuanLaporanEvent.OnFilterChange(status))
+                onEvent(ReportListEvent.OnFilterChange(status))
             }
         )
     }
@@ -393,20 +393,20 @@ fun PengajuanLaporanScreen(
         val isEditable = report?.isEditable ?: false
 
         ReportOptionBottomSheet(
-            onDismiss = { onEvent(PengajuanLaporanEvent.OnReportOptionSheetDismiss) },
+            onDismiss = { onEvent(ReportListEvent.OnReportOptionSheetDismiss) },
             onDetailClick = {
-                onEvent(PengajuanLaporanEvent.OnReportOptionSheetDismiss)
+                onEvent(ReportListEvent.OnReportOptionSheetDismiss)
                 onNavigateToDetail(selectedReportId)
             },
             onEditClick = {
-                onEvent(PengajuanLaporanEvent.OnReportOptionSheetDismiss)
+                onEvent(ReportListEvent.OnReportOptionSheetDismiss)
                 onNavigateToEdit(selectedReportId)
             },
             onDeleteClick = {
-                onEvent(PengajuanLaporanEvent.OnDeleteClick)
+                onEvent(ReportListEvent.OnDeleteClick)
             },
             onSubmitClick = {
-                onEvent(PengajuanLaporanEvent.OnSubmitClick)
+                onEvent(ReportListEvent.OnSubmitClick)
             },
             isEditable = isEditable
         )
@@ -416,8 +416,8 @@ fun PengajuanLaporanScreen(
         CustomConfirmationDialog(
             title = "Hapus laporan?",
             supportingText = "Data yang dihapus tidak dapat dikembalikan.",
-            onConfirm = { onEvent(PengajuanLaporanEvent.OnDeleteConfirm) },
-            onDismiss = { onEvent(PengajuanLaporanEvent.OnDismissDeleteDialog) },
+            onConfirm = { onEvent(ReportListEvent.OnDeleteConfirm) },
+            onDismiss = { onEvent(ReportListEvent.OnDismissDeleteDialog) },
             confirmButtonText = "Hapus",
             dismissButtonText = "Batal",
             confirmColor = MaterialTheme.colorScheme.error
@@ -430,8 +430,8 @@ fun PengajuanLaporanScreen(
             confirmButtonText = "Ajukan",
             dismissButtonText = "Batal",
             confirmColor = MaterialTheme.colorScheme.tertiary,
-            onConfirm = { onEvent(PengajuanLaporanEvent.OnSubmitConfirm) },
-            onDismiss = { onEvent(PengajuanLaporanEvent.OnDismissSubmitDialog) }
+            onConfirm = { onEvent(ReportListEvent.OnSubmitConfirm) },
+            onDismiss = { onEvent(ReportListEvent.OnDismissSubmitDialog) }
         )
     }
 }

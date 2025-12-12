@@ -3,7 +3,6 @@ package com.dishut_lampung.sitanihut.presentation.commodity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.GetCommoditiesUseCase
-import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.PengajuanLaporanEvent
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job

@@ -1,11 +1,10 @@
-package com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create
+package com.dishut_lampung.sitanihut.presentation.report_submission.form
 
 import com.dishut_lampung.sitanihut.domain.model.Commodity
 import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
-import java.io.File
 
-data class AddReportState(
+data class ReportFormState(
     val isAjukan: Boolean= false,
     val isLoading: Boolean = false,
     val error: String? = null,
@@ -67,26 +66,26 @@ data class HarvestDetailUiState(
     val totalPriceError: String? = null,
 )
 
-sealed class AddReportEvent {
-    data class OnMonthChange(val month: String) : AddReportEvent()
-    data class OnPeriodChange(val period: String) : AddReportEvent()
-    data class OnModalChange(val value: String) : AddReportEvent()
-    data class OnFarmerNotesChange(val value: String) : AddReportEvent()
+sealed class ReportFormEvent {
+    data class OnMonthChange(val month: String) : ReportFormEvent()
+    data class OnPeriodChange(val period: String) : ReportFormEvent()
+    data class OnModalChange(val value: String) : ReportFormEvent()
+    data class OnFarmerNotesChange(val value: String) : ReportFormEvent()
 
-    object OnAddPlantingDetail : AddReportEvent()
-    data class OnRemovePlantingDetail(val index: Int) : AddReportEvent()
-    data class OnPlantingItemChange(val index: Int, val item: PlantingDetailUiState) : AddReportEvent()
+    object OnAddPlantingDetail : ReportFormEvent()
+    data class OnRemovePlantingDetail(val index: Int) : ReportFormEvent()
+    data class OnPlantingItemChange(val index: Int, val item: PlantingDetailUiState) : ReportFormEvent()
 
-    object OnAddHarvestDetail : AddReportEvent()
-    data class OnRemoveHarvestDetail(val index: Int) : AddReportEvent()
-    data class OnHarvestItemChange(val index: Int, val item: HarvestDetailUiState) : AddReportEvent()
+    object OnAddHarvestDetail : ReportFormEvent()
+    data class OnRemoveHarvestDetail(val index: Int) : ReportFormEvent()
+    data class OnHarvestItemChange(val index: Int, val item: HarvestDetailUiState) : ReportFormEvent()
 
-    data class OnAddAttachment(val filePath: String) : AddReportEvent()
-    data class OnRemoveAttachment(val index: Int) : AddReportEvent()
+    data class OnAddAttachment(val filePath: String) : ReportFormEvent()
+    data class OnRemoveAttachment(val index: Int) : ReportFormEvent()
 
-    data class OnSubmit(val isAjukan: Boolean) : AddReportEvent() // True=Ajukan, False=Simpan
-    object OnDismissMessage : AddReportEvent()
-    data class OnShowConfirmDialog(val isAjukan: Boolean) : AddReportEvent()
-    object OnDismissConfirmDialog : AddReportEvent()
-    data class OnShowUserMessage(val message: String, val type: MessageType) : AddReportEvent()
+    data class OnSubmit(val isAjukan: Boolean) : ReportFormEvent() // True=Ajukan, False=Simpan
+    object OnDismissMessage : ReportFormEvent()
+    data class OnShowConfirmDialog(val isAjukan: Boolean) : ReportFormEvent()
+    object OnDismissConfirmDialog : ReportFormEvent()
+    data class OnShowUserMessage(val message: String, val type: MessageType) : ReportFormEvent()
 }

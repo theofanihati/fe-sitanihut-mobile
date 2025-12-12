@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.pengajuan_laporan
+package com.dishut_lampung.sitanihut.presentation.report_submission
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
@@ -11,10 +11,9 @@ import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.UpdateReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.ValidateReportInputUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ListValidationResult
-import com.dishut_lampung.sitanihut.domain.validator.ValidationResult
-import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create.AddReportEvent
-import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create.AddReportViewModel
-import com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create.HarvestDetailUiState
+import com.dishut_lampung.sitanihut.presentation.report_submission.form.AddReportEvent
+import com.dishut_lampung.sitanihut.presentation.report_submission.form.ReportFormViewModel
+import com.dishut_lampung.sitanihut.presentation.report_submission.form.HarvestDetailUiState
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
@@ -32,7 +31,7 @@ import org.junit.Rule
 import org.junit.Test
 
 @ExperimentalCoroutinesApi
-class AddReportViewModelTest {
+class ReportFormViewModelTest {
 
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule()
@@ -51,10 +50,10 @@ class AddReportViewModelTest {
 
     private fun createViewModel(
         customSavedState: SavedStateHandle? = null
-    ): AddReportViewModel {
+    ): ReportFormViewModel {
         val stateHandle = customSavedState ?: savedStateHandle
 
-        return AddReportViewModel(
+        return ReportFormViewModel(
             getCommoditiesUseCase,
             createReportUseCase,
             validateReportInputUseCase,
@@ -124,7 +123,7 @@ class AddReportViewModelTest {
     fun `OnPlantingItemChange with type Semusim and Date should calculate plant age`() = runTest {
         var viewModel = createViewModel()
         val dateString = "01/01/2020" // Tanggal lampau agar umur > 0
-        val item = com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create.PlantingDetailUiState(
+        val item = com.dishut_lampung.sitanihut.presentation.report_submission.form.PlantingDetailUiState(
             plantType = "semusim",
             plantDate = dateString,
             amount = "10"

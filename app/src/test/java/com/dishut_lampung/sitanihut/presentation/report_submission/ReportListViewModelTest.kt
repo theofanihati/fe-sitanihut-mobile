@@ -1,13 +1,13 @@
-package com.dishut_lampung.sitanihut.presentation.pengajuan_laporan
+package com.dishut_lampung.sitanihut.presentation.report_submission
 
 import androidx.paging.PagingData
 import app.cash.turbine.test
-import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.usecase.report.DeleteReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportsUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.SubmitReportUseCase
-import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
+import com.dishut_lampung.sitanihut.presentation.report_submission.list.PengajuanLaporanEvent
+import com.dishut_lampung.sitanihut.presentation.report_submission.list.ReportListViewModel
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
@@ -30,7 +30,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class PengajuanLaporanViewModelTest {
+class ReportListViewModelTest {
 
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule()
@@ -39,7 +39,7 @@ class PengajuanLaporanViewModelTest {
     private val deleteReportUseCase: DeleteReportUseCase = mockk()
     private val submitReportUseCase: SubmitReportUseCase = mockk()
 
-    private lateinit var viewModel: PengajuanLaporanViewModel
+    private lateinit var viewModel: ReportListViewModel
 
     @Before
     fun setUp() {
@@ -47,7 +47,7 @@ class PengajuanLaporanViewModelTest {
         coEvery { deleteReportUseCase(any()) } returns Resource.Success(Unit)
         coEvery { submitReportUseCase(any()) } returns Resource.Success(Unit)
 
-        viewModel = PengajuanLaporanViewModel(
+        viewModel = ReportListViewModel(
             getReportsUseCase,
             deleteReportUseCase,
             submitReportUseCase

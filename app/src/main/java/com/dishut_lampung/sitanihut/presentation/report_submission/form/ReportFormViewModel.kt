@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.pengajuan_laporan.create
+package com.dishut_lampung.sitanihut.presentation.report_submission.form
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -26,12 +26,11 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
-class AddReportViewModel @Inject constructor(
+class ReportFormViewModel @Inject constructor(
     private val getCommoditiesUseCase: GetCommoditiesUseCase,
     private val createReportUseCase: CreateReportUseCase,
     private val validateReportInputUseCase: ValidateReportInputUseCase,
@@ -40,7 +39,7 @@ class AddReportViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private var currentReportId: String? = null
-    private val _uiState = MutableStateFlow(AddReportState())
+    private val _uiState = MutableStateFlow(ReportFormState())
     val uiState = _uiState.asStateFlow()
 
     init {
@@ -51,33 +50,33 @@ class AddReportViewModel @Inject constructor(
         if (currentReportId != null) {
             loadExistingReportData(currentReportId!!)
         } else {
-            onEvent(AddReportEvent.OnAddPlantingDetail)
-            onEvent(AddReportEvent.OnAddHarvestDetail)
+            onEvent(ReportFormEvent.OnAddPlantingDetail)
+            onEvent(ReportFormEvent.OnAddHarvestDetail)
         }
     }
 
-    fun onEvent(event: AddReportEvent) {
+    fun onEvent(event: ReportFormEvent) {
         when (event) {
-            is AddReportEvent.OnMonthChange -> _uiState.update { it.copy(month = event.month, monthError = null)}
-            is AddReportEvent.OnPeriodChange -> _uiState.update { it.copy(period = event.period, periodError = null) }
-            is AddReportEvent.OnModalChange -> {
+            is ReportFormEvent.OnMonthChange -> _uiState.update { it.copy(month = event.month, monthError = null)}
+            is ReportFormEvent.OnPeriodChange -> _uiState.update { it.copy(period = event.period, periodError = null) }
+            is ReportFormEvent.OnModalChange -> {
                 val errorMsg = validateNumberInput(event.value, "Modal")
                 _uiState.update { it.copy(modal = event.value, modalError = errorMsg) }
             }
-            is AddReportEvent.OnFarmerNotesChange -> _uiState.update { it.copy(farmerNotes = event.value) }
+            is ReportFormEvent.OnFarmerNotesChange -> _uiState.update { it.copy(farmerNotes = event.value) }
 
             // MASA TANAM
-            AddReportEvent.OnAddPlantingDetail -> {
+            ReportFormEvent.OnAddPlantingDetail -> {
                 val newList = _uiState.value.plantingDetails + PlantingDetailUiState()
                 _uiState.update { it.copy(plantingDetails = newList) }
             }
 
-            is AddReportEvent.OnRemovePlantingDetail -> {
+            is ReportFormEvent.OnRemovePlantingDetail -> {
                 val newList = _uiState.value.plantingDetails.toMutableList().apply { removeAt(event.index) }
                 _uiState.update { it.copy(plantingDetails = newList) }
             }
 
-            is AddReportEvent.OnPlantingItemChange -> {
+            is ReportFormEvent.OnPlantingItemChange -> {
                 val newList = _uiState.value.plantingDetails.toMutableList()
                 var updatedItem = event.item
 
@@ -110,18 +109,18 @@ class AddReportViewModel @Inject constructor(
             }
 
             // MASA PANEN
-            AddReportEvent.OnAddHarvestDetail -> {
+            ReportFormEvent.OnAddHarvestDetail -> {
                 val newList = _uiState.value.harvestDetails + HarvestDetailUiState()
                 _uiState.update { it.copy(harvestDetails = newList) }
             }
 
-            is AddReportEvent.OnRemoveHarvestDetail -> {
+            is ReportFormEvent.OnRemoveHarvestDetail -> {
                 val newHarvestList = _uiState.value.harvestDetails.toMutableList().apply { removeAt(event.index) }
                 val newNte = newHarvestList.sumOf { it.totalPrice }
                 _uiState.update { it.copy(harvestDetails = newHarvestList, nte = newNte) }
             }
 
-            is AddReportEvent.OnHarvestItemChange -> {
+            is ReportFormEvent.OnHarvestItemChange -> {
                 val newList = _uiState.value.harvestDetails.toMutableList()
 
                 //total Price (Harga * Jumlah)
@@ -144,7 +143,7 @@ class AddReportViewModel @Inject constructor(
                 _uiState.update { it.copy(harvestDetails = newList, nte = newNte) }
             }
 
-            is AddReportEvent.OnAddAttachment -> {
+            is ReportFormEvent.OnAddAttachment -> {
                 val currentList = _uiState.value.attachments.toMutableList()
                 currentList.add(
                     ReportAttachment(
@@ -155,14 +154,14 @@ class AddReportViewModel @Inject constructor(
                 )
                 _uiState.update { it.copy(attachments = currentList) }
             }
-            is AddReportEvent.OnRemoveAttachment -> {
+            is ReportFormEvent.OnRemoveAttachment -> {
                 val currentList = _uiState.value.attachments.toMutableList()
                 if (event.index in currentList.indices) {
                     currentList.removeAt(event.index)
                     _uiState.update { it.copy(attachments = currentList) }
                 }
             }
-            is AddReportEvent.OnShowConfirmDialog -> {
+            is ReportFormEvent.OnShowConfirmDialog -> {
                 _uiState.update {
                     it.copy(
                         showConfirmDialog = true,
@@ -170,15 +169,15 @@ class AddReportViewModel @Inject constructor(
                     )
                 }
             }
-            is AddReportEvent.OnDismissConfirmDialog -> {
+            is ReportFormEvent.OnDismissConfirmDialog -> {
                 _uiState.update { it.copy(showConfirmDialog = false) }
             }
-            is AddReportEvent.OnSubmit -> {
+            is ReportFormEvent.OnSubmit -> {
 //                _uiState.update { it.copy(showConfirmDialog = false) }
                 submitReport(event.isAjukan)
             }
-            AddReportEvent.OnDismissMessage -> _uiState.update { it.copy(error = null, successMessage = null) }
-            is AddReportEvent.OnShowUserMessage -> {
+            ReportFormEvent.OnDismissMessage -> _uiState.update { it.copy(error = null, successMessage = null) }
+            is ReportFormEvent.OnShowUserMessage -> {
                 viewModelScope.launch {
                     _uiState.update { it.copy(successMessage = null, error = null) }
                     kotlinx.coroutines.delay(100)

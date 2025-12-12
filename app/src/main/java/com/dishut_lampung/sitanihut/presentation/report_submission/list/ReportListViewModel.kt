@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.pengajuan_laporan
+package com.dishut_lampung.sitanihut.presentation.report_submission.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,13 +22,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PengajuanLaporanViewModel @Inject constructor(
+class ReportListViewModel @Inject constructor(
     private val getReportsUseCase: GetReportsUseCase,
     private val deleteReportUseCase: DeleteReportUseCase,
     private val submitReportUseCase: SubmitReportUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(PengajuanLaporanUiState())
+    private val _uiState = MutableStateFlow(ReportListUiState())
     val uiState = _uiState.asStateFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -44,43 +44,43 @@ class PengajuanLaporanViewModel @Inject constructor(
                 .cachedIn(viewModelScope)
         }
 
-    fun onEvent(event: PengajuanLaporanEvent) {
+    fun onEvent(event: ReportListEvent) {
         when (event) {
-            is PengajuanLaporanEvent.OnSearchQueryChange -> {
+            is ReportListEvent.OnSearchQueryChange -> {
                 _uiState.update { it.copy(searchQuery = event.query) }
             }
-            is PengajuanLaporanEvent.OnReportMoreOptionClick -> {
+            is ReportListEvent.OnReportMoreOptionClick -> {
                 _uiState.update { it.copy(isOptionSheetVisible = true, selectedReportId = event.id) }
             }
-            PengajuanLaporanEvent.OnReportOptionSheetDismiss -> {
+            ReportListEvent.OnReportOptionSheetDismiss -> {
                 _uiState.update { it.copy(isOptionSheetVisible = false, selectedReportId = null) }
             }
-            PengajuanLaporanEvent.OnDeleteClick -> {
+            ReportListEvent.OnDeleteClick -> {
                 _uiState.update { it.copy(isOptionSheetVisible = false, isDeleteDialogVisible = true) }
             }
-            PengajuanLaporanEvent.OnDismissDeleteDialog -> {
+            ReportListEvent.OnDismissDeleteDialog -> {
                 _uiState.update { it.copy(isDeleteDialogVisible = false) }
             }
-            PengajuanLaporanEvent.OnDeleteConfirm -> deleteReport()
+            ReportListEvent.OnDeleteConfirm -> deleteReport()
 
-            PengajuanLaporanEvent.OnSubmitClick -> {
+            ReportListEvent.OnSubmitClick -> {
                 _uiState.update { it.copy(isOptionSheetVisible = false, isSubmitDialogVisible = true) }
             }
-            PengajuanLaporanEvent.OnDismissSubmitDialog -> {
+            ReportListEvent.OnDismissSubmitDialog -> {
                 _uiState.update { it.copy(isSubmitDialogVisible = false) }
             }
-            PengajuanLaporanEvent.OnSubmitConfirm -> submitReport()
+            ReportListEvent.OnSubmitConfirm -> submitReport()
 
-            PengajuanLaporanEvent.OnDismissError -> {
+            ReportListEvent.OnDismissError -> {
                 _uiState.update { it.copy(errorMessage = null) }
             }
-            PengajuanLaporanEvent.OnDismissSuccessMessage -> {
+            ReportListEvent.OnDismissSuccessMessage -> {
                 _uiState.update { it.copy(successMessage = null) }
             }
-            PengajuanLaporanEvent.OnFilterClick -> {
+            ReportListEvent.OnFilterClick -> {
                 _uiState.update { it.copy(isFilterSheetVisible = true) }
             }
-            is PengajuanLaporanEvent.OnFilterChange -> {
+            is ReportListEvent.OnFilterChange -> {
                 _uiState.update {
                     it.copy(
                         selectedStatus = event.status,
@@ -88,7 +88,7 @@ class PengajuanLaporanViewModel @Inject constructor(
                     )
                 }
             }
-            PengajuanLaporanEvent.OnDismissFilterSheet -> {
+            ReportListEvent.OnDismissFilterSheet -> {
                 _uiState.update { it.copy(isFilterSheetVisible = false) }
             }
         }
