@@ -604,7 +604,7 @@ fun HarvestItemCard(
 }
 
 @Composable
-fun SectionHeader(title: String, onAddClick: (() -> Unit)? = null) {
+private fun SectionHeader(title: String, onAddClick: (() -> Unit)? = null) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

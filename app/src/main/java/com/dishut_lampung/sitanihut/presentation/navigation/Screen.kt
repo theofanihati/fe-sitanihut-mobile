@@ -27,7 +27,6 @@ sealed class Screen(val route: String) {
 
     sealed class  Petani(route: String) : Screen(route) {
         data object ProfilePetani : Petani("profile_petani_screen")
-
         object ReportSubmission : Petani("report-submission")
         object ReportForm : Petani("report_form?reportId={reportId}") {
             fun createRoute(reportId: String? = null): String {
@@ -38,8 +37,7 @@ sealed class Screen(val route: String) {
                 }
             }
         }
-
-        data class DetailReportSubmission(val id : String) : Petani("report-submission-detail/$id")
+        data class DetailReportSubmission(val id : String) : Petani("report-submission-detail/{reportId}")
     }
 
     sealed class  Penyuluh(route: String) : Screen(route) {

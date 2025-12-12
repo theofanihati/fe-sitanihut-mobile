@@ -1,5 +1,6 @@
 package com.dishut_lampung.sitanihut.util
 
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -26,6 +27,13 @@ fun String.parseIndonesianNumber(): Double {
     return cleanString.toDoubleOrNull() ?: 0.0
 }
 
+fun formatRupiah(amount: Double): String {
+    val localeID = Locale("in", "ID")
+    val numberFormat = NumberFormat.getCurrencyInstance(localeID)
+    numberFormat.maximumFractionDigits = 0
+    return numberFormat.format(amount)
+}
+
 fun String.formatApiToUiString(): String {
     val doubleVal = this.toDoubleOrNull() ?: return this
     return java.text.NumberFormat.getNumberInstance(java.util.Locale("id", "ID")).format(doubleVal)
@@ -34,15 +42,14 @@ fun String.formatApiToUiString(): String {
 fun convertUiDateToApiDate(uiDate: String): String {
     return try {
         if (uiDate.contains("/")) {
-            // Jika formatnya 05/10/2025 -> ubah jadi 2025-10-05
             val inputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)
             val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
             val date = inputFormat.parse(uiDate)
             outputFormat.format(date ?: return uiDate)
         } else {
-            uiDate // Kalau sudah yyyy-MM-dd biarkan saja
+            uiDate
         }
     } catch (e: Exception) {
-        uiDate // Kembalikan aslinya jika gagal parse
+        uiDate
     }
 }

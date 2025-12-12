@@ -14,6 +14,7 @@ import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScre
 import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutRoute
 import com.dishut_lampung.sitanihut.presentation.profile.petani.PetaniProfileRoute
+import com.dishut_lampung.sitanihut.presentation.report_submission.detail.ReportDetailRoute
 import com.dishut_lampung.sitanihut.presentation.report_submission.form.ReportFormRoute
 import com.dishut_lampung.sitanihut.presentation.report_submission.list.ReportListRoute
 
@@ -57,7 +58,7 @@ fun NavGraphBuilder.petaniNavGraph(
                     navController.navigateSingleTop(
                         Screen.Petani.ReportForm.createRoute(reportId = null))
                 },
-                onNavigateToDetail = {
+                onNavigateToDetail = { id ->
                     navController.navigateSingleTop("report-submission-detail/$id")
                 },
                 onNavigateToEdit = { id ->
@@ -67,6 +68,7 @@ fun NavGraphBuilder.petaniNavGraph(
                 },
             )
         }
+
         composable(
             route = Screen.Petani.ReportForm.route,
             arguments = listOf(
@@ -80,6 +82,17 @@ fun NavGraphBuilder.petaniNavGraph(
             ReportFormRoute(
                 onNavigateUp = { navController.popBackStack() }
             )
+        }
+
+        composable(
+            route = "report-submission-detail/{reportId}",
+            arguments = listOf(
+                navArgument("reportId") {
+                    type = NavType.StringType
+                }
+            )
+        ){
+            ReportDetailRoute()
         }
 
         composable(route = Screen.Information.route){
