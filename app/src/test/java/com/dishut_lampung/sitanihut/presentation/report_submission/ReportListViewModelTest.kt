@@ -6,7 +6,7 @@ import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.usecase.report.DeleteReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportsUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.SubmitReportUseCase
-import com.dishut_lampung.sitanihut.presentation.report_submission.list.PengajuanLaporanEvent
+import com.dishut_lampung.sitanihut.presentation.report_submission.list.ReportListEvent
 import com.dishut_lampung.sitanihut.presentation.report_submission.list.ReportListViewModel
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
@@ -69,7 +69,7 @@ class ReportListViewModelTest {
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.reportPagingFlow.collect {}
         }
-        viewModel.onEvent(PengajuanLaporanEvent.OnSearchQueryChange("Jagung"))
+        viewModel.onEvent(ReportListEvent.OnSearchQueryChange("Jagung"))
         advanceUntilIdle()
 
         assertEquals("Jagung", viewModel.uiState.value.searchQuery)
@@ -82,7 +82,7 @@ class ReportListViewModelTest {
         val job = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.reportPagingFlow.collect {}
         }
-        viewModel.onEvent(PengajuanLaporanEvent.OnFilterChange(ReportStatus.VERIFIED))
+        viewModel.onEvent(ReportListEvent.OnFilterChange(ReportStatus.VERIFIED))
         advanceUntilIdle()
 
         assertEquals(ReportStatus.VERIFIED, viewModel.uiState.value.selectedStatus)
@@ -93,7 +93,7 @@ class ReportListViewModelTest {
     @Test
     fun `onReportMoreOptionClick should set selectedReportId and open sheet`() = runTest {
         val reportId = "raport-id-222"
-        viewModel.onEvent(PengajuanLaporanEvent.OnReportMoreOptionClick(reportId))
+        viewModel.onEvent(ReportListEvent.OnReportMoreOptionClick(reportId))
 
         val state = viewModel.uiState.value
         assertEquals(reportId, state.selectedReportId)
@@ -104,9 +104,9 @@ class ReportListViewModelTest {
     fun `onDeleteClick should close option sheet and show delete confirmation dialog`() = runTest {
         val reportId = "raport-id-222"
 
-        viewModel.onEvent(PengajuanLaporanEvent.OnReportMoreOptionClick(reportId))
+        viewModel.onEvent(ReportListEvent.OnReportMoreOptionClick(reportId))
 
-        viewModel.onEvent(PengajuanLaporanEvent.OnDeleteClick)
+        viewModel.onEvent(ReportListEvent.OnDeleteClick)
 
         val state = viewModel.uiState.value
         assertFalse("Sheet tertutup", state.isOptionSheetVisible)
@@ -117,7 +117,7 @@ class ReportListViewModelTest {
     @Test
     fun `onDeleteConfirm success should call deleteReport and show success message`() = runTest {
         val reportId = "id-to-delete"
-        viewModel.onEvent(PengajuanLaporanEvent.OnReportMoreOptionClick(reportId))
+        viewModel.onEvent(ReportListEvent.OnReportMoreOptionClick(reportId))
         coEvery { deleteReportUseCase(reportId) } coAnswers {
             delay(100)
             Resource.Success(Unit)
@@ -126,7 +126,7 @@ class ReportListViewModelTest {
         viewModel.uiState.test {
             val initialState = awaitItem()
 
-            viewModel.onEvent(PengajuanLaporanEvent.OnDeleteConfirm)
+            viewModel.onEvent(ReportListEvent.OnDeleteConfirm)
 
             val loadingState = awaitItem()
             assertTrue("Harus loading saat proses hapus", loadingState.isLoading)
@@ -144,7 +144,7 @@ class ReportListViewModelTest {
     @Test
     fun `onSubmitClick success should call submitReport and show success message`() = runTest {
         val reportId = "id-to-submit"
-        viewModel.onEvent(PengajuanLaporanEvent.OnReportMoreOptionClick(reportId))
+        viewModel.onEvent(ReportListEvent.OnReportMoreOptionClick(reportId))
         coEvery { submitReportUseCase(reportId) } coAnswers {
             delay(100)
             Resource.Success(Unit)
@@ -152,7 +152,7 @@ class ReportListViewModelTest {
         viewModel.uiState.test {
             val initialState = awaitItem()
 
-            viewModel.onEvent(PengajuanLaporanEvent.OnSubmitClick)
+            viewModel.onEvent(ReportListEvent.OnSubmitClick)
 
             val loadingState = awaitItem()
             assertTrue(loadingState.isLoading)
@@ -169,11 +169,11 @@ class ReportListViewModelTest {
     @Test
     fun `onConfirmDelete error should show error message`() = runTest {
         val reportId = "123"
-        viewModel.onEvent(PengajuanLaporanEvent.OnReportMoreOptionClick(reportId))
+        viewModel.onEvent(ReportListEvent.OnReportMoreOptionClick(reportId))
 
         coEvery { deleteReportUseCase(reportId) } returns Resource.Error("Gagal Hapus")
 
-        viewModel.onEvent(PengajuanLaporanEvent.OnDeleteConfirm)
+        viewModel.onEvent(ReportListEvent.OnDeleteConfirm)
         advanceUntilIdle()
 
         coVerify { deleteReportUseCase(reportId) }
@@ -183,10 +183,10 @@ class ReportListViewModelTest {
     @Test
     fun `onSubmitClick success should call usecase`() = runTest {
         val reportId = "456"
-        viewModel.onEvent(PengajuanLaporanEvent.OnReportMoreOptionClick(reportId))
+        viewModel.onEvent(ReportListEvent.OnReportMoreOptionClick(reportId))
         coEvery { submitReportUseCase(reportId) } returns Resource.Success(Unit)
 
-        viewModel.onEvent(PengajuanLaporanEvent.OnSubmitClick)
+        viewModel.onEvent(ReportListEvent.OnSubmitClick)
         advanceUntilIdle()
 
         coVerify { submitReportUseCase(reportId) }

@@ -11,9 +11,9 @@ import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.UpdateReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.ValidateReportInputUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ListValidationResult
-import com.dishut_lampung.sitanihut.presentation.report_submission.form.AddReportEvent
 import com.dishut_lampung.sitanihut.presentation.report_submission.form.ReportFormViewModel
 import com.dishut_lampung.sitanihut.presentation.report_submission.form.HarvestDetailUiState
+import com.dishut_lampung.sitanihut.presentation.report_submission.form.ReportFormEvent
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
@@ -82,7 +82,7 @@ class ReportFormViewModelTest {
     @Test
     fun `OnModalChange should update modal state`() = runTest {
         var viewModel = createViewModel()
-        viewModel.onEvent(AddReportEvent.OnModalChange("1.000.000"))
+        viewModel.onEvent(ReportFormEvent.OnModalChange("1.000.000"))
         assertEquals("1.000.000", viewModel.uiState.value.modal)
     }
 
@@ -91,7 +91,7 @@ class ReportFormViewModelTest {
         var viewModel = createViewModel()
         assertEquals(1, viewModel.uiState.value.plantingDetails.size)
 
-        viewModel.onEvent(AddReportEvent.OnAddPlantingDetail)
+        viewModel.onEvent(ReportFormEvent.OnAddPlantingDetail)
         assertEquals(2, viewModel.uiState.value.plantingDetails.size)
     }
 
@@ -99,11 +99,11 @@ class ReportFormViewModelTest {
     fun `OnRemovePlantingDetail should remove item at specific index`() = runTest {
         var viewModel = createViewModel()
 
-        viewModel.onEvent(AddReportEvent.OnAddPlantingDetail)
-        viewModel.onEvent(AddReportEvent.OnAddPlantingDetail)
+        viewModel.onEvent(ReportFormEvent.OnAddPlantingDetail)
+        viewModel.onEvent(ReportFormEvent.OnAddPlantingDetail)
         assertEquals(3, viewModel.uiState.value.plantingDetails.size)
 
-        viewModel.onEvent(AddReportEvent.OnRemovePlantingDetail(1))
+        viewModel.onEvent(ReportFormEvent.OnRemovePlantingDetail(1))
         assertEquals(2, viewModel.uiState.value.plantingDetails.size)
     }
 
@@ -112,7 +112,7 @@ class ReportFormViewModelTest {
         var viewModel = createViewModel()
         val initialItem = viewModel.uiState.value.plantingDetails[0]
         val updatedItem = initialItem.copy(plantType = "tahunan", amount = "100")
-        viewModel.onEvent(AddReportEvent.OnPlantingItemChange(0, updatedItem))
+        viewModel.onEvent(ReportFormEvent.OnPlantingItemChange(0, updatedItem))
 
         val currentItem = viewModel.uiState.value.plantingDetails[0]
         assertEquals("tahunan", currentItem.plantType)
@@ -130,7 +130,7 @@ class ReportFormViewModelTest {
         )
 
         // Act
-        viewModel.onEvent(AddReportEvent.OnPlantingItemChange(0, item))
+        viewModel.onEvent(ReportFormEvent.OnPlantingItemChange(0, item))
 
         // Assert
         val updatedItem = viewModel.uiState.value.plantingDetails[0]
@@ -145,21 +145,21 @@ class ReportFormViewModelTest {
         var viewModel = createViewModel()
         assertEquals(1, viewModel.uiState.value.harvestDetails.size)
 
-        viewModel.onEvent(AddReportEvent.OnAddHarvestDetail)
+        viewModel.onEvent(ReportFormEvent.OnAddHarvestDetail)
         assertEquals(2, viewModel.uiState.value.harvestDetails.size)
     }
 
     @Test
     fun `OnHarvestItemChange should calculate total price per item and total NTE`() = runTest {
         var viewModel = createViewModel()
-        viewModel.onEvent(AddReportEvent.OnAddHarvestDetail)
-        viewModel.onEvent(AddReportEvent.OnAddHarvestDetail)
+        viewModel.onEvent(ReportFormEvent.OnAddHarvestDetail)
+        viewModel.onEvent(ReportFormEvent.OnAddHarvestDetail)
 
         val item1 = HarvestDetailUiState(unitPrice = "5000", amount = "10")
-        viewModel.onEvent(AddReportEvent.OnHarvestItemChange(0, item1))
+        viewModel.onEvent(ReportFormEvent.OnHarvestItemChange(0, item1))
 
         val item2 = HarvestDetailUiState(unitPrice = "10000", amount = "5")
-        viewModel.onEvent(AddReportEvent.OnHarvestItemChange(1, item2))
+        viewModel.onEvent(ReportFormEvent.OnHarvestItemChange(1, item2))
 
         val state = viewModel.uiState.value
 
@@ -171,19 +171,19 @@ class ReportFormViewModelTest {
     @Test
     fun `OnRemoveHarvestDetail should remove item and recalculate NTE`() = runTest {
         var viewModel = createViewModel()
-        viewModel.onEvent(AddReportEvent.OnAddHarvestDetail)
-        viewModel.onEvent(AddReportEvent.OnAddHarvestDetail)
+        viewModel.onEvent(ReportFormEvent.OnAddHarvestDetail)
+        viewModel.onEvent(ReportFormEvent.OnAddHarvestDetail)
 
-        viewModel.onEvent(AddReportEvent.OnHarvestItemChange(0,
+        viewModel.onEvent(ReportFormEvent.OnHarvestItemChange(0,
             HarvestDetailUiState(unitPrice = "5000", amount = "10")
         ))
-        viewModel.onEvent(AddReportEvent.OnHarvestItemChange(1,
+        viewModel.onEvent(ReportFormEvent.OnHarvestItemChange(1,
             HarvestDetailUiState(unitPrice = "2000", amount = "10")
         ))
 
         assertEquals(70000.0, viewModel.uiState.value.nte, 0.0)
 
-        viewModel.onEvent(AddReportEvent.OnRemoveHarvestDetail(0))
+        viewModel.onEvent(ReportFormEvent.OnRemoveHarvestDetail(0))
         assertEquals(2, viewModel.uiState.value.harvestDetails.size)
         assertEquals(20000.0, viewModel.uiState.value.nte, 0.0)
     }
@@ -199,7 +199,7 @@ class ReportFormViewModelTest {
         every { validateReportInputUseCase.execute(any()) } returns
                 ListValidationResult(successful = false, errorMessage = "Cek Input", fieldErrors = fieldErrors)
 
-        viewModel.onEvent(AddReportEvent.OnSubmit(true))
+        viewModel.onEvent(ReportFormEvent.OnSubmit(true))
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -218,8 +218,8 @@ class ReportFormViewModelTest {
         coEvery { createReportUseCase(any()) } returns Resource.Success(Unit)
 
         var viewModel = createViewModel()
-        viewModel.onEvent(AddReportEvent.OnModalChange("5000"))
-        viewModel.onEvent(AddReportEvent.OnSubmit(isAjukan = true))
+        viewModel.onEvent(ReportFormEvent.OnModalChange("5000"))
+        viewModel.onEvent(ReportFormEvent.OnSubmit(isAjukan = true))
         advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.isLoading)
@@ -269,7 +269,7 @@ class ReportFormViewModelTest {
         val viewModel = createViewModel(customSavedState = editStateHandle)
         advanceUntilIdle()
 
-        viewModel.onEvent(AddReportEvent.OnSubmit(true))
+        viewModel.onEvent(ReportFormEvent.OnSubmit(true))
         advanceUntilIdle()
 
         coVerify(exactly = 1) { updateReportUseCase(eq(reportId), any()) }
