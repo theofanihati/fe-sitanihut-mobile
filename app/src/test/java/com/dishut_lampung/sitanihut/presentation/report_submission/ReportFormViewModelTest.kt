@@ -122,22 +122,20 @@ class ReportFormViewModelTest {
     @Test
     fun `OnPlantingItemChange with type Semusim and Date should calculate plant age`() = runTest {
         var viewModel = createViewModel()
-        val dateString = "01/01/2020" // Tanggal lampau agar umur > 0
+        val dateString = "01/01/2020"
         val item = com.dishut_lampung.sitanihut.presentation.report_submission.form.PlantingDetailUiState(
             plantType = "semusim",
             plantDate = dateString,
             amount = "10"
         )
 
-        // Act
         viewModel.onEvent(ReportFormEvent.OnPlantingItemChange(0, item))
 
-        // Assert
         val updatedItem = viewModel.uiState.value.plantingDetails[0]
         val age = updatedItem.plantAge.toDoubleOrNull() ?: 0.0
 
-        assertEquals("kg", updatedItem.unit) // Semusim unit harus kg
-        assert(age > 1.0) // Pastikan umur terhitung (lebih dari 1 tahun karena 2020)
+        assertEquals("kg", updatedItem.unit)
+        assert(age > 1.0)
     }
 
     @Test
@@ -243,6 +241,7 @@ class ReportFormViewModelTest {
             month = "Januari",
             period = 2024,
             farmerNotes = "Catatan",
+            penyuluhNotes = "Catatan",
             nte = 0.0,
             status = ReportStatus.DRAFT,
             attachments = emptyList(),
