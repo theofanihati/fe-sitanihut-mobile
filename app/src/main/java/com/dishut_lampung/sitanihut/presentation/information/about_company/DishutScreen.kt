@@ -73,9 +73,23 @@ fun DishutScreen(
     onEvent: (InformationEvent) -> Unit,
 ) {
     val kphData = listOf(
-        CarouselItemData(R.drawable.auth_image_1, "KPHK TAHURA Wan Abdul Rachman"),
-        CarouselItemData(R.drawable.auth_image_1, "KPH Tangkit Teba"),
-        CarouselItemData(R.drawable.auth_image_1, "KPH Way Waya")
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPHK Tahura Wan Abdul Rachman"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Pesisir Barat"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Liwa"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Bukit Punggur"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Muara Dua"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Sungai Buaya"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Way Terusan"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Way Waya"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Tangkit Teba"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Batu Tegi"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Kota Agung Utara"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Pematang Neba"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Pesawaran"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Gunung Balak"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Way Pisang"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Batu Serampok"),
+        CarouselItemData(R.drawable.logo_kph, "UPTD KPH Gedong Wani")
     )
 
     val scrollState = rememberScrollState()

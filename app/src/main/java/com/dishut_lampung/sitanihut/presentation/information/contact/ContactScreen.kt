@@ -129,7 +129,7 @@ fun ContactScreen() {
         SocialMediaItem(
             icon = R.drawable.ic_whatsapp,
             title = "WhatsApp",
-            handle = "*WhatsApp dishut"
+            handle = "+62 821-8022-8516"
         )
 
         SocialMediaItem(

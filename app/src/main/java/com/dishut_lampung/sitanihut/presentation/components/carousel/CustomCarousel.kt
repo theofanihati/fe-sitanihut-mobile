@@ -3,9 +3,12 @@ package com.dishut_lampung.sitanihut.presentation.components.carousel
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -24,7 +27,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 data class CarouselItemData(
     @DrawableRes val imageRes: Int,
@@ -38,31 +44,50 @@ fun CarouselCard(
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier
+            .fillMaxSize()
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Image(
-                painter = painterResource(id = data.imageRes),
-                contentDescription = data.label,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
-            )
+                    .weight(0.65f)
+                    .fillMaxWidth()
+            ) {
+                Image(
+                    painter = painterResource(id = data.imageRes),
+                    contentDescription = data.label,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
 
-            Text(
-                text = data.label,
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.White,
-                fontWeight = FontWeight.SemiBold,
+            Column(
                 modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(16.dp)
-            )
+                    .weight(0.35f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = data.label,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = 14.sp,
+                        lineHeight = 18.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }
@@ -77,16 +102,16 @@ fun CustomCarousel(
 
     HorizontalMultiBrowseCarousel(
         state = carouselState,
-        preferredItemWidth = 200.dp,
+        preferredItemWidth = 180.dp,
         itemSpacing = 16.dp,
-        modifier = modifier.height(240.dp)
+        modifier = modifier.height(220.dp)
     ) { index ->
         val item = items[index]
 
         CarouselCard(
             data = item,
             modifier = Modifier
-                .width(200.dp)
+                .width(180.dp)
                 .maskClip(MaterialTheme.shapes.extraLarge)
         )
     }
