@@ -88,7 +88,7 @@ class HomePagePetaniViewModel @Inject constructor(
 
             is HomeEvent.OnSubmitClick -> showSubmitConfirmation(event.reportId)
             HomeEvent.OnSubmitCancel -> updateTemporaryState { it.copy(reportIdToSubmit = null) }
-            is HomeEvent.OnSubmitConfirm -> submitReport()
+            is HomeEvent.OnSubmitConfirm -> submitReport(event.reportId)
 
             HomeEvent.OnDismissError -> updateTemporaryState { it.copy(generalError = null) }
             HomeEvent.OnDismissSuccessMessage -> updateTemporaryState { it.copy(successMessage = null) }
@@ -167,8 +167,7 @@ class HomePagePetaniViewModel @Inject constructor(
         }
     }
 
-    private fun submitReport(){
-        val reportId = _temporatyUiState.value.reportIdToSubmit ?: return
+    private fun submitReport(reportId: String){
         updateTemporaryState{it.copy(
             isLoading = true,
             reportIdForOptionSheet = null,

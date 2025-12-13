@@ -36,7 +36,7 @@ sealed class HomeEvent {
     data class OnEditClick(val reportId: String) : HomeEvent()
     data class OnSubmitClick(val reportId: String) : HomeEvent() // Ajukan/Submit
     object OnSubmitCancel : HomeEvent()
-    object OnSubmitConfirm : HomeEvent()
+    data class OnSubmitConfirm(val reportId: String) : HomeEvent()
 
     data class OnDeleteClick(val reportId: String) : HomeEvent()
     object OnDeleteCancel : HomeEvent()

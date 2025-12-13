@@ -350,7 +350,8 @@ fun HomePagePetaniScreen(
                 dismissButtonText = "Batal",
                 confirmColor = MaterialTheme.colorScheme.tertiary,
                 onConfirm = {
-                    onEvent(HomeEvent.OnSubmitConfirm)
+                    val idLaporan = state.reportIdToSubmit ?: ""
+                    onEvent(HomeEvent.OnSubmitConfirm(idLaporan))
                 },
                 onDismiss = {
                     onEvent(HomeEvent.OnSubmitCancel)
