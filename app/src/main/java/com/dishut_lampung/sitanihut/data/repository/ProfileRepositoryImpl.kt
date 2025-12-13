@@ -7,10 +7,12 @@ import com.dishut_lampung.sitanihut.data.mapper.toDomain
 import com.dishut_lampung.sitanihut.data.mapper.toUserDetail
 import com.dishut_lampung.sitanihut.data.mapper.toEntity
 import com.dishut_lampung.sitanihut.data.remote.api.UserApiService
+import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.util.Resource
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -25,7 +27,9 @@ class ProfileRepositoryImpl @Inject constructor(
 ) : ProfileRepository {
 
     override fun getUserDetail(userId: String): Flow<Resource<UserDetail>> {
-        return userDao.getUserById(userId).map { userEntity ->
+        return userDao.getUserById(userId)
+            .distinctUntilChanged()
+            .map { userEntity ->
             if (userEntity != null) {
                 Resource.Success(userEntity.toUserDetail())
             } else {
@@ -41,36 +45,41 @@ class ProfileRepositoryImpl @Inject constructor(
             val response = apiService.getUserDetail(currentUserId)
             val userDto = response.data
 
-            var roleName = roleDao.getRoleName(userDto.roleId)
-            if (roleName == null) {
-                try {
-                    val rolesResponse = apiService.getRoles()
-                    val roleEntities = rolesResponse.data.map { it.toEntity() }
-                    roleDao.insertRoles(roleEntities)
-
-                    roleName = roleDao.getRoleName(userDto.roleId)
-                } catch (e: Exception) {
-                    // Silent fail fetch roles
-                }
-            }
-
-            if (roleName == null) {
-                val prefRole = userPreferences.userRole.first()
-                roleName = prefRole?.replaceFirstChar { it.uppercase() }
-            }
-            val userEntity = userDto.toEntity(roleName ?: "Pengguna")
+            val roleName = resolveRoleName(userDto.roleId)
+            val userEntity = userDto.toEntity(roleName)
 
             userDao.upsertUser(userEntity)
-
-            userPreferences.saveUserName(userDto.name)
-            if (!userDto.profilePictureUrl.isNullOrEmpty()) {
-                userPreferences.saveUserAvatar(userDto.profilePictureUrl)
-            }
+            updateUserPreferences(userDto)
 
             Resource.Success(Unit)
         } catch (e: Exception) {
             e.printStackTrace()
             Resource.Error("Gagal sinkronisasi: ${e.message}")
+        }
+    }
+
+    private suspend fun resolveRoleName(roleId: String): String {
+        roleDao.getRoleName(roleId)?.let { return it }
+        try {
+            fetchAndCacheRoles()
+            roleDao.getRoleName(roleId)?.let { return it }
+        } catch (e: Exception) {
+        }
+
+        val prefRole = userPreferences.userRole.first()
+        return prefRole?.replaceFirstChar { it.uppercase() } ?: "Pengguna"
+    }
+
+    private suspend fun fetchAndCacheRoles() {
+        val rolesResponse = apiService.getRoles()
+        val roleEntities = rolesResponse.data.map { it.toEntity() }
+        roleDao.insertRoles(roleEntities)
+    }
+
+    private suspend fun updateUserPreferences(userDto: UserDetailDto) {
+        userPreferences.saveUserName(userDto.name)
+        if (!userDto.profilePictureUrl.isNullOrEmpty()) {
+            userPreferences.saveUserAvatar(userDto.profilePictureUrl)
         }
     }
 }
