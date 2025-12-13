@@ -4,9 +4,11 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.worker.DataSyncWorker
@@ -25,6 +27,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 data class UserProfileState(
@@ -46,6 +49,7 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
+    private val SYNC_COOLDOWN_MS = 30 * 60 * 1000L
 
     val userProfileState: StateFlow<UserProfileState> = homeRepository.getUserProfile()
         .map { domainProfile ->
@@ -68,13 +72,45 @@ class MainViewModel @Inject constructor(
 
     private fun observeSessionForSync() {
         viewModelScope.launch {
-            userPreferences.authToken.collect { token ->
+            combine(
+                userPreferences.authToken,
+                userPreferences.lastSyncTime
+            ) { token, lastSync ->
+                Pair(token, lastSync)
+            }.collect { (token, lastSync) ->
                 if (!token.isNullOrEmpty()) {
-                    Log.d("SYNC_DEBUG", "Token terdeteksi! Menjalankan Worker...")
-                    startBackgroundSync()
+                    val currentTime = System.currentTimeMillis()
+                    val timeDiff = currentTime - lastSync
+
+                    if (timeDiff > SYNC_COOLDOWN_MS) {
+                        Log.d("SYNC", "Data sudah basi (${timeDiff/60000} menit lalu). Mulai Sync...")
+                        startBackgroundSync()
+                    } else {
+                        Log.d("SYNC", "Data masih segar. Skip Sync. Tunggu ${(SYNC_COOLDOWN_MS - timeDiff)/60000} menit lagi.")
+                    }
+
+                    setupPeriodicSync()
                 }
             }
         }
+    }
+
+    private fun setupPeriodicSync() {
+        val periodicRequest = PeriodicWorkRequestBuilder<DataSyncWorker>(
+            12, TimeUnit.HOURS
+        )
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+            )
+            .build()
+
+        workManager.enqueueUniquePeriodicWork(
+            "periodic_data_sync",
+            ExistingPeriodicWorkPolicy.KEEP,
+            periodicRequest
+        )
     }
 
     private fun checkAuthStatus() {
