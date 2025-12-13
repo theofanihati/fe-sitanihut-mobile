@@ -30,7 +30,7 @@ class ReportSyncWorkerTest {
 
     @Test
     fun `doWork should return Success when no pending reports`() = runTest {
-        coEvery { reportDao.getReportsBySyncStatus("pending_create") } returns emptyList()
+        coEvery { reportDao.getAllUnsyncedReports() } returns emptyList()
         val worker = TestListenableWorkerBuilder<ReportSyncWorker>(context)
             .setWorkerFactory(object : androidx.work.WorkerFactory() {
                 override fun createWorker(
