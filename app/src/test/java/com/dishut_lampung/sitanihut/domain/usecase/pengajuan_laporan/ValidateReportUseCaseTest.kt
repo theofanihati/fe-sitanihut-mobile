@@ -64,7 +64,7 @@ class ValidateReportUseCaseTest {
         val input = baseInput.copy(modal = "0")
         val result = validateReportInput.execute(input)
         assertFalse(result.successful)
-        assertEquals("Modal harus terisi dan lebih dari 0", result.errorMessage)
+        assertEquals("Modal harus angka lebih dari 0", result.fieldErrors["modal"])
     }
 
     // --- TANAMAN SEMUSIM ---
@@ -75,7 +75,7 @@ class ValidateReportUseCaseTest {
 
         val result = validateReportInput.execute(input)
         assertFalse(result.successful)
-        assertEquals("Tanggal wajib diisi untuk tanaman semusim", result.errorMessage)
+        assertEquals("Tanggal wajib diisi untuk tanaman semusim", result.fieldErrors["plant_date_0"])
     }
 
     // --- TANAMAN TAHUNAN ---
@@ -86,7 +86,7 @@ class ValidateReportUseCaseTest {
 
         val result = validateReportInput.execute(input)
         assertFalse(result.successful)
-        assertEquals("Usia tanam wajib diisi untuk tanaman tahunan", result.errorMessage)
+        assertEquals("Usia tanam wajib diisi untuk tanaman tahunan", result.fieldErrors["plant_age_0"])
     }
 
     // --- TEST PANEN ---
@@ -100,6 +100,6 @@ class ValidateReportUseCaseTest {
 
         val result = validateReportInput.execute(input)
         assertFalse(result.successful)
-        assertEquals("Harga satuan harus lebih dari 0", result.errorMessage)
+        assertEquals("Harga satuan harus lebih dari 0", result.fieldErrors["harvest_price_0"])
     }
 }
