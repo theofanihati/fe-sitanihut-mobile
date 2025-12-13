@@ -61,6 +61,7 @@ class ProfileRepositoryImplTest {
         mockApiService = mockk()
         mockUserDao = mockk()
         mockRoleDao = mockk()
+        mockUserPreferences = mockk(relaxed = true)
         repository = ProfileRepositoryImpl(
             apiService = mockApiService,
             userDao = mockUserDao,
@@ -70,134 +71,69 @@ class ProfileRepositoryImplTest {
     }
 
     @Test
-    fun `getUserDetail success from network should save to db and emit success`() = runTest {
-        every { mockUserDao.getUserById(userId) } returnsMany listOf(
-            flowOf(null),
-            flowOf(dummyUserEntity)
-        )
+    fun `getUserDetail should emit Loading when data is null`() = runTest {
+        every { mockUserDao.getUserById(userId) } returns flowOf(null)
+        repository.getUserDetail(userId).test {
+            val item = awaitItem()
+            assertTrue(item is Resource.Loading)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 
+    @Test
+    fun `getUserDetail should emit Success when data exists in DB`() = runTest {
+        every { mockUserDao.getUserById(userId) } returns flowOf(dummyUserEntity)
+        repository.getUserDetail(userId).test {
+            val item = awaitItem()
+            assertTrue(item is Resource.Success)
+            assertEquals(dummyUserDetail, item.data)
+            assertEquals("Petani", item.data?.role)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `when syncUserDetail success, should fetch api and upsert to db`() = runTest {
+        every { mockUserPreferences.userId } returns flowOf(userId)
         coEvery { mockApiService.getUserDetail(userId) } returns ApiResponse(200, "ok", dummyUserDto)
         coEvery { mockRoleDao.getRoleName(roleId) } returns roleName
         coJustRun { mockUserDao.upsertUser(any()) }
 
-        repository.getUserDetail(userId).test {
-            assertTrue(awaitItem() is Resource.Loading)
-
-            val successItem = awaitItem()
-            assertTrue(successItem is Resource.Success)
-            assertEquals(dummyUserDetail, successItem.data)
-            assertEquals("Petani", successItem.data?.role)
-
-            cancelAndIgnoreRemainingEvents()
-        }
+        val result = repository.syncUserDetail()
+        assertTrue(result is Resource.Success)
 
         coVerify { mockApiService.getUserDetail(userId) }
-        coVerify { mockUserDao.upsertUser(any()) }
-    }
-
-    @Test
-    fun `getUserDetail fail from network, then emit data cache`() = runTest {
-        val cachedEntity = dummyUserEntity.copy(name = "Budi Lama")
-        every { mockUserDao.getUserById(userId) } returns flowOf(cachedEntity)
-
-        coEvery { mockApiService.getUserDetail(any()) } throws IOException("Tidak ada koneksi internet. Menampilkan data offline.")
-
-        val flow = repository.getUserDetail(userId)
-
-        flow.test {
-            assertTrue(awaitItem() is Resource.Loading)
-
-            val cacheItem = awaitItem()
-            assertTrue(cacheItem is Resource.Success)
-            assertEquals("Budi Lama", cacheItem.data?.name)
-
-            val errorItem = awaitItem()
-            assertTrue(errorItem is Resource.Error)
-            assertEquals("Tidak ada koneksi internet. Menampilkan data offline.", errorItem.message)
-            assertEquals("Budi Lama", errorItem.data?.name)
-
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `when cache update success, should emit new data`() = runTest {
-        val oldEntity = dummyUserEntity.copy(name = "Budi Lama")
-        val newEntity = dummyUserEntity.copy(name = "Budi Baru")
-
-        every { mockUserDao.getUserById(userId) } returnsMany listOf(
-            flowOf(oldEntity),
-            flowOf(newEntity)
-        )
-
-        val newDto = dummyUserDto.copy(name = "Budi Baru")
-        coEvery { mockApiService.getUserDetail(userId) } returns ApiResponse( 200, "ok", newDto)
-
-        coEvery { mockRoleDao.getRoleName(roleId) } returns roleName
-        coJustRun { mockUserDao.upsertUser(any()) }
-
-        val flow = repository.getUserDetail(userId)
-
-        flow.test {
-            assertTrue(awaitItem() is Resource.Loading)
-            val oldItem = awaitItem()
-            assertTrue(oldItem is Resource.Success)
-            assertEquals("Budi Lama", oldItem.data?.name)
-
-            val newItem = awaitItem()
-            assertTrue(newItem is Resource.Success)
-            assertEquals("Budi Baru", newItem.data?.name)
-
-            cancelAndIgnoreRemainingEvents()
-        }
+        coVerify { mockUserDao.upsertUser(match { it.id == userId && it.name == "Budi Petani" }) }
+        coVerify { mockUserPreferences.saveUserName("Budi Petani") }
     }
 
 
     @Test
-    fun `when cache update fail, should emit error`() = runTest {
-        every { mockUserDao.getUserById(userId) } returns flowOf(null)
-        coEvery { mockApiService.getUserDetail(any()) } throws IOException("No Connection")
+    fun `when syncUserDetail fail, should return error`() = runTest {
+        every { mockUserPreferences.userId } returns flowOf(userId)
+        coEvery { mockApiService.getUserDetail(userId) } throws IOException("No Internet")
 
-        val flow = repository.getUserDetail(userId)
-
-        flow.test {
-            assertTrue(awaitItem() is Resource.Loading)
-
-            val errorItem = awaitItem()
-            assertTrue(errorItem is Resource.Error)
-            assertNull(errorItem.data)
-
-            cancelAndIgnoreRemainingEvents()
-        }
+        val result = repository.syncUserDetail()
+        assertTrue(result is Resource.Error)
+        assertTrue(result.message!!.contains("Gagal sinkronisasi"))
     }
 
     @Test
-    fun `when roles empty, should fetch and insert roles`() = runTest {
-        every { mockUserDao.getUserById(userId) } returnsMany listOf(
-            flowOf(null),
-            flowOf(dummyUserEntity)
-        )
-        coEvery { mockApiService.getUserDetail(any()) } returns ApiResponse(200, "ok", dummyUserDto)
-        coJustRun { mockUserDao.upsertUser(any()) }
-
+    fun `when roles null locally, syncUserDetail should fetch roles`() = runTest {
+        every { mockUserPreferences.userId } returns flowOf(userId)
+        coEvery { mockApiService.getUserDetail(userId) } returns ApiResponse(200, "ok", dummyUserDto)
         coEvery { mockRoleDao.getRoleName(roleId) } returnsMany listOf(null, "Petani")
 
-        val rolesResponse = ApiResponse( 200, "ok", listOf(RoleDto(roleId, "Petani")))
+        val rolesResponse = ApiResponse(200, "ok", listOf(RoleDto(roleId, "Petani")))
         coEvery { mockApiService.getRoles() } returns rolesResponse
-
         coJustRun { mockRoleDao.insertRoles(any()) }
+        coJustRun { mockUserDao.upsertUser(any()) }
 
-        repository.getUserDetail(userId).test {
-            awaitItem()
+        val result = repository.syncUserDetail()
+        assertTrue(result is Resource.Success)
 
-            val successItem = awaitItem()
-            assertTrue(successItem is Resource.Success)
-            assertEquals("Petani", successItem.data?.role)
-
-            cancelAndIgnoreRemainingEvents()
-        }
-
-        coVerify(exactly = 1) { mockApiService.getRoles() }
-        coVerify(exactly = 1) { mockRoleDao.insertRoles(any()) }
+        coVerify { mockApiService.getRoles() }
+        coVerify { mockRoleDao.insertRoles(any()) }
+        coVerify { mockUserDao.upsertUser(match { it.role == "Petani" }) }
     }
 }
