@@ -2,7 +2,9 @@ package com.dishut_lampung.sitanihut.data.repository
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
+import androidx.work.Operation
 import androidx.work.WorkManager
 import com.dishut_lampung.sitanihut.data.local.SitanihutDatabase
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
@@ -14,6 +16,7 @@ import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.Runs
 import io.mockk.coEvery
+import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
@@ -47,12 +50,39 @@ class ReportRepositoryImplTest {
     private lateinit var context: Context
     private lateinit var repository: ReportRepositoryImpl
 
+    private val mockWorkManager: WorkManager = mockk()
+    private val mockOperation: Operation = mockk(relaxed = true)
+
+    val dummyReport = ReportEntity(
+        id = "123",
+        userId = "user1",
+        period = 2024,
+        month = "Februari",
+        date = "2024-02-01",
+        nte = 100000.0,
+        status = "menunggu",
+        syncStatus = SyncStatus.SYNCED,
+        jsonPayload = null,
+        plantingDetailsJson = "[]",
+        harvestDetailsJson = "[]",
+    )
+
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
         repository = ReportRepositoryImpl(apiService, db, reportDao, userPreferences, context)
 
         every { db.reportDao() } returns reportDao
+        every { userPreferences.userId } returns flowOf("user-123")
+        mockkStatic(WorkManager::class)
+        every { WorkManager.getInstance(any()) } returns mockWorkManager
+        every {
+            mockWorkManager.enqueueUniqueWork(
+                any(),
+                any(),
+                any<OneTimeWorkRequest>()
+            )
+        } returns mockOperation
     }
 
     @After
@@ -61,38 +91,56 @@ class ReportRepositoryImplTest {
     }
 
     @Test
-    fun `deleteReport should delete from local AND remote when token exists`() = runTest {
+    fun `deleteReport should mark local as PENDING_DELETE and enqueue Worker`() = runTest {
         val id = "123"
-        coEvery { userPreferences.getAuthToken() } returns "fake_token"
-        val result = repository.deleteReport(id)
-
-        assertTrue(result is Resource.Success)
-        coVerify { reportDao.deleteReportById(id) }
-        coVerify { apiService.deleteReport(id) }
-    }
-
-    @Test
-    fun `deleteReport should return Success even if API fails (Offline Logic)`() = runTest {
-        val id = "123"
-        coEvery { userPreferences.getAuthToken() } returns "fake_token"
-
-        coEvery { apiService.deleteReport(id) } throws Exception("No Internet")
+        coEvery { reportDao.getSyncStatus(id) } returns SyncStatus.SYNCED
 
         val result = repository.deleteReport(id)
         assertTrue(result is Resource.Success)
-        coVerify { reportDao.deleteReportById(id) }
+
+        coVerify { reportDao.markAsPendingDelete(id) }
+        verify {
+            mockWorkManager.enqueueUniqueWork(
+                "sync_report_queue",
+                ExistingWorkPolicy.APPEND,
+                any<OneTimeWorkRequest>()
+            )
+        }
     }
 
     @Test
-    fun `submitReport should update local AND call API when token exists`() = runTest {
+    fun `unsynced item should just delete locally`() = runTest {
         val id = "123"
-        coEvery { userPreferences.getAuthToken() } returns "fake_token"
-        coEvery { reportDao.submitReportById(id) } just Runs
+        coEvery { reportDao.getSyncStatus(id) } returns SyncStatus.PENDING_CREATE
+
+        val result = repository.deleteReport(id)
+        assertTrue(result is Resource.Success)
+        coVerify { reportDao.deleteReportById(id) }
+        verify(exactly = 0) { mockWorkManager.enqueueUniqueWork(any(), any(), any<OneTimeWorkRequest>()) }
+    }
+
+    @Test
+    fun `submitReport should update local AND enqueue Worker`() = runTest {
+        val id = "123"
+        coEvery { reportDao.getReportById(id) } returns dummyReport
+        coJustRun { reportDao.upsertAll(any()) }
+
         val result = repository.submitReport(id)
 
         assertTrue(result is Resource.Success)
-        coVerify { reportDao.submitReportById(id) }
-        coVerify { apiService.submitReport(eq(id), any(), any()) }
+        coVerify {
+            reportDao.upsertAll(match { list ->
+                list.first().status == "menunggu" &&
+                        list.first().syncStatus == SyncStatus.PENDING_UPDATE
+            })
+        }
+        verify {
+            mockWorkManager.enqueueUniqueWork(
+                "sync_report_queue",
+                ExistingWorkPolicy.APPEND,
+                any<OneTimeWorkRequest>()
+            )
+        }
     }
 
     @Test
@@ -109,61 +157,43 @@ class ReportRepositoryImplTest {
             isAjukan = true,
             nte = 5000.0
         )
-        coEvery { userPreferences.userId } returns flowOf("user-123")
 
         val reportSlot = slot<List<ReportEntity>>()
         coEvery { reportDao.upsertAll(capture(reportSlot)) } just Runs
 
-        mockkStatic(WorkManager::class)
-        val mockWorkManager = mockk<WorkManager>()
-        every { WorkManager.getInstance(any()) } returns mockWorkManager
-        every { mockWorkManager.enqueue(any<OneTimeWorkRequest>()) } returns mockk()
-
         val result = repository.createReport(input)
         assertTrue(result is Resource.Success)
 
-        coVerify(exactly = 1) { reportDao.insertAll(any()) }
+        coVerify(exactly = 1) { reportDao.upsertAll(any()) }
         val savedEntity = reportSlot.captured.first()
 
         assertEquals("user-123", savedEntity.userId)
         assertEquals(SyncStatus.PENDING_CREATE, savedEntity.syncStatus)
-        assertNotNull(savedEntity.jsonPayload)
+        assertEquals("menunggu", savedEntity.status)
 
-        verify(exactly = 1) { mockWorkManager.enqueue(any<OneTimeWorkRequest>()) }
+        verify(exactly = 1) {
+            mockWorkManager.enqueueUniqueWork("sync_report_queue", ExistingWorkPolicy.APPEND, any<OneTimeWorkRequest>())
+        }
         unmockkStatic(WorkManager::class)
     }
 
     @Test
     fun `createReport should return Error if Database insert fails`() = runTest {
         val input = mockk<CreateReportInput>(relaxed = true)
-        coEvery { userPreferences.userId } returns flowOf("user-123")
-        coEvery { reportDao.insertAll(any()) } throws Exception("Database Full")
+        coEvery { reportDao.upsertAll(any()) } throws Exception("Database Full")
 
         val result = repository.createReport(input)
 
         assertTrue(result is Resource.Error)
         assertEquals("Gagal menyimpan data: Database Full", result.message)
-        mockkStatic(WorkManager::class)
-        unmockkStatic(WorkManager::class)
+        verify(exactly = 0) { mockWorkManager.enqueueUniqueWork(any(), any(), any<OneTimeWorkRequest>()) }
     }
 
     @Test
     fun `getReportById should emit Success when data found`() = runTest {
         val id = "123"
-        val dummyEntity = ReportEntity(
-            id = id,
-            userId = "user1",
-            period = 2024,
-            month = "Februari",
-            date = "2024-02-01",
-            nte = 100000.0,
-            status = "menunggu",
-            syncStatus = SyncStatus.SYNCED,
-            jsonPayload = null,
-            plantingDetailsJson = "[]",
-            harvestDetailsJson = "[]",
-        )
-        every { reportDao.getReportByIdFlow(id=id) } returns flowOf(dummyEntity)
+        coEvery { apiService.getReportDetail(id) } throws Exception("Skip network check")
+        every { reportDao.getReportByIdFlow(id=id) } returns flowOf(dummyReport)
 
         val result = repository.getReportById(id).first { it !is Resource.Loading }
         assertTrue(result is Resource.Success)
