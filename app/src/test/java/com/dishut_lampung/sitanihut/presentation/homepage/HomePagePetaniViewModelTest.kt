@@ -182,19 +182,23 @@ class HomePagePetaniViewModelTest {
     @Test
     fun `onDeleteConfirm success should call deleteReport and show success message`() = runTest {
         val reportId = "id-to-delete"
+        coEvery { homeRepository.deleteReport(reportId) } returns Resource.Success(Unit)
+
         viewModel.uiState.test {
             awaitItem()
-            viewModel.onEvent(HomeEvent.OnDeleteConfirm(reportId))
+            viewModel.onEvent(HomeEvent.OnDeleteClick(reportId))
+            awaitItem()
+            viewModel.onEvent(HomeEvent.OnDeleteConfirm)
 
             var nextState = awaitItem()
-            if (nextState.isLoading) {
+            while (nextState.successMessage == null || nextState.isLoading) {
                 nextState = awaitItem()
             }
             assertFalse(nextState.isLoading)
             assertEquals("Laporan berhasil dihapus", nextState.successMessage)
-
-            coVerify(exactly = 1) { homeRepository.deleteReport(reportId) }
+            cancelAndIgnoreRemainingEvents()
         }
+        coVerify(exactly = 1) { homeRepository.deleteReport(reportId) }
     }
 
     @Test
