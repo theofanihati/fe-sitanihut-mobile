@@ -25,7 +25,7 @@ fun NavGraphBuilder.petaniNavGraph(
     navigation(startDestination = Screen.HomePetani.route, route = "petani") {
         composable(route = Screen.HomePetani.route) {
             val onNavigateToDetail = { id : String ->
-                navController.navigateSingleTop("report-submission/$id")
+                navController.navigateSingleTop("report-submission-detail/$id")
             }
             val onNavigateToCommodity = {
                 navController.navigateSingleTop("data_commodity")
