@@ -159,4 +159,5 @@ dependencies {
     implementation("androidx.hilt:hilt-work:1.2.0")
     kapt("androidx.hilt:hilt-compiler:1.2.0")
     testImplementation("androidx.work:work-testing")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
 }
