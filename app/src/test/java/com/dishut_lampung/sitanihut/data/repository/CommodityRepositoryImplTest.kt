@@ -9,6 +9,7 @@ import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.*
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -23,6 +24,21 @@ class CommodityRepositoryImplTest {
     private lateinit var mockDao: CommodityDao
     private lateinit var repository: CommodityRepositoryImpl
 
+    private val commodityEntity = CommodityEntity(
+        id = "1",
+        code = "JG01",
+        name = "Jagung Manis",
+        category = "Hortikultura"
+    )
+
+    private val commodityDto = CommodityDto(
+        id = "1",
+        code = "JG01",
+        name = "Jagung Manis",
+        category = "Hortikultura",
+        createdAt = "2023-01-01"
+    )
+
     @Before
     fun setUp() {
         mockApiService = mockk()
@@ -31,42 +47,14 @@ class CommodityRepositoryImplTest {
     }
 
     @Test
-    fun `getCommodities success from network should save to db and emit success`() = runTest {
+    fun `getCommodities success should emit loading then success`() = runTest {
         val query = "Jagung"
-        val dto = CommodityDto(
-            id = "1",
-            code = "JG01",
-            name = "Jagung Manis",
-            category = "Hortikultura",
-            createdAt = "2023-01-01"
-        )
-
-        val paginatedData = PaginatedData(
-            data = listOf(dto),
-            totalPages = 1,
-            count = 1
-        )
-        val apiResponse = ApiResponse(
-            statusCode = 404,
-            message = "success",
-            data = paginatedData
-        )
-
-        val entity = CommodityEntity(
-            id = "1",
-            code = "JG01",
-            name = "Jagung Manis",
-            category = "buah buahan"
-        )
-
-        coEvery { mockApiService.getCommodities(search = query) } returns apiResponse
-        every { mockDao.getCommodities(query) } returns flowOf(listOf(entity))
-
+        every { mockDao.getCommodities(query) } returns flowOf(listOf(commodityEntity))
         repository.getCommodities(query).test {
             assertTrue(awaitItem() is Resource.Loading)
+
             val successItem = awaitItem()
             assertTrue(successItem is Resource.Success)
-
             val data = successItem.data
             assertEquals(1, data?.size)
             assertEquals("Jagung Manis", data?.first()?.name)
@@ -74,32 +62,71 @@ class CommodityRepositoryImplTest {
             cancelAndIgnoreRemainingEvents()
         }
 
-        coVerify(exactly = 1) { mockApiService.getCommodities(search = query) }
-        coVerify(exactly = 1) { mockDao.insertCommodities(any()) }
     }
 
     @Test
-    fun `getCommodities fail from network should emit error then emit data from cache`() = runTest {
+    fun `getCommodities should emit error when dao throws exception`() = runTest {
         val query = "Jagung"
-        coEvery { mockApiService.getCommodities(search = query) } throws IOException("No Internet")
-
-        val entity = CommodityEntity("1", "JG01", "Jagung", "Palawija")
-        every { mockDao.getCommodities(query) } returns flowOf(listOf(entity))
+        every { mockDao.getCommodities(query) } returns flow { throw Exception("DB Error") }
 
         repository.getCommodities(query).test {
             assertTrue(awaitItem() is Resource.Loading)
             val errorItem = awaitItem()
             assertTrue(errorItem is Resource.Error)
-            assertEquals("Gagal update data: No Internet", errorItem.message)
-
-            val successItem = awaitItem()
-            assertTrue(successItem is Resource.Success)
-            assertEquals("Jagung", successItem.data?.first()?.name)
+            assertTrue(errorItem.message!!.contains("Terjadi kesalahan database"))
 
             cancelAndIgnoreRemainingEvents()
         }
+    }
 
-        coVerify(exactly = 1) { mockApiService.getCommodities(search = query) }
+    @Test
+    fun `syncCommodities success should fetch api and insert to db`() = runTest {
+        val paginatedData = PaginatedData(
+            data = listOf(commodityDto),
+            totalPages = 1,
+            count = 1
+        )
+        val apiResponse = ApiResponse(200, "success", paginatedData)
+
+        coEvery { mockApiService.getCommodities(search = "") } returns apiResponse
+        coJustRun { mockDao.insertCommodities(any()) }
+
+        val result = repository.syncCommodities()
+
+        assertTrue(result is Resource.Success)
+
+        coVerify { mockApiService.getCommodities(search = "") }
+        coVerify {
+            mockDao.insertCommodities(match { list ->
+                list.size == 1 && list[0].id == "1"
+            })
+        }
+    }
+
+    @Test
+    fun `syncCommodities when api returns empty should not insert`() = runTest {
+        val paginatedData = PaginatedData(
+            data = emptyList<CommodityDto>(),
+            totalPages = 0,
+            count = 0
+        )
+        val apiResponse = ApiResponse(200, "success", paginatedData)
+        coEvery { mockApiService.getCommodities(search = "") } returns apiResponse
+
+        val result = repository.syncCommodities()
+        assertTrue(result is Resource.Success)
+
+        coVerify(exactly = 0) { mockDao.insertCommodities(any()) }
+    }
+
+    @Test
+    fun `syncCommodities fail network should return Error`() = runTest {
+        coEvery { mockApiService.getCommodities(search = "") } throws IOException("No Internet")
+
+        val result = repository.syncCommodities()
+        assertTrue(result is Resource.Error)
+        assertEquals("Gagal sinkronisasi: No Internet", result.message)
+
         coVerify(exactly = 0) { mockDao.insertCommodities(any()) }
     }
 }
