@@ -49,7 +49,11 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
-    private val SYNC_COOLDOWN_MS = 30 * 60 * 1000L
+    companion object {
+        private const val SYNC_COOLDOWN_MS = 30 * 60 * 1000L
+        private const val SYNC_TAG_PERIODIC = "periodic_data_sync"
+        private const val SYNC_TAG_INITIAL = "initial_data_sync"
+    }
 
     val userProfileState: StateFlow<UserProfileState> = homeRepository.getUserProfile()
         .map { domainProfile ->
@@ -107,7 +111,7 @@ class MainViewModel @Inject constructor(
             .build()
 
         workManager.enqueueUniquePeriodicWork(
-            "periodic_data_sync",
+            SYNC_TAG_PERIODIC,
             ExistingPeriodicWorkPolicy.KEEP,
             periodicRequest
         )
@@ -150,17 +154,10 @@ class MainViewModel @Inject constructor(
         // KEEP = klo ada worker yang jalan, tunggu done
         // REPLACE = Cancel yang lama, mulai baru
         workManager.enqueueUniqueWork(
-            "initial_data_sync",
+            SYNC_TAG_INITIAL,
             ExistingWorkPolicy.REPLACE,
             syncRequest
         )
-
-        workManager.getWorkInfoByIdLiveData(syncRequest.id).observeForever { workInfo ->
-            if (workInfo != null) {
-                Log.d("WORKER_STATUS", "Status: ${workInfo.state}")
-            }
-        }
-        Log.d("SYNC_DEBUG", "Request Worker Terkirim ke WorkManager")
     }
 
     fun logout() {
