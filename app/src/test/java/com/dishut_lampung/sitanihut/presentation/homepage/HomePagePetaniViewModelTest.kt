@@ -204,11 +204,15 @@ class HomePagePetaniViewModelTest {
     @Test
     fun `onSubmitClick success should call submitReport and show success message`() = runTest {
         val reportId = "id-to-submit"
+        coEvery { homeRepository.submitReport(reportId) } returns Resource.Success(Unit)
         viewModel.uiState.test {
             awaitItem()
             viewModel.onEvent(HomeEvent.OnSubmitClick(reportId))
+          awaitItem()
+            viewModel.onEvent(HomeEvent.OnSubmitConfirm(reportId))
+
             var nextState = awaitItem()
-            if (nextState.isLoading) {
+            while (nextState.successMessage == null || nextState.isLoading) {
                 nextState = awaitItem()
             }
 
