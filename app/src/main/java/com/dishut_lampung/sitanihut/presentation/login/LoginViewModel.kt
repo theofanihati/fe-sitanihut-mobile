@@ -103,7 +103,6 @@ class LoginViewModel @Inject constructor(
             val result = loginUseCase(loginState.email.trim(), loginState.password.trim())
             when (result) {
                 is AuthResult.Success -> {
-                    homeRepository.syncUserProfile()
                     val role = result.data.role.lowercase()
                     pendingDestinationRoute = when (role) {
                         "petani" -> Screen.HomePetani.route

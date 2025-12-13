@@ -44,34 +44,33 @@ class HomeRepositoryImpl @Inject constructor(
             )
         }
 
-        return localProfileFlow.onStart {
-            syncUserProfile()
-        }
+        return localProfileFlow
     }
 
     override suspend fun syncUserProfile() {
-        try {
-            val token = userPreferences.authToken.first()
-            val userId = userPreferences.userId.first()
-            Log.d("SITANIHUT_SYNC_AUTH", "Token: $token, User ID: $userId")
-            Log.d("SITANIHUT_SYNC", "Token: $token, User ID: $userId")
-
-            if (!token.isNullOrEmpty() && !userId.isNullOrEmpty()) {
-                val response = apiService.getUserDetail(userId)
-
-                if (response.statusCode == 200 && response.data != null) {
-                    val data = response.data
-                    Log.d("SITANIHUT_DATA", "API URL Avatar: ${data.profilePictureUrl}")
-                    if (!data.profilePictureUrl.isNullOrEmpty()) {
-                        userPreferences.saveUserAvatar(data.profilePictureUrl)
-                    }
-
-                    userPreferences.saveUserName(data.name)
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        TODO()
+//        try {
+//            val token = userPreferences.authToken.first()
+//            val userId = userPreferences.userId.first()
+//            Log.d("SITANIHUT_SYNC_AUTH", "Token: $token, User ID: $userId")
+//            Log.d("SITANIHUT_SYNC", "Token: $token, User ID: $userId")
+//
+//            if (!token.isNullOrEmpty() && !userId.isNullOrEmpty()) {
+//                val response = apiService.getUserDetail(userId)
+//
+//                if (response.statusCode == 200 && response.data != null) {
+//                    val data = response.data
+//                    Log.d("SITANIHUT_DATA", "API URL Avatar: ${data.profilePictureUrl}")
+//                    if (!data.profilePictureUrl.isNullOrEmpty()) {
+//                        userPreferences.saveUserAvatar(data.profilePictureUrl)
+//                    }
+//
+//                    userPreferences.saveUserName(data.name)
+//                }
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//        }
     }
 
     override fun getReportSummary(): Flow<ReportSummary> {
