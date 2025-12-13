@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.google.dagger.hilt.android)
     alias(libs.plugins.kotlin.kapt)
     id("kotlin-parcelize")
+    id("jacoco")
 }
 
 android {
@@ -26,6 +27,7 @@ android {
 
     buildTypes {
         debug {
+            enableUnitTestCoverage = true
             buildConfigField("String", "BASE_URL", "\"https://api-sipetahut.palum.id/api/\"")
         }
 
@@ -161,3 +163,72 @@ dependencies {
     testImplementation("androidx.work:work-testing")
     testImplementation("androidx.arch.core:core-testing:2.2.0")
 }
+
+val exclusions = listOf(
+    "**/R.class",
+    "**/R$*.class",
+    "**/BuildConfig.*",
+    "**/Manifest*.*",
+    "**/*Test*.*",
+    "android/**/*.*",
+
+    // Hilt & Dagger (DI)
+    "**/di/**",
+    "**/*_HiltModules*",
+    "**/hilt_aggregated_deps/**",
+    "**/*_Factory*",
+    "**/*_MembersInjector*",
+    "**/dagger/**",
+
+    // Android UI (Activity, Fragment, Adapter, Application)
+    "**/*Activity*",
+    "**/*Fragment*",
+    "**/*Adapter*",
+    "**/*Application*",
+
+    // Jetpack Compose UI (Screen, Components, Generated)
+    "**/presentation/**/components/**",
+    "**/presentation/**/ui/**",
+    "**/*Screen*",
+    "**/*Kt*",
+    "**/*\$Composable*",
+    "**/*Preview*",
+
+    // Data Classes (Model, DTO, Entity, Response)
+    "**/model/**",
+    "**/dto/**",
+    "**/response/**",
+    "**/entity/**",
+
+    // Generated Code (Room, Retrofit)
+    "**/*_Impl*"
+)
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest") // Wajib: Jalanin test dulu sebelum generate report
+
+    group = "Reporting"
+    description = "Generate JaCoCo coverage reports excluding UI and DI."
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true) // Kita butuh HTML-nya
+    }
+
+    // Arahkan ke folder class Kotlin yang sudah dicompile (KUNCI UTAMA: tmp/kotlin-classes)
+    // Ini menghindari folder generated java milik Hilt
+    val debugTree = fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
+        exclude(exclusions)
+    }
+
+    val mainSrc = "${project.projectDir}/src/main/java"
+
+    sourceDirectories.setFrom(files(mainSrc))
+    classDirectories.setFrom(files(debugTree))
+
+    // Ambil data eksekusi test (.exec)
+    executionData.setFrom(fileTree(layout.buildDirectory.get()) {
+        include(listOf("**/*.exec", "**/*.ec"))
+    })
+}
+
