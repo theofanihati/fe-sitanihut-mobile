@@ -13,6 +13,7 @@ import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -45,32 +46,6 @@ class HomeRepositoryImpl @Inject constructor(
         }
 
         return localProfileFlow
-    }
-
-    override suspend fun syncUserProfile() {
-        TODO()
-//        try {
-//            val token = userPreferences.authToken.first()
-//            val userId = userPreferences.userId.first()
-//            Log.d("SITANIHUT_SYNC_AUTH", "Token: $token, User ID: $userId")
-//            Log.d("SITANIHUT_SYNC", "Token: $token, User ID: $userId")
-//
-//            if (!token.isNullOrEmpty() && !userId.isNullOrEmpty()) {
-//                val response = apiService.getUserDetail(userId)
-//
-//                if (response.statusCode == 200 && response.data != null) {
-//                    val data = response.data
-//                    Log.d("SITANIHUT_DATA", "API URL Avatar: ${data.profilePictureUrl}")
-//                    if (!data.profilePictureUrl.isNullOrEmpty()) {
-//                        userPreferences.saveUserAvatar(data.profilePictureUrl)
-//                    }
-//
-//                    userPreferences.saveUserName(data.name)
-//                }
-//            }
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//        }
     }
 
     override fun getReportSummary(): Flow<ReportSummary> {
@@ -122,42 +97,31 @@ class HomeRepositoryImpl @Inject constructor(
 
     override fun getReportsByStatus(status: String): Flow<Resource<List<Report>>> = flow {
         emit(Resource.Loading())
-
         val localData = reportDao.getReportsByStatus(status).first()
-        val localDomain = localData.map { it.toDomain() }
 
-        if (localDomain.isNotEmpty()) {
-            emit(Resource.Success(localDomain))
+        if (localData.isNotEmpty()) {
+            emit(Resource.Success(localData.map { it.toDomain() }))
         }
 
         try {
             val token = userPreferences.getAuthToken()
-            if (token.isNullOrBlank()) {
-                if (localDomain.isEmpty()) emit(Resource.Error("Token expired"))
-                return@flow
-            }
-
-            val response = apiService.getReportsByStatus(status)
-            val remoteItems = response.data
-
-            if (remoteItems != null) {
-                reportDao.upsertAll(remoteItems.map { it.toEntity() })
-
-                val newDomainData = remoteItems.map { it.toDomain() }
-                emit(Resource.Success(newDomainData))
-            } else if (localDomain.isEmpty()) {
-                emit(Resource.Success(emptyList()))
-            }
-
-        } catch (e: IOException) {
-            if (localDomain.isNotEmpty()) {
-                emit(Resource.Success(localDomain))
-            } else {
-                emit(Resource.Error("Gagal terhubung internet."))
+            if (token != null) {
+                val response = apiService.getReportsByStatus(status)
+                val remoteList = response.data.data ?: emptyList()
+                if (remoteList.isNotEmpty()) {
+                    reportDao.upsertAll(remoteList.map { it.toEntity() })
+                }
             }
         } catch (e: Exception) {
-            if (localDomain.isEmpty()) emit(Resource.Error(e.localizedMessage ?: "Error"))
+            if (localData.isEmpty()) {
+            }
         }
+
+        emitAll(
+            reportDao.getReportsByStatus(status).map { entities ->
+                Resource.Success(entities.map { it.toDomain() })
+            }
+        )
     }
 
     override suspend fun deleteReport(reportId: String): Resource<Unit> {

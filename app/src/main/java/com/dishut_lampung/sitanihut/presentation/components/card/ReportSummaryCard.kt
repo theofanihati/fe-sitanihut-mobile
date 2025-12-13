@@ -15,6 +15,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,12 +23,63 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.dishut_lampung.sitanihut.domain.model.ReportSummary
 
+enum class SummaryRole {
+    PETANI,
+    PENYULUH,
+    PENANGGUNG_JAWAB
+}
+
 @Composable
 fun ReportSummaryCard(
     modifier: Modifier = Modifier,
     summary: ReportSummary,
-    showRejected: Boolean = true
+    role: SummaryRole,
 ) {
+    val (
+        displayPending, displayVerified, displayApproved, displayRejected,
+        showPending, showVerified, showApproved, showRejected
+    ) = remember(summary, role)
+    {
+        when (role) {
+            SummaryRole.PETANI -> {
+                SummaryStatus(
+                    Menunggu = summary.pendingCount + summary.verifiedcount,
+                    Diverifikasi = 0,
+                    Disetujui = summary.approvedCount,
+                    Ditolak = summary.rejectedCount,
+                    showPending = true,
+                    showVerified = false,
+                    showApproved = true,
+                    ShowRejected = true,
+                )
+            }
+            SummaryRole.PENYULUH -> {
+                SummaryStatus(
+                    Menunggu = summary.pendingCount,
+                    Diverifikasi = summary.verifiedcount,
+                    Disetujui = 0,
+                    Ditolak = 0,
+                    showPending = true,
+                    showVerified = true,
+                    showApproved = false,
+                    ShowRejected = false,
+                )
+            }
+            SummaryRole.PENANGGUNG_JAWAB -> {
+                SummaryStatus(
+                    Menunggu = 0,
+                    Diverifikasi = summary.verifiedcount,
+                    Disetujui = summary.approvedCount,
+                    Ditolak = 0,
+                    showPending = false,
+                    showVerified = true,
+                    showApproved = true,
+                    ShowRejected = false
+                )
+            }
+        }
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -45,25 +97,35 @@ fun ReportSummaryCard(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SummaryItem(
-                count = summary.pendingCount,
-                label = "Menunggu",
-                countColor = Color.White
-            )
+            if (showPending) {
+                SummaryItem(
+                    count = displayPending,
+                    label = if (role == SummaryRole.PETANI) "Diproses" else "Menunggu",
+                    countColor = Color.White
+                )
+            }
 
-            SummaryDivider()
+            if (showVerified) {
+                SummaryItem(
+                    count = displayVerified,
+                    label = if (role == SummaryRole.PENYULUH) "Terverifikasi" else "Diverifikasi penyuluh" ,
+                    countColor = Color.White
+                )
+            }
 
-            SummaryItem(
-                count = summary.approvedCount,
-                label = "Disetujui",
-                countColor = Color.White
-            )
+            if (showApproved) {
+                SummaryDivider()
+                SummaryItem(
+                    count = displayApproved,
+                    label = "Disetujui",
+                    countColor = Color.White
+                )
+            }
 
             if (showRejected) {
                 SummaryDivider()
-
                 SummaryItem(
-                    count = summary.rejectedCount,
+                    count = displayRejected,
                     label = "Ditolak",
                     countColor = Color.White
                 )
@@ -71,6 +133,17 @@ fun ReportSummaryCard(
         }
     }
 }
+
+private data class SummaryStatus<A, B, C, D, E, F, G, H>(
+    val Menunggu: A,
+    val Diverifikasi: B,
+    val Disetujui: C,
+    val Ditolak: D,
+    val showPending: E,
+    val showVerified: F,
+    val showApproved: G,
+    val ShowRejected: H,
+)
 
 @Composable
 private fun SummaryItem(

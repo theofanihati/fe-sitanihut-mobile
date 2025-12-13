@@ -13,5 +13,4 @@ interface  HomeRepository {
     fun getReportsByStatus(status: String): Flow<Resource<List<Report>>>
     suspend fun deleteReport(reportId: String): Resource<Unit>
     suspend fun submitReport(reportId: String): Resource<Unit>
-    suspend fun syncUserProfile()
 }

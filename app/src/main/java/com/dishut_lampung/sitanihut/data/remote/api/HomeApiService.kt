@@ -23,7 +23,7 @@ interface HomeApiService {
     @GET("v1/laporan")
     suspend fun getReportsByStatus(
         @Query("status") status: String
-    ): ApiResponse<List<ReportListItemDto>>
+    ): ApiResponse<PaginatedData<ReportListItemDto>>
 
     @DELETE("v1/laporan/{id}")
     suspend fun deleteReport(

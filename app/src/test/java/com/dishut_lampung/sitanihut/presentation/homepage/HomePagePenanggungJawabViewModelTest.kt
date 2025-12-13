@@ -49,8 +49,9 @@ class HomePagePenanggungJawabViewModelTest {
     fun setUp() {
         MockKAnnotations.init(this)
         coEvery { homeRepository.getUserProfile() } returns flowOf(dummyProfile)
-        coEvery { homeRepository.getReportsByStatus("menunggu") } returns flowOf(Resource.Success(emptyList()))
+        coEvery { homeRepository.getReportsByStatus("diverifikasi") } returns flowOf(Resource.Success(emptyList()))
         coEvery { homeRepository.getReportsByStatus("disetujui") } returns flowOf(Resource.Success(emptyList()))
+        coEvery { homeRepository.getReportsByStatus("ditolak") } returns flowOf(Resource.Success(emptyList()))
     }
 
     @After
@@ -63,7 +64,7 @@ class HomePagePenanggungJawabViewModelTest {
         val pendingList = listOf(reportPending1, reportPending2)
         val approvedList = listOf(reportApproved1)
 
-        coEvery { homeRepository.getReportsByStatus("menunggu") } returns flowOf(Resource.Success(pendingList))
+        coEvery { homeRepository.getReportsByStatus("diverifikasi") } returns flowOf(Resource.Success(pendingList))
         coEvery { homeRepository.getReportsByStatus("disetujui") } returns flowOf(Resource.Success(approvedList))
 
         viewModel = HomePagePenanggungJawabViewModel(homeRepository, logoutUseCase)
@@ -71,7 +72,7 @@ class HomePagePenanggungJawabViewModelTest {
             val state = awaitItem()
 
             assertEquals("Goeslawz Oast", state.userProfile.name)
-            assertEquals("Jumlah pending harus 2", 2, state.reportSummary.pendingCount)
+            assertEquals("Jumlah verified harus 2", 2, state.reportSummary.verifiedcount)
             assertEquals("Jumlah approved harus 1", 1, state.reportSummary.approvedCount)
 
             assertEquals(2, state.latestReports.size)
@@ -84,7 +85,7 @@ class HomePagePenanggungJawabViewModelTest {
     @Test
     fun `ReportUiModel should have correct mapping for Kepala  KPH`() = runTest {
         val pendingList = listOf(reportPending1)
-        coEvery { homeRepository.getReportsByStatus("menunggu") } returns flowOf(Resource.Success(pendingList))
+        coEvery { homeRepository.getReportsByStatus("diverifikasi") } returns flowOf(Resource.Success(pendingList))
 
         viewModel = HomePagePenanggungJawabViewModel(homeRepository, logoutUseCase)
         viewModel.state.test {
@@ -100,7 +101,7 @@ class HomePagePenanggungJawabViewModelTest {
 
     @Test
     fun `when error occurs in one flow, generalError should be updated`() = runTest {
-        coEvery { homeRepository.getReportsByStatus("menunggu") } returns flowOf(Resource.Error("Network Error"))
+        coEvery { homeRepository.getReportsByStatus("diverifikasi") } returns flowOf(Resource.Error("Network Error"))
         coEvery { homeRepository.getReportsByStatus("disetujui") } returns flowOf(Resource.Success(emptyList()))
 
         viewModel = HomePagePenanggungJawabViewModel(homeRepository, logoutUseCase)
@@ -117,7 +118,7 @@ class HomePagePenanggungJawabViewModelTest {
 
         viewModel.onEvent(HomeEvent.OnRefreshData)
         coVerify(atLeast = 2) { homeRepository.getUserProfile() }
-        coVerify(atLeast = 2) { homeRepository.getReportsByStatus("menunggu") }
+        coVerify(atLeast = 2) { homeRepository.getReportsByStatus("diverifikasi") }
         coVerify(atLeast = 2) { homeRepository.getReportsByStatus("disetujui") }
     }
 

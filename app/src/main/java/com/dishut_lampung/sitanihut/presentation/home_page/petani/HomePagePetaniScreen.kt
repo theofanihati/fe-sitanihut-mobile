@@ -47,6 +47,7 @@ import com.dishut_lampung.sitanihut.presentation.components.card.HomeMenuGrid
 import com.dishut_lampung.sitanihut.presentation.components.card.HomeMenuItem
 import com.dishut_lampung.sitanihut.presentation.components.card.ReportCard
 import com.dishut_lampung.sitanihut.presentation.components.bottomsheet.ReportOptionBottomSheet
+import com.dishut_lampung.sitanihut.presentation.components.card.SummaryRole
 import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirmationDialog
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiEvent
@@ -217,6 +218,7 @@ fun HomePagePetaniScreen(
                 ReportSummaryCard(
                     modifier = Modifier.padding(horizontal = Dimens.ScreenPadding),
                     summary = state.reportSummary,
+                    role = SummaryRole.PETANI
                 )
 
                 Spacer(Modifier.height(16.dp))

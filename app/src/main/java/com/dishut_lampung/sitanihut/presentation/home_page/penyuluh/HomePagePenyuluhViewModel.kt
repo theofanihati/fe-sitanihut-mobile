@@ -64,36 +64,32 @@ class HomePagePenyuluhViewModel @Inject constructor(
         viewModelScope.launch {
             val profileFlow = homeRepository.getUserProfile()
             val pendingFlow = homeRepository.getReportsByStatus("menunggu")
+            val verifiedFlow = homeRepository.getReportsByStatus("diverifikasi")
             val approvedFlow = homeRepository.getReportsByStatus("disetujui")
+            val rejectedFlow = homeRepository.getReportsByStatus("ditolak")
 
-            combine(profileFlow, pendingFlow, approvedFlow) { profile, pendingRes, approvedRes ->
+            combine(
+                profileFlow, pendingFlow,
+                verifiedFlow, approvedFlow,
+                rejectedFlow
+            ) {
+              profile, pendingRes, verifiedRes, approvedRes, rejectedRes ->
 
-                val pendingList = when (pendingRes) {
-                    is Resource.Success -> pendingRes.data ?: emptyList()
-                    is Resource.Error -> {
-                        _state.update { it.copy(generalError = pendingRes.message) }
-                        emptyList()
-                    }
-                    is Resource.Loading -> emptyList()
-                }
+                val pendingList = pendingRes.data ?: emptyList()
+                val verifiedList = verifiedRes.data ?: emptyList()
+                val approvedList = approvedRes.data ?: emptyList()
+                val rejectedList = rejectedRes.data ?: emptyList()
 
-                val approvedList = when (approvedRes) {
-                    is Resource.Success -> approvedRes.data ?: emptyList()
-                    is Resource.Error -> {
-                        _state.update { it.copy(generalError = approvedRes.message) }
-                        emptyList()
-                    }
-                    is Resource.Loading -> emptyList()
-                }
-
-                val errorMsg = pendingRes.message ?: approvedRes.message
+                val errorMsg = pendingRes.message ?: verifiedRes.message ?: approvedRes.message
 
                 val summary = ReportSummary(
                     pendingCount = pendingList.size,
-                    verifiedcount = 0,
+                    verifiedcount = verifiedList.size,
                     approvedCount = approvedList.size,
-                    rejectedCount = 0
+                    rejectedCount = rejectedList.size
                 )
+                val allReports = (pendingList + verifiedList + approvedList + rejectedList)
+                    .sortedByDescending { it.submissionDate }
 
                 HomeUiState(
                     isLoading = false,

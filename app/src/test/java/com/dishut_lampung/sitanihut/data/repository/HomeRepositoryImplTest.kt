@@ -13,6 +13,7 @@ import com.dishut_lampung.sitanihut.data.remote.api.HomeApiService
 import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
+import com.dishut_lampung.sitanihut.util.Resource
 import com.google.gson.Gson
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
@@ -25,6 +26,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,6 +64,7 @@ class HomeRepositoryImplTest {
             .build()
         reportDao = db.reportDao()
         every { userPreferences.userId } returns flowOf("user-dummy")
+        coEvery { userPreferences.getAuthToken() } returns "token-rahasia"
 
         repository = HomeRepositoryImpl(apiService, reportDao, userPreferences)
     }
@@ -142,6 +145,109 @@ class HomeRepositoryImplTest {
             assertEquals(10, emission.size)
             assertEquals("id-15", emission[0].id)
             assertEquals("id-6", emission[9].id)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getReportsByStatus should fetch network data immediately with Paginated format, save to DB, and emit Success`() = runTest {
+        val mockResponseBody = """
+            {
+                "statusCode": 200,
+                "message": "Success",
+                "data": {
+                    "count": 1,
+                    "totalPages": 1,
+                    "data": [
+                        {
+                            "id": "report-api-1",
+                            "tanggal": "2024-09-01", 
+                            "periode": 2024,
+                            "bulan": "september",
+                            "nte": 15000.0,
+                            "status": "menunggu",
+                            "id_user": "user-dummy",
+                            "nama_user": "Pak Tani"
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+
+        mockWebServer.enqueue(MockResponse().setBody(mockResponseBody).setResponseCode(200))
+
+        repository.getReportsByStatus("menunggu").test {
+
+            val firstItem = awaitItem()
+            assertTrue(firstItem is Resource.Loading)
+
+            val secondItem = awaitItem()
+            assertTrue(secondItem is Resource.Success)
+
+            val data = (secondItem as Resource.Success).data
+            assertEquals(1, data?.size)
+
+            val item = data?.first()
+            assertEquals("report-api-1", item?.id)
+            assertEquals(15000.0, item?.totalTransaction ?: 0.0, 0.0)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getReportsByStatus should emit local data even if API fails`() = runTest {
+        val cachedReport = ReportEntity(
+            id = "id-lokal-lama",
+            userId = "user-dummy",
+            period = 2024,
+            month = "agustus",
+            date = "2024-08-01",
+            nte = 5000.0,
+            status = "menunggu",
+            syncStatus = SyncStatus.SYNCED
+        )
+        reportDao.upsertAll(listOf(cachedReport))
+        mockWebServer.enqueue(MockResponse().setResponseCode(500))
+
+        repository.getReportsByStatus("menunggu").test {
+
+            val firstItem = awaitItem()
+            assertTrue(firstItem is Resource.Loading)
+
+            val secondItem = awaitItem()
+            assertTrue(secondItem is Resource.Success)
+
+            val data = (secondItem as Resource.Success).data
+            assertEquals(1, data?.size)
+            assertEquals("id-lokal-lama", data?.first()?.id)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getReportsByStatus should handle empty API response gracefully`() = runTest {
+        val mockResponseBody = """
+            {
+                "statusCode": 200,
+                "message": "Success",
+                "data": {
+                    "count": 0,
+                    "totalPages": 0,
+                    "data": []
+                }
+            }
+        """.trimIndent()
+        mockWebServer.enqueue(MockResponse().setBody(mockResponseBody).setResponseCode(200))
+
+        repository.getReportsByStatus("menunggu").test {
+            awaitItem()
+
+            val successItem = awaitItem()
+            assertTrue(successItem is Resource.Success)
+            assertTrue(successItem.data?.isEmpty() == true)
 
             cancelAndIgnoreRemainingEvents()
         }

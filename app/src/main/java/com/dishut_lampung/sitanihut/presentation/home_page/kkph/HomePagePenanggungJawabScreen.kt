@@ -50,6 +50,7 @@ import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgre
 import com.dishut_lampung.sitanihut.presentation.components.card.HomeMenuGrid
 import com.dishut_lampung.sitanihut.presentation.components.card.HomeMenuItem
 import com.dishut_lampung.sitanihut.presentation.components.card.ReportCard
+import com.dishut_lampung.sitanihut.presentation.components.card.SummaryRole
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiState
@@ -232,7 +233,7 @@ fun HomePagePenanggungJawabScreen(
                 ReportSummaryCard(
                     modifier = Modifier.padding(horizontal = Dimens.ScreenPadding),
                     summary = state.reportSummary,
-                    showRejected = false,
+                    role = SummaryRole.PENANGGUNG_JAWAB
                 )
 
                 Spacer(Modifier.height(16.dp))

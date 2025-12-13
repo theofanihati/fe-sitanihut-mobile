@@ -160,13 +160,11 @@ data class StatusColor(
 @Composable
 fun getStatusColors(statusText: String): StatusColor {
     return when (statusText.lowercase()) {
-        "belum diajukan", "draft" -> StatusColor(Color.LightGray, Color.White)
+        "belum diajukan" -> StatusColor(Color.LightGray, Color.White)
         "menunggu" -> StatusColor(warning, Color.White)
+        "diverifikasi" -> StatusColor(blue, Color.White)
         "disetujui" -> StatusColor(MaterialTheme.colorScheme.tertiary, Color.White)
         "ditolak" -> StatusColor(MaterialTheme.colorScheme.error, Color.White)
-
-        "pemeriksaan penyuluh" -> StatusColor(blue, Color.White)
-        "pemeriksaan kph" -> StatusColor(purple, Color.White)
 
         else -> StatusColor(Color.Transparent, Color.Black)
     }

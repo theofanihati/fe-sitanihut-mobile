@@ -48,7 +48,9 @@ class HomePagePenyuluhViewModelTest {
         MockKAnnotations.init(this)
         coEvery { homeRepository.getUserProfile() } returns flowOf(dummyProfile)
         coEvery { homeRepository.getReportsByStatus("menunggu") } returns flowOf(Resource.Success(emptyList()))
+        coEvery { homeRepository.getReportsByStatus("diverifikasi") } returns flowOf(Resource.Success(emptyList()))
         coEvery { homeRepository.getReportsByStatus("disetujui") } returns flowOf(Resource.Success(emptyList()))
+        coEvery { homeRepository.getReportsByStatus("ditolak") } returns flowOf(Resource.Success(emptyList()))
     }
 
     @After

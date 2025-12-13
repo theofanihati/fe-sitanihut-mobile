@@ -65,35 +65,24 @@ class HomePagePenanggungJawabViewModel @Inject constructor(
             val profileFlow = homeRepository.getUserProfile()
             val verifiedFlow = homeRepository.getReportsByStatus("diverifikasi")
             val approvedFlow = homeRepository.getReportsByStatus("disetujui")
+            val rejectedFlow = homeRepository.getReportsByStatus("ditolak")
 
-            combine(profileFlow, verifiedFlow, approvedFlow) { profile, verifiedRes, approvedRes ->
+            combine(profileFlow, verifiedFlow, approvedFlow, rejectedFlow) { profile, verifiedRes, approvedRes, rejectedRes ->
 
-                val verifiedList = when (verifiedRes) {
-                    is Resource.Success -> verifiedRes.data ?: emptyList()
-                    is Resource.Error -> {
-                        _state.update { it.copy(generalError = verifiedRes.message) }
-                        emptyList()
-                    }
-                    is Resource.Loading -> emptyList()
-                }
+                val verifiedList = verifiedRes.data ?: emptyList()
+                val approvedList = approvedRes.data ?: emptyList()
+                val rejectedList = rejectedRes.data ?: emptyList()
 
-                val approvedList = when (approvedRes) {
-                    is Resource.Success -> approvedRes.data ?: emptyList()
-                    is Resource.Error -> {
-                        _state.update { it.copy(generalError = approvedRes.message) }
-                        emptyList()
-                    }
-                    is Resource.Loading -> emptyList()
-                }
-
-                val errorMsg = verifiedRes.message ?: approvedRes.message
+                val errorMsg = verifiedRes.message ?: approvedRes.message ?: rejectedRes.message
 
                 val summary = ReportSummary(
                     pendingCount = 0,
                     verifiedcount = verifiedList.size,
                     approvedCount = approvedList.size,
-                    rejectedCount = 0
+                    rejectedCount = rejectedList.size
                 )
+                val allReports = (verifiedList + approvedList + rejectedList)
+                    .sortedByDescending { it.submissionDate }
 
                 HomeUiState(
                     isLoading = false,
@@ -101,7 +90,7 @@ class HomePagePenanggungJawabViewModel @Inject constructor(
                     userProfile = profile,
                     reportSummary = summary,
                     latestReports = verifiedList.map { it.toKkphUiModel() },
-                    generalError = if (verifiedList.isEmpty() && approvedList.isEmpty()) errorMsg else null
+                    generalError = if (allReports.isEmpty()) errorMsg else null
                 )
             }.collect { newState ->
                 _state.value = newState
