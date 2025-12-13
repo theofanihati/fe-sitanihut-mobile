@@ -39,6 +39,9 @@ interface ReportDao {
     @Upsert
     suspend fun upsertAll(reports: List<ReportEntity>)
 
+    @Upsert
+    suspend fun upsertReport(report: ReportEntity)
+
     @Transaction
     suspend fun insertOrIgnorePending(newReports: List<ReportEntity>) {
         newReports.forEach { report ->

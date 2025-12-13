@@ -28,6 +28,12 @@ interface ReportApiService {
         @Query("status") status: String? = null,
     ): ApiResponse<PaginatedData<ReportListItemDto>>
 
+    @GET("v1/laporan")
+    suspend fun getLatestReports(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 10,
+    ): ApiResponse<PaginatedData<ReportListItemDto>>
+
     @GET("v1/laporan/{id}")
     suspend fun getReportDetail(
         @Path("id") id: String

@@ -16,4 +16,5 @@ interface ReportRepository {
     suspend fun createReport(input: CreateReportInput): Resource<Unit>
     fun getReportById(id: String): Flow<Resource<ReportDetail>>
     suspend fun updateReport(id: String, input: CreateReportInput): Resource<Boolean>
+    suspend fun syncReportDetail(): Resource<Unit>
 }

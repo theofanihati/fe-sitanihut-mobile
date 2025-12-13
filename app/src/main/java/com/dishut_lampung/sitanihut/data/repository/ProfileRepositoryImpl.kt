@@ -12,10 +12,7 @@ import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flow
-import retrofit2.HttpException
-import java.io.IOException
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,23 +23,25 @@ class ProfileRepositoryImpl @Inject constructor(
     private val roleDao: RoleDao,
     private val userPreferences: UserPreferences
 ) : ProfileRepository {
-    override fun getUserDetail(userId: String): Flow<Resource<UserDetail>> = flow {
-        emit(Resource.Loading())
 
-        val cached = userDao.getUserById(userId).firstOrNull()
-        if (cached != null) {
-            emit(Resource.Success(cached.toUserDetail()))
+    override fun getUserDetail(userId: String): Flow<Resource<UserDetail>> {
+        return userDao.getUserById(userId).map { userEntity ->
+            if (userEntity != null) {
+                Resource.Success(userEntity.toUserDetail())
+            } else {
+                Resource.Loading()
+            }
         }
+    }
 
-        try {
-            val currentUserId = userPreferences.userId.first()
-            val isCurrentUser = currentUserId == userId
+    override suspend fun syncUserDetail(): Resource<Unit> {
+        return try {
+            val currentUserId = userPreferences.userId.first()?: return Resource.Error("No User ID")
 
-            val response = apiService.getUserDetail(userId)
+            val response = apiService.getUserDetail(currentUserId)
             val userDto = response.data
 
             var roleName = roleDao.getRoleName(userDto.roleId)
-
             if (roleName == null) {
                 try {
                     val rolesResponse = apiService.getRoles()
@@ -54,24 +53,24 @@ class ProfileRepositoryImpl @Inject constructor(
                     // Silent fail fetch roles
                 }
             }
-            if (roleName == null && isCurrentUser) {
+
+            if (roleName == null) {
                 val prefRole = userPreferences.userRole.first()
                 roleName = prefRole?.replaceFirstChar { it.uppercase() }
             }
-
-            val finalRoleName = roleName ?: "Pengguna"
-
-            val userEntity = userDto.toEntity(finalRoleName)
+            val userEntity = userDto.toEntity(roleName ?: "Pengguna")
 
             userDao.upsertUser(userEntity)
 
-            val newCached = userDao.getUserById(userId).firstOrNull()
-            if (newCached != null) {
-                emit(Resource.Success(newCached.toUserDetail()))
+            userPreferences.saveUserName(userDto.name)
+            if (!userDto.profilePictureUrl.isNullOrEmpty()) {
+                userPreferences.saveUserAvatar(userDto.profilePictureUrl)
             }
 
+            Resource.Success(Unit)
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "Gagal terhubung ke server. Menampilkan data offline", cached?.toUserDetail()))
+            e.printStackTrace()
+            Resource.Error("Gagal sinkronisasi: ${e.message}")
         }
     }
 }

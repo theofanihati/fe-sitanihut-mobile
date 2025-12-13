@@ -6,4 +6,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface ProfileRepository {
     fun getUserDetail(userId: String): Flow<Resource<UserDetail>>
+    suspend fun syncUserDetail(): Resource<Unit>
 }

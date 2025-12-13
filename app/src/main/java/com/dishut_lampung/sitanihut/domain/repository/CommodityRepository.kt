@@ -6,4 +6,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface CommodityRepository {
     fun getCommodities(query: String = ""): Flow<Resource<List<Commodity>>>
+    suspend fun syncCommodities(): Resource<Unit>
 }

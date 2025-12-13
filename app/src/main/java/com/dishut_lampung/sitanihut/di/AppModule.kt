@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.ui.semantics.Role
 import androidx.room.Room
+import androidx.work.WorkManager
 import com.dishut_lampung.sitanihut.BuildConfig
 import com.dishut_lampung.sitanihut.data.local.SitanihutDatabase
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
@@ -98,6 +99,12 @@ object AppModule{
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+        return WorkManager.getInstance(context)
     }
 
     @Provides
