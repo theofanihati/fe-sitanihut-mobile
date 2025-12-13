@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.data.repository
 
 import android.content.Context
+import android.util.Log
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -59,6 +60,18 @@ class ReportRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ReportRepository {
 
+    private val gson = Gson()
+
+    companion object {
+        private const val WORK_QUEUE_NAME = "sync_report_queue"
+        private const val TAG_REPORT_OP = "REPORT_OPERATION"
+        private const val STATUS_WAITING = "menunggu"
+        private const val STATUS_DRAFT = "belum diajukan"
+        private const val OP_create = "CREATE"
+        private const val OP_UPDATE = "UPDATE"
+        private const val OP_DELETE = "DELETE"
+    }
+
     fun enqueueReportOperation(operationType: String, reportId: String) {
         val inputData = workDataOf(
             "OPERATION_TYPE" to operationType,
@@ -72,12 +85,12 @@ class ReportRepositoryImpl @Inject constructor(
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build()
             )
-            .addTag("REPORT_OPERATION")
+            .addTag(TAG_REPORT_OP)
             .addTag("REPORT_$operationType")
             .build()
 
         WorkManager.getInstance(context).enqueueUniqueWork(
-            "sync_report_queue",
+            WORK_QUEUE_NAME,
             ExistingWorkPolicy.APPEND,
             request
         )
@@ -112,13 +125,12 @@ class ReportRepositoryImpl @Inject constructor(
                 reportDao.deleteReportById(reportId)
             } else {
                 reportDao.markAsPendingDelete(reportId)
-                enqueueReportOperation("DELETE", reportId)
+                enqueueReportOperation(OP_DELETE, reportId)
             }
 
             Resource.Success(Unit)
         } catch (e: Exception) {
-            e.printStackTrace()
-            Resource.Error("Gagal menghapus data: ${e.message}")
+            handleException("Gagal menghapus data", e)
         }
     }
 
@@ -127,13 +139,8 @@ class ReportRepositoryImpl @Inject constructor(
             val oldReport = reportDao.getReportById(reportId)
                 ?: return Resource.Error("Laporan tidak ditemukan di database lokal")
 
-            val newStatusString = "menunggu"
-
-            val plantingType = object : TypeToken<List<MasaTanam>>() {}.type
-            val harvestType = object : TypeToken<List<MasaPanen>>() {}.type
-
-            val plantingList: List<MasaTanam> = Gson().fromJson(oldReport.plantingDetailsJson, plantingType) ?: emptyList()
-            val harvestList: List<MasaPanen> = Gson().fromJson(oldReport.harvestDetailsJson, harvestType) ?: emptyList()
+            val plantingList: List<MasaTanam> = Gson().fromJson(oldReport.plantingDetailsJson, object : TypeToken<List<MasaTanam>>() {}.type) ?: emptyList()
+            val harvestList: List<MasaPanen> = Gson().fromJson(oldReport.harvestDetailsJson, object : TypeToken<List<MasaPanen>>() {}.type)?: emptyList()
 
             val requestDto = ReportRequestDto(
                 id = reportId,
@@ -141,114 +148,54 @@ class ReportRepositoryImpl @Inject constructor(
                 period = oldReport.period,
                 month = oldReport.month,
                 modal = oldReport.modal ?: 0.0,
-                farmerNotes = oldReport.farmerNotes?: "",
+                farmerNotes = oldReport.farmerNotes ?: "",
                 nte = oldReport.nte,
                 plantingDetails = plantingList.map { it.toDto() },
                 harvestDetails = harvestList.map { it.toDto() },
-                status = newStatusString
+                status = STATUS_WAITING
             )
 
-            val jsonPayload = Gson().toJson(requestDto)
-
             val updatedEntity = oldReport.copy(
-                status = newStatusString,
+                status = STATUS_WAITING,
                 syncStatus = SyncStatus.PENDING_UPDATE,
-                jsonPayload = jsonPayload,
+                jsonPayload = gson.toJson(requestDto),
                 date = getCurrentDate()
             )
             reportDao.upsertAll(listOf(updatedEntity))
-            enqueueReportOperation("UPDATE", reportId)
+            enqueueReportOperation(OP_UPDATE, reportId)
 
             Resource.Success(Unit)
         } catch (e: Exception) {
-            e.printStackTrace()
-            Resource.Error("Gagal mengajukan laporan: ${e.message}")
+            handleException("Gagal mengajukan laporan", e)
         }
     }
 
     override suspend fun createReport(input: CreateReportInput): Resource<Unit>{
-        val reportId = UUID.randomUUID().toString()
-        val isoDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
-            timeZone = TimeZone.getTimeZone("UTC")
-        }.format(Date())
-        val localDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-
-        val statusLaporan = if (input.isAjukan) "menunggu" else "belum diajukan"
-        val requestDto = input.toDto(
-            id = reportId,
-            updatedAt = isoDate
-        ).copy(
-            status = statusLaporan
-        )
-        val gson = Gson()
-        val jsonPayloadString = gson.toJson(requestDto)
-        val plantingJsonLocal = gson.toJson(input.plantingDetails)
-        val harvestJsonLocal = gson.toJson(input.harvestDetails)
-
-        val attachmentObjects = input.newAttachments.map { path ->
-            ReportAttachment(
-                id = null,
-                filePath = path,
-                isLocal = true
-            )
-        }
-        val attachmentsJsonString = gson.toJson(attachmentObjects)
-
-        val currentUserId = userPreferences.userId.first() ?: ""
-
-        val newReport = ReportEntity(
-            id = reportId,
-            userId = currentUserId,
-
-            period = input.period,
-            month = input.month,
-            date = localDate,
-            nte = input.nte,
-            status = statusLaporan,
-
-            modal = input.modal.replace(".", "").toDoubleOrNull(),
-            farmerNotes = input.farmerNotes,
-            plantingDetailsJson = plantingJsonLocal,
-            harvestDetailsJson = harvestJsonLocal,
-
-            syncStatus = SyncStatus.PENDING_CREATE,
-
-            jsonPayload = jsonPayloadString,
-            attachmentsJson = attachmentsJsonString
-        )
         return try {
+            val reportId = UUID.randomUUID().toString()
+            val currentUserId = userPreferences.userId.first() ?: ""
+
+            val statusLaporan = if (input.isAjukan) "menunggu" else "belum diajukan"
+            val newReport = buildNewReportEntity(
+                id = reportId,
+                userId = currentUserId,
+                status = statusLaporan,
+                input = input
+            )
             reportDao.upsertAll(listOf(newReport))
-            enqueueReportOperation("CREATE", reportId)
+            enqueueReportOperation(OP_create, reportId)
 
             Resource.Success(Unit)
 
         } catch (e: Exception) {
-            e.printStackTrace()
-            Resource.Error("Gagal menyimpan data: ${e.message}")
+            handleException("Gagal menyimpan data", e)
         }
     }
 
     override fun getReportById(id: String): Flow<Resource<ReportDetail>> {
         return flow {
             emit(Resource.Loading())
-            try {
-                android.util.Log.d("REPO_DEBUG", "Fetching Detail ID: $id")
-                val response = apiService.getReportDetail(id)
-                if (response.statusCode == 200 && response.data != null) {
-                    val detailDto = response.data
-                    val entity = detailDto.toEntity()
-                    reportDao.upsertAll(listOf(entity))
-                    android.util.Log.d("DEBUG_EDIT_REPO", "Berhasil fetch detail. Tanam: ${entity.plantingDetailsJson}")
-                }else {
-                    android.util.Log.e("DEBUG_EDIT_REPO", "Gagal fetch detail: ${response.message}")
-                }
-            } catch (e: HttpException) {
-                val errorBody = e.response()?.errorBody()?.string()
-                android.util.Log.e("DEBUG_EDIT_REPO", "Server Error 500 Body: $errorBody")
-            } catch (e: Exception) {
-                e.printStackTrace()
-                android.util.Log.e("DEBUG_EDIT_REPO", "Error network: ${e.message}")
-            }
+            fetchAndSaveDetailFromNetwork(id)
 
             reportDao.getReportByIdFlow(id).collect { entity ->
                 if (entity != null) {
@@ -267,38 +214,18 @@ class ReportRepositoryImpl @Inject constructor(
 
             val statusLaporan = if (input.isAjukan) "menunggu" else "belum diajukan"
 
-            val newStatus = when (oldReport.syncStatus) {
-                SyncStatus.PENDING_CREATE -> SyncStatus.PENDING_CREATE
-                else -> SyncStatus.PENDING_UPDATE
+            val newSyncStatus = if (oldReport.syncStatus == SyncStatus.PENDING_CREATE) {
+                SyncStatus.PENDING_CREATE
+            } else {
+                SyncStatus.PENDING_UPDATE
             }
 
-            val requestDto = ReportRequestDto(
+            val jsonPayload = generateRequestJson(
                 id = id,
                 updatedAt = getCurrentDate(),
-                period = input.period,
-                month = input.month,
-                modal = input.modal.replace(".", "").toDoubleOrNull() ?: 0.0,
-                farmerNotes = input.farmerNotes,
-                nte = input.nte,
-                plantingDetails = input.plantingDetails.map { it.toDto() },
-                harvestDetails = input.harvestDetails.map { it.toDto() },
+                input = input,
                 status = statusLaporan
-
-                )
-            val jsonPayload = Gson().toJson(requestDto)
-
-            val plantingJsonForEntity = Gson().toJson(input.plantingDetails)
-            val harvestJsonForEntity = Gson().toJson(input.harvestDetails)
-
-
-            val attachmentsForEntity = mutableListOf<ReportAttachment>()
-            input.existingAttachmentIds.forEach { id ->
-                attachmentsForEntity.add(ReportAttachment(id = id, filePath = "", isLocal = false))
-            }
-            input.newAttachments.forEach { path ->
-                attachmentsForEntity.add(ReportAttachment(id = null, filePath = path, isLocal = true))
-            }
-            val attachmentsJsonString = Gson().toJson(attachmentsForEntity)
+            )
 
             // room db update
             val updatedEntity = oldReport.copy(
@@ -307,21 +234,20 @@ class ReportRepositoryImpl @Inject constructor(
                 modal = input.modal.replace(".", "").toDoubleOrNull(),
                 farmerNotes = input.farmerNotes,
                 nte = input.nte,
-                attachmentsJson = attachmentsJsonString,
+                attachmentsJson = generateAttachmentsJson(input),
                 status = statusLaporan,
                 jsonPayload = jsonPayload,
-                plantingDetailsJson = plantingJsonForEntity,
-                harvestDetailsJson = harvestJsonForEntity,
-                syncStatus = newStatus,
+                plantingDetailsJson = gson.toJson(input.plantingDetails),
+                harvestDetailsJson = gson.toJson(input.harvestDetails),
+                syncStatus = newSyncStatus,
                 date = getCurrentDate()
             )
             reportDao.upsertAll(listOf(updatedEntity))
-            enqueueReportOperation("UPDATE", id)
+            enqueueReportOperation(OP_UPDATE, id)
 
             Resource.Success(true)
         } catch (e: Exception) {
-            e.printStackTrace()
-            Resource.Error("Gagal menyimpan perubahan: ${e.localizedMessage}")
+            handleException("Gagal menyimpan perubahan", e)
         }
     }
 
@@ -332,21 +258,83 @@ class ReportRepositoryImpl @Inject constructor(
 
             if (listData.isNotEmpty()) {
                 reportDao.upsertAll(listData.map { it.toEntity() })
-                val top10 = listData.take(10)
-
-                top10.forEach { summaryItem ->
-                    try {
-                        val detailResponse = apiService.getReportDetail(summaryItem.id)
-                        val detailDto = detailResponse.data
-                        reportDao.upsertReport(detailDto.toEntity())
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                listData.take(10).forEach { item ->
+                    fetchAndSaveDetailFromNetwork(item.id)
                 }
             }
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error("Gagal sinkronisasi: ${e.message}")
         }
+    }
+
+    private fun buildNewReportEntity(
+        id: String,
+        userId: String,
+        status: String,
+        input: CreateReportInput
+    ): ReportEntity {
+        val isoDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }.format(Date())
+
+        val localDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+        val jsonPayload = generateRequestJson(id, isoDate, input, status)
+
+        return ReportEntity(
+            id = id,
+            userId = userId,
+            period = input.period,
+            month = input.month,
+            date = localDate,
+            nte = input.nte,
+            status = status,
+            modal = input.modal.replace(".", "").toDoubleOrNull(),
+            farmerNotes = input.farmerNotes,
+            plantingDetailsJson = gson.toJson(input.plantingDetails),
+            harvestDetailsJson = gson.toJson(input.harvestDetails),
+            syncStatus = SyncStatus.PENDING_CREATE,
+            jsonPayload = jsonPayload,
+            attachmentsJson = generateAttachmentsJson(input)
+        )
+    }
+
+    private fun generateRequestJson(
+        id: String,
+        updatedAt: String,
+        input: CreateReportInput,
+        status: String
+    ): String {
+        val requestDto = input.toDto(id = id, updatedAt = updatedAt).copy(status = status)
+        return gson.toJson(requestDto)
+    }
+
+    private fun generateAttachmentsJson(input: CreateReportInput): String {
+        val attachments = mutableListOf<ReportAttachment>()
+        input.existingAttachmentIds.forEach { id ->
+            attachments.add(ReportAttachment(id = id, filePath = "", isLocal = false))
+        }
+        input.newAttachments.forEach { path ->
+            attachments.add(ReportAttachment(id = null, filePath = path, isLocal = true))
+        }
+        return gson.toJson(attachments)
+    }
+
+    private suspend fun fetchAndSaveDetailFromNetwork(id: String) {
+        try {
+            val response = apiService.getReportDetail(id)
+            if (response.statusCode == 200 && response.data != null) {
+                reportDao.upsertAll(listOf(response.data.toEntity()))
+                Log.d("ReportRepo", "Detail synced for ID: $id")
+            }
+        } catch (e: Exception) {
+            Log.e("ReportRepo", "Failed to sync detail: ${e.message}")
+        }
+    }
+
+    private fun <T> handleException(msg: String, e: Exception): Resource<T> {
+        Log.e("ReportRepo", "$msg: ${e.message}", e)
+        return Resource.Error("$msg: ${e.localizedMessage}")
     }
 }
