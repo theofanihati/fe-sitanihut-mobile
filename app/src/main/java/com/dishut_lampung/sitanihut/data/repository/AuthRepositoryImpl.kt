@@ -38,45 +38,8 @@ class AuthRepositoryImpl @Inject constructor(
                 val name = dataObject.get("name").asString
                 val emailResp = dataObject.get("email").asString
 
-                userPreferences.saveAuthToken(token)
-                userPreferences.saveUserRole(role)
-                userPreferences.saveUserName(name)
-                userPreferences.saveUserId(id)
-
-                try {
-                    val userDetailResponse = userApiService.getUserDetail(id)
-
-                    if (userDetailResponse.statusCode == 200 && userDetailResponse.data != null) {
-                        val fullDataDto = userDetailResponse.data
-
-                        val userEntity = UserEntity(
-                            id = fullDataDto.id,
-                            name = fullDataDto.name,
-                            role = role,
-                            email = fullDataDto.email,
-                            profilePictureUrl = fullDataDto.profilePictureUrl,
-                            roleId = fullDataDto.roleId,
-                            kphId = fullDataDto.kphId,
-                            kphName = fullDataDto.kphName,
-                            kthId = fullDataDto.kthId,
-                            kthName = fullDataDto.kthName,
-                            identityNumber = fullDataDto.identityNumber,
-                            gender = fullDataDto.gender,
-                            address = fullDataDto.address,
-                            whatsAppNumber = fullDataDto.whatsAppNumber,
-                            lastEducation = fullDataDto.lastEducation,
-                            sideJob = fullDataDto.sideJob,
-                            landArea = fullDataDto.landArea,
-                            position = fullDataDto.position
-                        )
-                        userDao.upsertUser(userEntity)
-                    } else {
-                        saveBasicUserToDb(id, name, role, emailResp, null)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    saveBasicUserToDb(id, name, role, emailResp, null)
-                }
+                saveSession(token, role, name, id)
+                fetchAndSaveUserDetails(id, name, role, emailResp)
 
                 AuthResult.Success(
                     data = User(
@@ -90,26 +53,8 @@ class AuthRepositoryImpl @Inject constructor(
             } else {
                 AuthResult.Error(response.message)
             }
-        } catch (e: HttpException) {
-            val errorBody = e.response()?.errorBody()?.string()
-            val errorMessage = try {
-                val errorResponse = Gson().fromJson(errorBody, AuthDto.ErrorResponse::class.java)
-                errorResponse.message ?: "Terjadi kesalahan (pesan tidak ada)"
-            } catch (jsonError: Exception) {
-                when (e.code()) {
-                    400 -> "Email dan password harus diisi."
-                    401 -> "Email atau password salah."
-                    403 -> "Akses ditolak."
-                    404 -> "Endpoint tidak ditemukan."
-                    500 -> "Terdapat gangguan server."
-                    else -> "Terjadi kesalahan pada server. Kode: ${e.code()}"
-                }
-            }
-            AuthResult.Error(errorMessage)
-        } catch (e: IOException) {
-            AuthResult.Error("Tidak ada koneksi internet. Silakan periksa jaringan Anda.")
         } catch (e: Exception) {
-            AuthResult.Error(e.message ?: "Terjadi kesalahan yang tidak diketahui.")
+            handleException(e)
         }
     }
 
@@ -127,41 +72,15 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun requestPasswordReset(email: String): AuthResult<Unit> {
         return try {
             val request = AuthDto.ForgotPasswordRequest(email)
-            apiService.requestPasswordReset(request)
-
-            AuthResult.Success(Unit)
-        } catch (e: HttpException) {
-            val errorBody = e.response()?.errorBody()?.string()
-            val errorMessage = try {
-                val errorResponse = Gson().fromJson(errorBody, AuthDto.ErrorResponse::class.java)
-                val responseFailed = "failed"
-                if(errorResponse.message != responseFailed){
-                    errorResponse.message ?: "Terjadi kesalahan (pesan tidak ada)"
-                } else{
-                    when (e.code()) {
-                        400 -> "Email harus diisi."
-                        401 -> "Email salah."
-                        403 -> "Akses ditolak. Silakan login kembali."
-                        404 -> "Email tidak ditemukan."
-                        500 -> "Terdapat gangguan server."
-                        else -> errorBody ?: "Terjadi kesalahan pada server. Kode: ${e.code()}"
-                    }
-                }
-            } catch (jsonError: Exception) {
-                when (e.code()) {
-                    400 -> "Email harus diisi."
-                    401 -> "Email salah."
-                    403 -> "Akses ditolak. Silakan login kembali."
-                    404 -> "Email tidak ditemukan."
-                    500 -> "Terdapat gangguan server."
-                    else -> errorBody ?: "Terjadi kesalahan pada server. Kode: ${e.code()}"
-                }
+            val response = apiService.requestPasswordReset(request)
+            if (response.isSuccessful) {
+                AuthResult.Success(Unit)
+            } else {
+                val errorMessage = parseErrorBody(response.code(), response.errorBody()?.string())
+                AuthResult.Error(errorMessage)
             }
-            AuthResult.Error(errorMessage)
-        } catch (e: IOException) {
-            AuthResult.Error("Tidak ada koneksi internet. Silakan periksa jaringan Anda.")
         } catch (e: Exception) {
-            AuthResult.Error(e.message ?: "Terjadi kesalahan yang tidak diketahui.")
+            handleException(e)
         }
     }
 
@@ -172,5 +91,72 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun isLoggedIn(): Boolean {
         return userPreferences.getAuthToken() != null
+    }
+
+    private suspend fun saveSession(token: String, role: String, name: String, id: String) {
+        userPreferences.apply {
+            saveAuthToken(token)
+            saveUserRole(role)
+            saveUserName(name)
+            saveUserId(id)
+        }
+    }
+
+    private fun <T> handleException(e: Exception): AuthResult<T> {
+        return when (e) {
+            is HttpException -> {
+                val errorBody = e.response()?.errorBody()?.string()
+                AuthResult.Error(parseErrorBody(e.code(), errorBody))
+            }
+            is IOException -> AuthResult.Error("Tidak ada koneksi internet. Silakan periksa jaringan Anda.")
+            else -> AuthResult.Error(e.message ?: "Terjadi kesalahan yang tidak diketahui.")
+        }
+    }
+
+    private fun parseErrorBody(code: Int, errorBody: String?): String {
+        return try {
+            val errorResponse = Gson().fromJson(errorBody, AuthDto.ErrorResponse::class.java)
+            if (errorResponse.message != null && errorResponse.message != "failed") {
+                errorResponse.message
+            } else {
+                getReadableErrorMessage(code, errorBody)
+            }
+        } catch (e: Exception) {
+            getReadableErrorMessage(code, errorBody)
+        }
+    }
+
+    private suspend fun fetchAndSaveUserDetails(id: String, name: String, role: String, email: String) {
+        try {
+            val userDetailResponse = userApiService.getUserDetail(id)
+            if (userDetailResponse.statusCode == 200 && userDetailResponse.data != null) {
+                val dto = userDetailResponse.data
+                val userEntity = UserEntity(
+                    id = dto.id, name = dto.name, role = role, email = dto.email,
+                    profilePictureUrl = dto.profilePictureUrl, roleId = dto.roleId,
+                    kphId = dto.kphId, kphName = dto.kphName, kthId = dto.kthId, kthName = dto.kthName,
+                    identityNumber = dto.identityNumber, gender = dto.gender, address = dto.address,
+                    whatsAppNumber = dto.whatsAppNumber, lastEducation = dto.lastEducation,
+                    sideJob = dto.sideJob, landArea = dto.landArea, position = dto.position
+                )
+                userDao.upsertUser(userEntity)
+            } else {
+                saveBasicUserToDb(id, name, role, email, null)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            saveBasicUserToDb(id, name, role, email, null)
+        }
+        }
+
+    private fun getReadableErrorMessage(code: Int, rawBody: String?): String {
+        return when (code) {
+            400 -> "Format data tidak valid."
+            401 -> "Sesi berakhir atau kredensial salah."
+            403 -> "Akses ditolak. Silakan login kembali."
+            404 -> "Data tidak ditemukan."
+            500 -> "Terdapat gangguan server."
+            else -> rawBody ?: "Terjadi kesalahan pada server. Kode: $code"
+        }
     }
 }
