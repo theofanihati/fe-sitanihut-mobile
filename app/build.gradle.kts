@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.kapt)
     id("kotlin-parcelize")
     id("jacoco")
+    id("io.gitlab.arturbosch.detekt") version "1.23.6"
 }
 
 android {
@@ -162,6 +163,17 @@ dependencies {
     kapt("androidx.hilt:hilt-compiler:1.2.0")
     testImplementation("androidx.work:work-testing")
     testImplementation("androidx.arch.core:core-testing:2.2.0")
+}
+
+
+detekt {
+    toolVersion = "1.23.6"
+    config.setFrom(files("$rootDir/config/detekt/detekt.yml")) // point to your custom config defining rules to run, overwriting default behavior
+    baseline =
+        file("$rootDir/config/baseline.xml") // a way of suppressing issues before introducing detekt
+    ignoreFailures = true
+    buildUponDefaultConfig = true
+    allRules = false // activate all available (even unstable) rules.
 }
 
 val exclusions = listOf(
