@@ -80,6 +80,38 @@ class CommodityRepositoryImplTest {
     }
 
     @Test
+    fun `getCommodities success with empty list should emit success with empty data`() = runTest {
+        val query = "Hantu"
+        every { mockDao.getCommodities(query) } returns flowOf(emptyList())
+
+        repository.getCommodities(query).test {
+            assertTrue(awaitItem() is Resource.Loading)
+            val result = awaitItem()
+            assertTrue(result is Resource.Success)
+            assertTrue(result.data!!.isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getCommodities should filter out duplicate emissions (distinctUntilChanged)`() = runTest {
+        val query = "Jagung"
+        val flowFromDao = flow {
+            emit(listOf(commodityEntity))
+            emit(listOf(commodityEntity))
+        }
+        every { mockDao.getCommodities(query) } returns flowFromDao
+
+        repository.getCommodities(query).test {
+            assertTrue(awaitItem() is Resource.Loading)
+
+            val item1 = awaitItem()
+            assertTrue(item1 is Resource.Success)
+            awaitComplete()
+        }
+    }
+
+    @Test
     fun `syncCommodities success should fetch api and insert to db`() = runTest {
         val paginatedData = PaginatedData(
             data = listOf(commodityDto),
@@ -117,6 +149,31 @@ class CommodityRepositoryImplTest {
         assertTrue(result is Resource.Success)
 
         coVerify(exactly = 0) { mockDao.insertCommodities(any()) }
+    }
+
+    @Test
+    fun `syncCommodities success should verify ALL fields mapping correctly`() = runTest {
+        val dto = CommodityDto("1", "C01", "Jagung", "Sayur", "2023")
+        val paginatedData = PaginatedData(
+            data = listOf(dto),
+            totalPages = 1,
+            count = 1
+        )
+        val apiResponse = ApiResponse(200, "ok", paginatedData)
+        coEvery { mockApiService.getCommodities(search = "") } returns apiResponse
+
+        val result = repository.syncCommodities()
+        assertTrue(result is Resource.Success)
+
+        coVerify(exactly = 1) { mockDao.insertCommodities(
+            match { list ->
+                val entity = list.first()
+                entity.id == "1" &&
+                        entity.code == "C01" &&
+                        entity.name == "Jagung" &&
+                        entity.category == "Sayur"
+            })
+        }
     }
 
     @Test

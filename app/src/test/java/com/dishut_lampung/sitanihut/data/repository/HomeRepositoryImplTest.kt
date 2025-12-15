@@ -20,6 +20,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.unmockkAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
@@ -34,6 +35,8 @@ import org.robolectric.RobolectricTestRunner
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
+import java.util.logging.Level
+import java.util.logging.Logger
 
 @RunWith(RobolectricTestRunner::class)
 class HomeRepositoryImplTest {
@@ -49,6 +52,7 @@ class HomeRepositoryImplTest {
 
     @Before
     fun setUp() {
+        Logger.getLogger("io.mockk").level = Level.OFF
         MockKAnnotations.init(this)
 
         mockWebServer = MockWebServer()
@@ -75,6 +79,69 @@ class HomeRepositoryImplTest {
         db.close()
         mockWebServer.shutdown()
         unmockkAll()
+    }
+
+    @Test
+    fun `getUserProfile should combine preferences flows correctly`() = runTest {
+        every { userPreferences.userName } returns flowOf("Budi")
+        every { userPreferences.userRole } returns flowOf("Petani")
+        every { userPreferences.userAvatar } returns flowOf("avatar.jpg")
+
+        repository.getUserProfile().test {
+            val item = awaitItem()
+            assertEquals("Budi", item.name)
+            assertEquals("Petani", item.role)
+            assertEquals("avatar.jpg", item.profilePictureUrl)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getUserProfile should use default values when preferences are null`() = runTest {
+        every { userPreferences.userName } returns flowOf(null)
+        every { userPreferences.userRole } returns flowOf(null)
+        every { userPreferences.userAvatar } returns flowOf(null)
+
+        repository.getUserProfile().test {
+            val item = awaitItem()
+            assertEquals("Pengguna", item.name)
+            assertEquals("Role", item.role)
+            assertEquals(null, item.profilePictureUrl)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getReportSummary should return zeros when userId is null`() = runTest {
+        every { userPreferences.userId } returns flowOf(null)
+
+        repository.getReportSummary().test {
+            val summary = awaitItem()
+            assertEquals(0, summary.pendingCount)
+            assertEquals(0, summary.approvedCount)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getReportSummary should return correct counts from DB`() = runTest {
+        every { userPreferences.userId } returns flowOf("user-001")
+
+        val reports = listOf(
+            ReportEntity("1", "user-001", "user-dummy", "1802045678902228","pria","rumah sini","KPH 123","KTH456", 2024, "jan", "2024-01", 1.0, "ditolak"),
+            ReportEntity("2", "user-001", "user-dummy", "1802067364890001","pria","way kiri","KPH 123","KTH456", 2024, "jan", "2024-01", 1.0, "disetujui"),
+            ReportEntity("3", "user-001", "user-dummy", "1802067284950002","wanita","lampung barat","KPH 123","KTH456", 2024, "jan", "2024-01", 1.0, "disetujui")
+        )
+        reportDao.upsertAll(reports)
+
+        repository.getReportSummary().test {
+            val summary = awaitItem()
+            assertEquals(0, summary.pendingCount)
+            assertEquals(0, summary.verifiedcount)
+            assertEquals(2, summary.approvedCount)
+            assertEquals(1, summary.rejectedCount)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
@@ -251,5 +318,58 @@ class HomeRepositoryImplTest {
 
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    @Test
+    fun `deleteReport success should remove from local and call API`() = runTest {
+        val reportId = "report-to-delete"
+        val report =  ReportEntity(reportId, "user-001", "user-dummy", "1802045678902228","pria","rumah sini","KPH 123","KTH456", 2024, "jan", "2024-01", 1.0, "ditolak")
+        reportDao.upsertAll(listOf(report))
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{ "message": "Berhasil dihapus", "statusCode": 200 }""")
+            )
+
+        val result = repository.deleteReport(reportId)
+        assertTrue(result is Resource.Success)
+
+        val dbResult = reportDao.getReportById(reportId)
+        val list = reportDao.getLatestReports("user-001").first()
+        assertTrue(list.isEmpty())
+
+        val request = mockWebServer.takeRequest()
+        assertEquals("DELETE", request.method)
+        assertTrue(request.path?.contains(reportId) == true)
+    }
+
+    @Test
+    fun `deleteReport api failure should return Error`() = runTest {
+        mockWebServer.enqueue(MockResponse().setResponseCode(500))
+        val result = repository.deleteReport("any-id")
+        assertTrue(result is Resource.Error)
+    }
+
+    @Test
+    fun `submitReport success should update local status and call API PATCH`() = runTest {
+        val reportId = "report-submit"
+        val report = ReportEntity(reportId, "user-001", "user-dummy", "1802045678902228","pria","rumah sini","KPH 123","KTH456", 2024, "jan", "2024-01", 1.0, "ditolak")
+        reportDao.upsertAll(listOf(report))
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{ "message": "Berhasil diajukan", "statusCode": 200 }""")
+        )
+        val result = repository.submitReport(reportId)
+        assertTrue(result is Resource.Success)
+
+        val updatedReport = reportDao.getLatestReports("user-001").first().first()
+        assertEquals("menunggu", updatedReport.status)
+
+        val request = mockWebServer.takeRequest()
+        assertEquals("POST", request.method)
+        val body = request.body.readUtf8()
+        assertTrue(body.contains("PATCH"))
+        assertTrue(body.contains("menunggu"))
     }
 }

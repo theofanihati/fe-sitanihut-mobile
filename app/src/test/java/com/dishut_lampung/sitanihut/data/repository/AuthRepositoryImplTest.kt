@@ -54,17 +54,43 @@ class AuthRepositoryImplTest {
 
     // BERHASIL POST v1/login
     @Test
-    fun `login success, should return Success result and save token`() = runTest {
-        val successResponseJson = """
+    fun `login success, should return Success result and save token AND complete user data to DB`() = runTest {
+        val loginResponseJson = """
             {
                 "message": "Berhasil masuk",
                 "statusCode": 200,
                 "data": {
                     "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL3YxL2xvZ2luIiwiaWF0IjoxNzU1OTM2NzMwLCJleHAiOjE3NTU5NzI3MzAsIm5iZiI6MTc1NTkzNjczMCwianRpIjoiVUtOMlk2Mm9USVF3VlF2cSIsInN1YiI6IjAxOThkNWQ0LWI5YjctNzFmMS04YzAyLThjMjQ5MzAzNzcyZiIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjciLCJyb2xlIjoicGV0YW5pIn0.bPAXLiV2FYZSP92wnsVDucCIS-FbtEH4kPg945wBUxg",
-                    "id": "0198d5d4-b9b7-71f1-8c02-8c249303772f",
+                    "id": "user-001",
                     "email": "petani2@example.com",
                     "role": "Petani",
                     "name": "Petani Dua"
+                }
+            }
+        """.trimIndent()
+        val userDetailResponseJson = """
+            {
+                "message": "Success",
+                "statusCode": 200,
+                "data": {
+                    "id_user": "user-001",
+                    "email": "petani@baru.com",
+                    "id_role": "0198d5d4-b007-71d0-b0ca-4b46be02f40b",
+                    "id_kph": "0198d5d4-b025-73a3-bc01-663f2adee7d6",
+                    "nama_kph": "UPTD KPH Kota Agung Utara",
+                    "id_kth": "0198d5d4-b068-703b-aee7-cbcfabedcd69",
+                    "nama_kth": "KTH Curah Sejuk",
+                    "id_detail": "0198db13-c6fe-7047-a175-de5cb71dbcc7",
+                    "nama_user": "Petani Dua",
+                    "nomor_induk": "1234567890111",
+                    "jenis_kelamin": "wanita",
+                    "profile_picture_url": "http://127.0.0.1:8000/storage/profile_pictures/0198db13-c6ef-73d4-b3a5-9a400cafae8d_j2GFhzoJ_Screenshot2025-07-06210849.png",
+                    "alamat": null,
+                    "nomor_wa": null,
+                    "pendidikan_terakhir": null,
+                    "pekerjaan_sampingan": null,
+                    "luas_lahan": null,
+                    "jabatan": null
                 }
             }
         """.trimIndent()
@@ -72,12 +98,44 @@ class AuthRepositoryImplTest {
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(200)
-                .setBody(successResponseJson)
+                .setBody(loginResponseJson)
+        )
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody(userDetailResponseJson)
         )
 
         val result = authRepository.login("petani2@example.com", "passwordbenar")
         assertTrue(result is AuthResult.Success)
         coVerify(exactly = 1) { mockUserPreferences.saveAuthToken("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL3YxL2xvZ2luIiwiaWF0IjoxNzU1OTM2NzMwLCJleHAiOjE3NTU5NzI3MzAsIm5iZiI6MTc1NTkzNjczMCwianRpIjoiVUtOMlk2Mm9USVF3VlF2cSIsInN1YiI6IjAxOThkNWQ0LWI5YjctNzFmMS04YzAyLThjMjQ5MzAzNzcyZiIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjciLCJyb2xlIjoicGV0YW5pIn0.bPAXLiV2FYZSP92wnsVDucCIS-FbtEH4kPg945wBUxg") }
+        coVerify { mockUserPreferences.saveUserId("user-001") }
+        coVerify { mockUserPreferences.saveUserName("Petani Dua") }
+        coVerify { mockUserPreferences.saveUserRole("petani") }
+        coVerify(exactly = 1) { mockUserDao.upsertUser(any()) }
+    }
+    @Test
+    fun `login success BUT fetchUserDetails fails, should save BASIC user data to DB`() = runTest {
+        val loginResponse = """
+            {
+                "message": "Berhasil", 
+                "statusCode": 200,
+                "data": {
+                    "token": "token123", 
+                    "id": "user-123", 
+                    "email": "petani@ex.com", 
+                    "role": "petani", 
+                    "name": "Pak Tani"
+                }
+            }
+        """.trimIndent()
+
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody(loginResponse))
+        mockWebServer.enqueue(MockResponse().setResponseCode(500).setBody("{}"))
+
+        val result = authRepository.login("petani@ex.com", "pass")
+        assertTrue(result is AuthResult.Success)
+        coVerify(exactly = 1) { mockUserDao.upsertUser(any()) }
     }
 
     // GAGAL POST v1/login
@@ -170,9 +228,10 @@ class AuthRepositoryImplTest {
 
     // LOGOUT
     @Test
-    fun `logout, should call clearAuthToken`() = runTest {
+    fun `logout, should clear preferences AND clear report database`() = runTest {
         authRepository.logout()
         coVerify(exactly = 1) { mockUserPreferences.clearAllSession() }
+        coVerify(exactly = 1) { mockReportDao.clearAllLaporan() }
     }
 
     // token save di datastore

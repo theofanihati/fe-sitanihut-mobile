@@ -107,6 +107,34 @@ class ProfileRepositoryImplTest {
         coVerify { mockUserPreferences.saveUserName("Budi Petani") }
     }
 
+    @Test
+    fun `syncUserDetail should return Error when userId is null in preferences`() = runTest {
+        every { mockUserPreferences.userId } returns flowOf(null)
+
+        val result = repository.syncUserDetail()
+
+        assertTrue(result is Resource.Error)
+        assertEquals("No User ID", result.message)
+
+        coVerify(exactly = 0) { mockApiService.getUserDetail(any()) }
+    }
+
+    @Test
+    fun `syncUserDetail should NOT save avatar when profilePictureUrl is null or empty`() = runTest {
+        val userNoAvatar = dummyUserDto.copy(profilePictureUrl = "")
+
+        every { mockUserPreferences.userId } returns flowOf(userId)
+        coEvery { mockApiService.getUserDetail(userId) } returns ApiResponse(200, "ok", userNoAvatar)
+        coEvery { mockRoleDao.getRoleName(any()) } returns roleName
+        coJustRun { mockUserDao.upsertUser(any()) }
+        coJustRun { mockUserPreferences.saveUserName(any()) }
+
+        val result = repository.syncUserDetail()
+        assertTrue(result is Resource.Success)
+        coVerify { mockUserPreferences.saveUserName("Budi Petani") }
+
+        coVerify(exactly = 0) { mockUserPreferences.saveUserAvatar(any()) }
+    }
 
     @Test
     fun `when syncUserDetail fail, should return error`() = runTest {
@@ -135,5 +163,26 @@ class ProfileRepositoryImplTest {
         coVerify { mockApiService.getRoles() }
         coVerify { mockRoleDao.insertRoles(any()) }
         coVerify { mockUserDao.upsertUser(match { it.role == "Petani" }) }
+    }
+
+    @Test
+    fun `syncUserDetail should use fallback role 'Pengguna' when API fails and local data missing`() = runTest {
+        every { mockUserPreferences.userId } returns flowOf(userId)
+        coEvery { mockApiService.getUserDetail(userId) } returns ApiResponse(200, "ok", dummyUserDto)
+        coEvery { mockRoleDao.getRoleName(roleId) } returns null
+        coEvery { mockApiService.getRoles() } throws RuntimeException("API Error")
+        every { mockUserPreferences.userRole } returns flowOf(null)
+
+        coJustRun { mockUserDao.upsertUser(any()) }
+        coJustRun { mockUserPreferences.saveUserName(any()) }
+        coJustRun { mockUserPreferences.saveUserAvatar(any()) }
+
+        val result = repository.syncUserDetail()
+        assertTrue(result is Resource.Success)
+        coVerify {
+            mockUserDao.upsertUser(match {
+                it.role == "Pengguna"
+            })
+        }
     }
 }
