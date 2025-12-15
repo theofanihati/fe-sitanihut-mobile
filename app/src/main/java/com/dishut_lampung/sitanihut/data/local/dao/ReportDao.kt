@@ -95,7 +95,7 @@ interface ReportDao {
     @Query("UPDATE laporan SET syncStatus = 'PENDING_DELETE' WHERE id = :reportId")
     suspend fun markAsPendingDelete(reportId: String)
 
-    @Query("UPDATE laporan SET status = 'menunggu', syncStatus = 'pending_upload' WHERE id = :reportId")
+    @Query("UPDATE laporan SET status = 'menunggu', syncStatus = 'PENDING_UPDATE' WHERE id = :reportId")
     suspend fun submitReportById(reportId: String)
 
     @Query("DELETE FROM laporan WHERE syncStatus = 'SYNCED'")
