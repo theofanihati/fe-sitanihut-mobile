@@ -7,6 +7,9 @@ plugins {
     id("jacoco")
     id("io.gitlab.arturbosch.detekt") version "1.23.6"
 }
+jacoco {
+    toolVersion = "0.8.11"
+}
 
 android {
     namespace = "com.dishut_lampung.sitanihut"
@@ -55,7 +58,8 @@ android {
                 "META-INF/LICENSE-notice.md",
                 "META-INF/DEPENDENCIES",
                 "META-INF/LICENSE",
-                "META-INF/NOTICE"
+                "META-INF/NOTICE",
+                "/META-INF/{AL2.0,LGPL2.1}"
             )
         }
     }
@@ -66,11 +70,11 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"
     }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
+//    packaging {
+//        resources {
+//            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+//        }
+//    }
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -177,6 +181,11 @@ detekt {
 }
 
 val exclusions = listOf(
+    "jdk.internal.**",
+    "kotlin.*",
+    "org.robolectric.*",
+    "com.google.*",
+    "androidx.*",
     "**/R.class",
     "**/R$*.class",
     "**/BuildConfig.*",
@@ -217,18 +226,16 @@ val exclusions = listOf(
 )
 
 tasks.register<JacocoReport>("jacocoTestReport") {
-    dependsOn("testDebugUnitTest") // Wajib: Jalanin test dulu sebelum generate report
+    dependsOn("testDebugUnitTest")
 
     group = "Reporting"
     description = "Generate JaCoCo coverage reports excluding UI and DI."
 
     reports {
         xml.required.set(true)
-        html.required.set(true) // Kita butuh HTML-nya
+        html.required.set(true)
     }
 
-    // Arahkan ke folder class Kotlin yang sudah dicompile (KUNCI UTAMA: tmp/kotlin-classes)
-    // Ini menghindari folder generated java milik Hilt
     val debugTree = fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
         exclude(exclusions)
     }
@@ -237,10 +244,24 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
     sourceDirectories.setFrom(files(mainSrc))
     classDirectories.setFrom(files(debugTree))
-
-    // Ambil data eksekusi test (.exec)
     executionData.setFrom(fileTree(layout.buildDirectory.get()) {
         include(listOf("**/*.exec", "**/*.ec"))
     })
 }
 
+tasks.withType<Test>().configureEach {
+    jvmArgs(
+        "-noverify",
+        "-Xmx3g",
+        "-XX:+UseG1GC",
+        "-XX:MaxMetaspaceSize=1g",
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens=java.base/java.net=ALL-UNNAMED"
+    )
+    configure<JacocoTaskExtension> {
+        isIncludeNoLocationClasses = true
+        includes = listOf("com.dishut_lampung.sitanihut.*")
+    }
+}
