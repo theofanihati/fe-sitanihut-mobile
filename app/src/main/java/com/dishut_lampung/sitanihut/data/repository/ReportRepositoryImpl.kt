@@ -183,7 +183,9 @@ class ReportRepositoryImpl @Inject constructor(
                 input = input
             )
             reportDao.upsertAll(listOf(newReport))
-            enqueueReportOperation(OP_create, reportId)
+            if (input.isAjukan) {
+                enqueueReportOperation(OP_create, reportId)
+            }
 
             Resource.Success(Unit)
 
