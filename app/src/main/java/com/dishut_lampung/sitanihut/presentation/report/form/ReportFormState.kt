@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.report_submission.form
+package com.dishut_lampung.sitanihut.presentation.report.form
 
 import com.dishut_lampung.sitanihut.domain.model.Commodity
 import com.dishut_lampung.sitanihut.domain.model.ReportAttachment

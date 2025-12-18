@@ -1,9 +1,8 @@
-package com.dishut_lampung.sitanihut.presentation.report_submission.detail
+package com.dishut_lampung.sitanihut.presentation.report.detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel

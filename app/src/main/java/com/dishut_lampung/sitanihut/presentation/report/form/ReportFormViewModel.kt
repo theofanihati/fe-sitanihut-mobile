@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.report_submission.form
+package com.dishut_lampung.sitanihut.presentation.report.form
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

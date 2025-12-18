@@ -1,12 +1,12 @@
-package com.dishut_lampung.sitanihut.presentation.report_submission
+package com.dishut_lampung.sitanihut.presentation.report
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
-import com.dishut_lampung.sitanihut.presentation.report_submission.detail.ReportDetailUiState
-import com.dishut_lampung.sitanihut.presentation.report_submission.detail.ReportDetailViewModel
+import com.dishut_lampung.sitanihut.presentation.report.detail.ReportDetailUiState
+import com.dishut_lampung.sitanihut.presentation.report.detail.ReportDetailViewModel
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.every

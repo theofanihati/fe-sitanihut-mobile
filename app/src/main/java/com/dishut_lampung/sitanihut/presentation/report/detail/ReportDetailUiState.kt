@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.report_submission.detail
+package com.dishut_lampung.sitanihut.presentation.report.detail
 
 import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 

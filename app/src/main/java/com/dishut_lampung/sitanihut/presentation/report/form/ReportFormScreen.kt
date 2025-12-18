@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.report_submission.form
+package com.dishut_lampung.sitanihut.presentation.report.form
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult

@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.report_submission
+package com.dishut_lampung.sitanihut.presentation.report
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
@@ -11,9 +11,9 @@ import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.UpdateReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.ValidateReportInputUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ListValidationResult
-import com.dishut_lampung.sitanihut.presentation.report_submission.form.ReportFormViewModel
-import com.dishut_lampung.sitanihut.presentation.report_submission.form.HarvestDetailUiState
-import com.dishut_lampung.sitanihut.presentation.report_submission.form.ReportFormEvent
+import com.dishut_lampung.sitanihut.presentation.report.form.ReportFormViewModel
+import com.dishut_lampung.sitanihut.presentation.report.form.HarvestDetailUiState
+import com.dishut_lampung.sitanihut.presentation.report.form.ReportFormEvent
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
@@ -123,7 +123,7 @@ class ReportFormViewModelTest {
     fun `OnPlantingItemChange with type Semusim and Date should calculate plant age`() = runTest {
         var viewModel = createViewModel()
         val dateString = "01/01/2020"
-        val item = com.dishut_lampung.sitanihut.presentation.report_submission.form.PlantingDetailUiState(
+        val item = com.dishut_lampung.sitanihut.presentation.report.form.PlantingDetailUiState(
             plantType = "semusim",
             plantDate = dateString,
             amount = "10"

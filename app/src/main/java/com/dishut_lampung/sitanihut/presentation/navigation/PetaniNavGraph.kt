@@ -14,9 +14,9 @@ import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScre
 import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutRoute
 import com.dishut_lampung.sitanihut.presentation.profile.petani.PetaniProfileRoute
-import com.dishut_lampung.sitanihut.presentation.report_submission.detail.ReportDetailRoute
-import com.dishut_lampung.sitanihut.presentation.report_submission.form.ReportFormRoute
-import com.dishut_lampung.sitanihut.presentation.report_submission.list.ReportListRoute
+import com.dishut_lampung.sitanihut.presentation.report.detail.ReportDetailRoute
+import com.dishut_lampung.sitanihut.presentation.report.form.ReportFormRoute
+import com.dishut_lampung.sitanihut.presentation.report.list.ReportListRoute
 
 fun NavGraphBuilder.petaniNavGraph(
     modifier : Modifier,
