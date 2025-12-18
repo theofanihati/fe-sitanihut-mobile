@@ -36,6 +36,17 @@ class ReportListViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
     private val userRoleFlow = userPreferences.userRole
 
+    init {
+        viewModelScope.launch {
+            userPreferences.userRole.collect { role ->
+                val isUserPetani = role.equals("petani", ignoreCase = true)
+                _uiState.update {
+                    it.copy(isPetani = isUserPetani)
+                }
+            }
+        }
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val reportPagingFlow = combine(
         _uiState,

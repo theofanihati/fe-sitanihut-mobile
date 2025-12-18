@@ -170,6 +170,7 @@ fun ReportListRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportListScreen(
+    viewModel: ReportListViewModel = hiltViewModel(),
     state: ReportListUiState,
     pagingItems: androidx.paging.compose.LazyPagingItems<ReportUiModel>,
     modifier: Modifier = Modifier,
@@ -213,7 +214,11 @@ fun ReportListScreen(
                 Spacer(modifier = Modifier.height(100.dp))
 
                 Text(
-                    text = "Pengajuan Laporan",
+                    text = if (state.isPetani) {
+                        "Pengajuan Laporan"
+                    } else {
+                        "Periksa Laporan"
+                    },
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold,
                     ),
@@ -286,10 +291,14 @@ fun ReportListScreen(
                         if (report != null) {
                             ReportCard(
                                 item = report,
-                                isPetani = true,
+                                isPetani = state.isPetani,
                                 onCardClick = { onNavigateToDetail(report.id) },
-                                onActionClick = {
-                                    onEvent(ReportListEvent.OnReportMoreOptionClick(report.id))
+                                onActionClick = {reportId ->
+                                    if (state.isPetani) {
+                                        viewModel.onEvent(ReportListEvent.OnReportMoreOptionClick(reportId))
+                                    } else {
+                                        onNavigateToDetail(reportId)
+                                    }
                                 }
                             )
                         }

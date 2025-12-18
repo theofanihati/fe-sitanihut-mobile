@@ -20,7 +20,7 @@ fun NavGraphBuilder.kkphNavGraph(
     navigation(startDestination = Screen.HomeKkph.route, route = "penanggung-jawab") {
         composable(route = Screen.HomeKkph.route) {
             val onNavigateToDetail = { id : String ->
-                navController.navigateSingleTop("report-verification/$id")
+                navController.navigateSingleTop("report_detail/$id")
             }
             val onNavigateToCommodity = {
                 navController.navigate("data_commodity")
@@ -35,7 +35,7 @@ fun NavGraphBuilder.kkphNavGraph(
                 navController.navigate("data_penyuluh")
             }
             val onNavigateToReportVerification = {
-                navController.navigate("report-verification")
+                navController.navigate("report_list")
             }
             val onNavigateToUserManagement = {
                 navController.navigate("user-management")

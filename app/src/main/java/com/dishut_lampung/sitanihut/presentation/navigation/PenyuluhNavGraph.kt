@@ -20,7 +20,7 @@ fun NavGraphBuilder.penyuluhNavGraph(
     navigation(startDestination = Screen.HomePenyuluh.route, route = "penyuluh") {
         composable(route = Screen.HomePenyuluh.route) {
             val onNavigateToDetail = { id : String ->
-                navController.navigateSingleTop("report-verification/$id")
+                navController.navigateSingleTop("report_detail/$id")
             }
             val onNavigateToCommodity = {
                 navController.navigate("data_commodity")
@@ -32,7 +32,7 @@ fun NavGraphBuilder.penyuluhNavGraph(
                 navController.navigate("data_petani")
             }
             val onNavigateToReportVerification = {
-                navController.navigate("report-verification")
+                navController.navigate("report_list")
             }
             val onNavigateToUserManagement = {
                 navController.navigate("user-management")

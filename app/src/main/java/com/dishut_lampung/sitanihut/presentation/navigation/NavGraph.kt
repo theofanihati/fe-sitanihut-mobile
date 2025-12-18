@@ -38,7 +38,7 @@ fun NavGraph(
             HomePagePetaniRoute(
                 modifier = modifier,
                 onNavigateToDetail = { id ->
-                    navController.navigateSingleTop("report-submission-detail/$id")
+                    navController.navigateSingleTop("report_detail/$id")
                 },
                 onNavigateToInfo = {
                     navController.navigate("information")
@@ -47,11 +47,11 @@ fun NavGraph(
                     navController.navigate("data_commodity")
                 },
                 onNavigateToReportSubmission = {
-                    navController.navigate("report-submission")
+                    navController.navigate("report_list")
                 },
                 onNavigateToEdit = { id: String ->
                     navController.navigateSingleTop(
-                        Screen.Petani.ReportForm.createRoute(reportId = id)
+                        Screen.ReportForm.createRoute(reportId = id)
                 )
             }
 
@@ -73,7 +73,7 @@ fun NavGraph(
                     navController.navigate("data_petani")
                 },
                 onNavigateToReportVerification = {
-                    navController.navigate("report-verification")
+                    navController.navigate("report_list")
                 },
                 onNavigateToUserManagement = {
                     navController.navigate("user-management")
@@ -102,7 +102,7 @@ fun NavGraph(
                     navController.navigate("data_penyuluh")
                 },
                 onNavigateToReportVerification = {
-                    navController.navigate("report-verification")
+                    navController.navigate("report_list")
                 },
                 onNavigateToUserManagement = {
                     navController.navigate("user-management")

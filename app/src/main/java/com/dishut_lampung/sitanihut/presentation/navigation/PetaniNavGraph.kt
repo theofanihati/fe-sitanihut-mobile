@@ -25,20 +25,20 @@ fun NavGraphBuilder.petaniNavGraph(
     navigation(startDestination = Screen.HomePetani.route, route = "petani") {
         composable(route = Screen.HomePetani.route) {
             val onNavigateToDetail = { id : String ->
-                navController.navigateSingleTop("report-submission-detail/$id")
+                navController.navigateSingleTop("report_detail/$id")
             }
             val onNavigateToCommodity = {
                 navController.navigateSingleTop("data_commodity")
             }
             val onNavigateToReportSubmission = {
-                navController.navigateSingleTop("report-submission")
+                navController.navigateSingleTop("report_list")
             }
             val onNavigateInfo = {
                 navController.navigateSingleTop("information")
             }
             val onNavigateToEdit = { id: String ->
                 navController.navigateSingleTop(
-                    Screen.Petani.ReportForm.createRoute(reportId = id)
+                    Screen.ReportForm.createRoute(reportId = id)
                 )
             }
 
@@ -58,25 +58,25 @@ fun NavGraphBuilder.petaniNavGraph(
         composable(route = Screen.DataCommodity.route){
             CommodityRoute()
         }
-        composable(route = Screen.Petani.ReportSubmission.route){
+        composable(route = Screen.ReportList.route){
             ReportListRoute(
                 onNavigateToAddReport = {
                     navController.navigateSingleTop(
-                        Screen.Petani.ReportForm.createRoute(reportId = null))
+                        Screen.ReportForm.createRoute(reportId = null))
                 },
                 onNavigateToDetail = { id ->
-                    navController.navigateSingleTop("report-submission-detail/$id")
+                    navController.navigateSingleTop("report_detail/$id")
                 },
                 onNavigateToEdit = { id ->
                     navController.navigateSingleTop(
-                        Screen.Petani.ReportForm.createRoute(reportId = id)
+                        Screen.ReportForm.createRoute(reportId = id)
                     )
                 },
             )
         }
 
         composable(
-            route = Screen.Petani.ReportForm.route,
+            route = Screen.ReportForm.route,
             arguments = listOf(
                 navArgument("reportId") {
                     type = NavType.StringType
@@ -91,7 +91,7 @@ fun NavGraphBuilder.petaniNavGraph(
         }
 
         composable(
-            route = "report-submission-detail/{reportId}",
+            route = "report_detail/{reportId}",
             arguments = listOf(
                 navArgument("reportId") {
                     type = NavType.StringType

@@ -14,10 +14,20 @@ sealed class Screen(val route: String) {
 
     object DataCommodity : Screen("data_commodity")
 
+    object ReportList : Petani("report_list")
+    object ReportForm : Petani("report_form?reportId={reportId}") {
+        fun createRoute(reportId: String? = null): String {
+            return if (reportId != null) {
+                "report_form?reportId=$reportId"
+            } else {
+                "report_form"
+            }
+        }
+    }
+    data class ReportDetail(val id : String) : Petani("report_detail/{reportId}")
+
     object DataKth : Screen("data_kth")
     object DataPetani : Screen("data_petani")
-    object ReportVerification : Screen("report-verification")
-    data class DetailReportVerification(val id : String) : Screen("report-verification/$id")
     object UserManagement : Screen("user-management")
 
     sealed class Auth(route : String) : Screen(route) {
@@ -27,17 +37,6 @@ sealed class Screen(val route: String) {
 
     sealed class  Petani(route: String) : Screen(route) {
         data object ProfilePetani : Petani("profile_petani_screen")
-        object ReportSubmission : Petani("report-submission")
-        object ReportForm : Petani("report_form?reportId={reportId}") {
-            fun createRoute(reportId: String? = null): String {
-                return if (reportId != null) {
-                    "report_form?reportId=$reportId"
-                } else {
-                    "report_form"
-                }
-            }
-        }
-        data class DetailReportSubmission(val id : String) : Petani("report-submission-detail/{reportId}")
     }
 
     sealed class  Penyuluh(route: String) : Screen(route) {

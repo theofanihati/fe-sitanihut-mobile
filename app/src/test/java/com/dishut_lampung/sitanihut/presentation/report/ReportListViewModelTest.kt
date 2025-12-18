@@ -108,6 +108,26 @@ class ReportListViewModelTest {
     }
 
     @Test
+    fun `when role is Petani, isPetani state should be true`() = runTest {
+        io.mockk.clearMocks(userPreferences)
+        every { userPreferences.userRole } returns flowOf("petani")
+
+        viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
+
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.isPetani)
+    }
+
+    @Test
+    fun `when role is Penyuluh, isPetani state should be false`() = runTest {
+        io.mockk.clearMocks(userPreferences)
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
+        advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.isPetani)
+    }
+    @Test
     fun `onSearch should refresh data with correct role filter`() = runTest {
         val role = "penyuluh"
         val query = "tanah"
