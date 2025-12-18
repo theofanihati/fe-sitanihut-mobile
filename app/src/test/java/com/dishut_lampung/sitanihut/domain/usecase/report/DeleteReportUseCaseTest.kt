@@ -1,8 +1,7 @@
-package com.dishut_lampung.sitanihut.domain.usecase.pengajuan_laporan
+package com.dishut_lampung.sitanihut.domain.usecase.report
 
 
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
-import com.dishut_lampung.sitanihut.domain.usecase.report.DeleteReportUseCase
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
 import io.mockk.coVerify

@@ -1,13 +1,11 @@
-package com.dishut_lampung.sitanihut.domain.usecase.pengajuan_laporan
+package com.dishut_lampung.sitanihut.domain.usecase.report
 
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
-import com.dishut_lampung.sitanihut.domain.usecase.report.SubmitReportUseCase
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test

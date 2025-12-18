@@ -1,10 +1,9 @@
-package com.dishut_lampung.sitanihut.domain.usecase.pengajuan_laporan
+package com.dishut_lampung.sitanihut.domain.usecase.report
 
 
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.MasaPanen
 import com.dishut_lampung.sitanihut.domain.model.MasaTanam
-import com.dishut_lampung.sitanihut.domain.usecase.report.ValidateReportInputUseCase
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

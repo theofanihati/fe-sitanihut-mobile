@@ -1,9 +1,7 @@
-package com.dishut_lampung.sitanihut.domain.usecase.pengajuan_laporan
+package com.dishut_lampung.sitanihut.domain.usecase.report
 
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
-import com.dishut_lampung.sitanihut.domain.usecase.report.UpdateReportUseCase
-import com.dishut_lampung.sitanihut.domain.usecase.report.ValidateReportInputUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ListValidationResult
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery

@@ -1,10 +1,7 @@
-package com.dishut_lampung.sitanihut.domain.usecase.pengajuan_laporan
+package com.dishut_lampung.sitanihut.domain.usecase.report
 
-import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
-import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
-import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.every
 import io.mockk.mockk
