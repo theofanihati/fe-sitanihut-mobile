@@ -2,6 +2,7 @@ package com.dishut_lampung.sitanihut.data.repository
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.core.app.launchActivity
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.Operation
@@ -11,6 +12,7 @@ import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
 import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
+import com.dishut_lampung.sitanihut.data.mapper.toDbValue
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
@@ -18,10 +20,13 @@ import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
+import com.dishut_lampung.sitanihut.domain.model.ReportStatus
+import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.mockk.Runs
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.coVerify
@@ -35,6 +40,7 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -102,6 +108,7 @@ class ReportRepositoryImplTest {
 
     @Before
     fun setUp() {
+        clearMocks(apiService, reportDao, db, mockWorkManager)
         context = ApplicationProvider.getApplicationContext()
         repository = ReportRepositoryImpl(apiService, db, reportDao, userPreferences, context)
 
@@ -154,6 +161,41 @@ class ReportRepositoryImplTest {
 
         val resultFlow = repository.getReports(query, null)
         assertNotNull(resultFlow)
+    }
+
+    @Test
+    fun `getReports should trigger PagingSource factory and invoke Dao`() = runTest {
+        val query = "test"
+        val mockPagingSource = mockk<androidx.paging.PagingSource<Int, ReportEntity>>(relaxed = true)
+
+        every { reportDao.getReports(query, any()) } returns mockPagingSource
+
+        val flow = repository.getReports(query, null)
+        val job = launch() {
+            flow.collect { }
+        }
+
+        testScheduler.advanceUntilIdle()
+
+        verify(exactly = 1) { reportDao.getReports(query, null) }
+
+        job.cancel()
+    }
+
+    @Test
+    fun `getReports with status filter should convert status and invoke Dao`() = runTest {
+        val status = ReportStatus.VERIFIED
+        val mockPagingSource = mockk<androidx.paging.PagingSource<Int, ReportEntity>>(relaxed = true)
+        every { reportDao.getReports(any(), any()) } returns mockPagingSource
+        val flow = repository.getReports("", status)
+
+        val job = launch {
+            flow.collect { }
+        }
+        testScheduler.advanceUntilIdle()
+        verify(exactly = 1) { reportDao.getReports(any(), match { it == "diverifikasi" }) }
+
+        job.cancel()
     }
 
     @Test
@@ -393,6 +435,36 @@ class ReportRepositoryImplTest {
         coVerify(exactly = 0) { reportDao.upsertAll(any()) } // Detail gagal disimpan
     }
 
+    @Test
+    fun `getReportById should not save to DB if network data is null`() = runTest {
+        val id = "id-1"
+        val nullDataResponse = ApiResponse<ReportDetailDto?>(200, "OK", null)
+
+        coEvery { apiService.getReportDetail(id) } returns (nullDataResponse as ApiResponse<ReportDetailDto>)
+
+        every { reportDao.getReportByIdFlow(id) } returns flowOf(dummyReport)
+
+        val result = repository.getReportById(id).first { it is Resource.Success }
+
+        assertTrue(result is Resource.Success)
+        coVerify(exactly = 0) { reportDao.upsertAll(any()) }
+    }
+    @Test
+    fun `getReportById should not save to DB if api status code is not 200`() = runTest {
+        val id = "id-1"
+        val errorResponse = ApiResponse<ReportDetailDto?>(
+            statusCode = 400,
+            message = "Bad Request",
+            data = null
+        )
+
+        coEvery { apiService.getReportDetail(id) } returns (errorResponse as ApiResponse<ReportDetailDto>)
+        every { reportDao.getReportByIdFlow(id) } returns flowOf(dummyReport)
+
+        val result = repository.getReportById(id).first { it is Resource.Success }
+        assertTrue(result is Resource.Success)
+        coVerify(exactly = 0) { reportDao.upsertAll(any()) }
+    }
     @Test
     fun `updateReport should keep PENDING_CREATE status when updating unsynced report`() = runTest {
         val id = "123"
@@ -684,4 +756,106 @@ class ReportRepositoryImplTest {
         coVerify(exactly = 2) { reportDao.upsertAll(match { it.size == 1 }) }
     }
 
+    @Test
+    fun `updateReportStatus should update local status and enqueue Worker`() = runTest {
+        val id = "123"
+        val newStatus = ReportStatus.APPROVED
+        val oldReport = dummyReport.copy(
+            id = id,
+            status = ReportStatus.PENDING.toString(),
+            syncStatus = SyncStatus.SYNCED
+        )
+
+        coEvery { reportDao.getReportById(id) } returns oldReport
+        coJustRun { reportDao.upsertAll(any()) }
+
+        val result = repository.updateReportStatus(id, newStatus)
+        assertTrue("Harus return Success", result is Resource.Success)
+
+        coVerify {
+            reportDao.upsertAll(match { list ->
+                val entity = list.first()
+                entity.id == id &&
+                        entity.status == newStatus.toDbValue() &&
+                        entity.syncStatus == SyncStatus.PENDING_UPDATE
+            })
+        }
+
+        verify {
+            mockWorkManager.enqueueUniqueWork(
+                "sync_report_queue",
+                ExistingWorkPolicy.APPEND,
+                any<OneTimeWorkRequest>()
+            )
+        }
+    }
+
+    @Test
+    fun `updateReportStatus should return Error when report not found`() = runTest {
+        val id = "ghost-id"
+        coEvery { reportDao.getReportById(id) } returns null
+
+        val result = repository.updateReportStatus(id, ReportStatus.PENDING)
+        assertTrue(result is Resource.Error)
+        assertEquals("Laporan tidak ditemukan di database lokal", result.message)
+
+        coVerify(exactly = 0) { reportDao.upsertAll(any()) }
+        verify(exactly = 0) { mockWorkManager.enqueueUniqueWork(any(), any(), any<OneTimeWorkRequest>()) }
+    }
+
+    @Test
+    fun `updateReportStatus should return Error when exception occurs`() = runTest {
+        val id = "123"
+        coEvery { reportDao.getReportById(id) } throws RuntimeException("DB Error")
+
+        val result = repository.updateReportStatus(id, ReportStatus.VERIFIED)
+
+        assertTrue(result is Resource.Error)
+        assertTrue(result.message!!.contains("Gagal mengupdate status"))
+    }
+
+    @Test
+    fun `updateReportStatus should keep PENDING_CREATE when updating unsynced report`() = runTest {
+        val id = "123"
+        val oldReport = dummyReport.copy(
+            id = id,
+            status = "menunggu",
+            syncStatus = SyncStatus.PENDING_CREATE
+        )
+
+        coEvery { reportDao.getReportById(id) } returns oldReport
+        coJustRun { reportDao.upsertAll(any()) }
+
+        val result = repository.updateReportStatus(id, ReportStatus.VERIFIED)
+        assertTrue(result is Resource.Success)
+
+        coVerify {
+            reportDao.upsertAll(match { list ->
+                val entity = list.first()
+                entity.syncStatus == SyncStatus.PENDING_CREATE &&
+                        entity.status == "diverifikasi"
+            })
+        }
+    }
+
+    @Test
+    fun `updateReportStatus should handle null fields in old entity safely`() = runTest {
+        val id = "123"
+        val oldReportWithNulls = dummyReport.copy(
+            id = id,
+            status = "menunggu",
+            syncStatus = SyncStatus.SYNCED,
+            modal = null,
+            farmerNotes = null
+        )
+
+        coEvery { reportDao.getReportById(id) } returns oldReportWithNulls
+        coJustRun { reportDao.upsertAll(any()) }
+
+        val result = repository.updateReportStatus(id, ReportStatus.VERIFIED)
+        assertTrue(result is Resource.Success)
+        coVerify {
+            reportDao.upsertAll(any())
+        }
+    }
 }

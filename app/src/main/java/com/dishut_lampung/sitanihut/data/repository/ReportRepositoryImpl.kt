@@ -270,6 +270,10 @@ class ReportRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateReportStatus(reportId: String, newStatus: ReportStatus): Resource<Unit> {
+        return TODO()
+    }
+
     private fun buildNewReportEntity(
         id: String,
         userId: String,
