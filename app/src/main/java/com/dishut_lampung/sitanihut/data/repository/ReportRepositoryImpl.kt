@@ -271,7 +271,45 @@ class ReportRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateReportStatus(reportId: String, newStatus: ReportStatus): Resource<Unit> {
-        return TODO()
+        return try {
+            val oldReport = reportDao.getReportById(reportId)
+                ?: return Resource.Error("Laporan tidak ditemukan di database lokal")
+            val newSyncStatus = if (oldReport.syncStatus == SyncStatus.PENDING_CREATE) {
+                SyncStatus.PENDING_CREATE
+            } else {
+                SyncStatus.PENDING_UPDATE
+            }
+
+            val plantingList: List<MasaTanam> = Gson().fromJson(oldReport.plantingDetailsJson, object : TypeToken<List<MasaTanam>>() {}.type) ?: emptyList()
+            val harvestList: List<MasaPanen> = Gson().fromJson(oldReport.harvestDetailsJson, object : TypeToken<List<MasaPanen>>() {}.type) ?: emptyList()
+
+            val requestDto = ReportRequestDto(
+                id = reportId,
+                updatedAt = getCurrentDate(),
+                period = oldReport.period,
+                month = oldReport.month,
+                modal = oldReport.modal ?: 0.0,
+                farmerNotes = oldReport.farmerNotes ?: "",
+                nte = oldReport.nte,
+                plantingDetails = plantingList.map { it.toDto() },
+                harvestDetails = harvestList.map { it.toDto() },
+                status = newStatus.toDbValue()
+            )
+
+            val updatedEntity = oldReport.copy(
+                status = newStatus.toDbValue(),
+                syncStatus = newSyncStatus,
+                jsonPayload = gson.toJson(requestDto),
+                date = getCurrentDate()
+            )
+
+            reportDao.upsertAll(listOf(updatedEntity))
+            enqueueReportOperation(OP_UPDATE, reportId)
+
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            handleException("Gagal mengupdate status", e)
+        }
     }
 
     private fun buildNewReportEntity(
