@@ -60,17 +60,6 @@ class ReportListViewModelTest {
     }
 
     @Test
-    fun `init should call getReportsUseCase with default params`() = runTest {
-        viewModel.reportPagingFlow.test {
-            awaitItem()
-            verify(exactly = 1) { getReportsUseCase("", null) }
-            cancelAndIgnoreRemainingEvents()
-        }
-
-        assertNotNull(viewModel.reportPagingFlow)
-    }
-
-    @Test
     fun `init should fetch reports with NO filter when role is Petani`() = runTest {
         val role = "petani"
         io.mockk.clearMocks(userPreferences)

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
+import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.usecase.report.DeleteReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportsUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.SubmitReportUseCase
@@ -14,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -35,8 +37,22 @@ class ReportListViewModel @Inject constructor(
     private val userRoleFlow = userPreferences.userRole
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val reportPagingFlow = _uiState
-        .map { it.searchQuery to it.selectedStatus }
+    val reportPagingFlow = combine(
+        _uiState,
+        userRoleFlow
+    ) { state, role ->
+        val query = state.searchQuery
+        val userSelectedStatus = state.selectedStatus
+
+        val statusFilter = when {
+            role.equals("penyuluh", ignoreCase = true) ->
+                userSelectedStatus ?: ReportStatus.PENDING
+            role.equals("penanggung jawab", ignoreCase = true) || role.equals("penanggung_jawab", ignoreCase = true) ->
+                userSelectedStatus ?: ReportStatus.VERIFIED
+            else -> userSelectedStatus
+        }
+        Pair(query, statusFilter)
+    }
         .debounce(300)
         .distinctUntilChanged()
         .flatMapLatest { (query, status) ->
