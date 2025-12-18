@@ -1,9 +1,10 @@
-package com.dishut_lampung.sitanihut.presentation.report_submission.list
+package com.dishut_lampung.sitanihut.presentation.report.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import androidx.paging.map
+import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.usecase.report.DeleteReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportsUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.SubmitReportUseCase
@@ -25,11 +26,13 @@ import javax.inject.Inject
 class ReportListViewModel @Inject constructor(
     private val getReportsUseCase: GetReportsUseCase,
     private val deleteReportUseCase: DeleteReportUseCase,
-    private val submitReportUseCase: SubmitReportUseCase
+    private val submitReportUseCase: SubmitReportUseCase,
+    private val userPreferences: UserPreferences
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ReportListUiState())
     val uiState = _uiState.asStateFlow()
+    private val userRoleFlow = userPreferences.userRole
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val reportPagingFlow = _uiState

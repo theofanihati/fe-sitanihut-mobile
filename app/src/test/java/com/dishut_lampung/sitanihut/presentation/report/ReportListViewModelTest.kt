@@ -1,13 +1,14 @@
-package com.dishut_lampung.sitanihut.presentation.report_submission
+package com.dishut_lampung.sitanihut.presentation.report
 
 import androidx.paging.PagingData
 import app.cash.turbine.test
+import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.usecase.report.DeleteReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportsUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.SubmitReportUseCase
-import com.dishut_lampung.sitanihut.presentation.report_submission.list.ReportListEvent
-import com.dishut_lampung.sitanihut.presentation.report_submission.list.ReportListViewModel
+import com.dishut_lampung.sitanihut.presentation.report.list.ReportListEvent
+import com.dishut_lampung.sitanihut.presentation.report.list.ReportListViewModel
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
@@ -39,11 +40,13 @@ class ReportListViewModelTest {
     private val getReportsUseCase: GetReportsUseCase = mockk()
     private val deleteReportUseCase: DeleteReportUseCase = mockk()
     private val submitReportUseCase: SubmitReportUseCase = mockk()
+    private val userPreferences: UserPreferences = mockk()
 
     private lateinit var viewModel: ReportListViewModel
 
     @Before
     fun setUp() {
+        every { userPreferences.userRole } returns flowOf("petani")
         every { getReportsUseCase(any(), any()) } returns flowOf(PagingData.from(emptyList()))
         coEvery { deleteReportUseCase(any()) } returns Resource.Success(Unit)
         coEvery { submitReportUseCase(any()) } returns Resource.Success(Unit)
@@ -51,7 +54,8 @@ class ReportListViewModelTest {
         viewModel = ReportListViewModel(
             getReportsUseCase,
             deleteReportUseCase,
-            submitReportUseCase
+            submitReportUseCase,
+            userPreferences
         )
     }
 
@@ -64,6 +68,75 @@ class ReportListViewModelTest {
         }
 
         assertNotNull(viewModel.reportPagingFlow)
+    }
+
+    @Test
+    fun `init should fetch reports with NO filter when role is Petani`() = runTest {
+        val role = "petani"
+        io.mockk.clearMocks(userPreferences)
+        every { userPreferences.userRole } returns flowOf(role)
+        coEvery { getReportsUseCase(any(), any()) } returns flowOf(androidx.paging.PagingData.empty())
+
+        viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
+
+        viewModel.reportPagingFlow.test {
+            awaitItem()
+            coVerify { getReportsUseCase(any(), null) }
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `init should fetch reports with WAITING filter when role is Penyuluh`() = runTest {
+        val role = "penyuluh"
+        io.mockk.clearMocks(userPreferences)
+        every { userPreferences.userRole } returns flowOf(role)
+        coEvery { getReportsUseCase(any(), any()) } returns flowOf(androidx.paging.PagingData.empty())
+
+        viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
+
+        viewModel.reportPagingFlow.test {
+            awaitItem()
+            coVerify { getReportsUseCase(any(), ReportStatus.PENDING) }
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `init should fetch reports with VERIFIED filter when role is PJ`() = runTest {
+        io.mockk.clearMocks(userPreferences)
+        val role = "penanggung jawab"
+
+        every { userPreferences.userRole } returns flowOf(role)
+        coEvery { getReportsUseCase(any(), any()) } returns flowOf(androidx.paging.PagingData.empty())
+        viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
+
+        viewModel.reportPagingFlow.test {
+            awaitItem()
+            coVerify { getReportsUseCase(any(), ReportStatus.VERIFIED) }
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `onSearch should refresh data with correct role filter`() = runTest {
+        val role = "penyuluh"
+        val query = "tanah"
+        io.mockk.clearMocks(userPreferences)
+        every { userPreferences.userRole } returns flowOf(role)
+        coEvery { getReportsUseCase(any(), any()) } returns flowOf(androidx.paging.PagingData.empty())
+
+        viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
+
+        viewModel.reportPagingFlow.test {
+            awaitItem()
+            viewModel.onEvent(ReportListEvent.OnSearchQueryChange(query))
+
+            awaitItem()
+            coVerify { getReportsUseCase(query, ReportStatus.PENDING) }
+
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
