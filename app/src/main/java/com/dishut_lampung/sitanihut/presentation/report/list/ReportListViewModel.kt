@@ -3,6 +3,7 @@ package com.dishut_lampung.sitanihut.presentation.report.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
+import androidx.paging.filter
 import androidx.paging.map
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
@@ -54,22 +55,32 @@ class ReportListViewModel @Inject constructor(
     ) { state, role ->
         val query = state.searchQuery
         val userSelectedStatus = state.selectedStatus
+        val statusFilter = userSelectedStatus
 
-        val statusFilter = when {
-            role.equals("penyuluh", ignoreCase = true) ->
-                userSelectedStatus ?: ReportStatus.PENDING
-            role.equals("penanggung jawab", ignoreCase = true) || role.equals("penanggung_jawab", ignoreCase = true) ->
-                userSelectedStatus ?: ReportStatus.VERIFIED
-            else -> userSelectedStatus
-        }
-        Pair(query, statusFilter)
+        Triple(query, statusFilter, role)
     }
         .debounce(300)
         .distinctUntilChanged()
-        .flatMapLatest { (query, status) ->
+        .flatMapLatest { (query, status, role) ->
             getReportsUseCase(query, status)
                 .map { pagingData ->
-                    pagingData.map { report -> report.toUiModel() }
+                    pagingData.filter { report ->
+                        if (status != null) return@filter true
+
+                        when {
+                            role.equals("penyuluh", ignoreCase = true) -> {
+                                !report.status.equals("belum diajukan")
+                            }
+
+                            role.equals("penanggung jawab", ignoreCase = true) ||
+                                    role.equals("penanggung-jawab", ignoreCase = true) -> {
+                                !report.status.equals("belum diajukan") &&
+                                        !report.status.equals("menunggu")
+                            }
+                            else -> true
+                        }
+                    }
+                        .map { report -> report.toUiModel() }
                 }
                 .cachedIn(viewModelScope)
         }
