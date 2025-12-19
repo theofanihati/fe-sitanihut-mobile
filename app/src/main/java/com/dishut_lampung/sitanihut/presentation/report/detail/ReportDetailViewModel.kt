@@ -36,69 +36,45 @@ class ReportDetailViewModel @Inject constructor(
 
     fun getReportDetail() {
         viewModelScope.launch {
-            getReportDetailUseCase(reportId).collect { result ->
+            combine(
+                getReportDetailUseCase(reportId),
+                userPreferences.userRole
+            ) { result, role ->
                 when (result) {
-                    is Resource.Loading -> {
-                        if (_uiState.value !is ReportDetailUiState.Success) {
-                            _uiState.value = ReportDetailUiState.Loading
-                        }
-                    }
+                    is Resource.Loading -> ReportDetailUiState.Loading
                     is Resource.Success -> {
-                        result.data?.let { detailData ->
-                            viewModelScope.launch {
-                                val role = userPreferences.userRole.first() ?: ""
-                                if (role.equals("penyuluh", ignoreCase = true)) {
-                                    if (detailData.status == ReportStatus.PENDING) {
-                                        _uiState.value = ReportDetailUiState.Success(
-                                            data = detailData,
-                                            canVerify = true,
-                                            canApprove = false,
-                                            canReject = true
-                                        )
-                                    } else {
-                                        _uiState.value = ReportDetailUiState.Success(
-                                            data = detailData,
-                                            canVerify = false,
-                                            canApprove = false,
-                                            canReject = false
-                                        )
-                                    }
-                                } else if (role.equals("pj", ignoreCase = true) ||
-                                    role.equals("penanggung jawab", ignoreCase = true) ||
-                                    role.equals("penanggung-jawab", ignoreCase = true)) {
+                        val data = result.data ?: return@combine ReportDetailUiState.Error("Data tidak ditemukan")
+                        val isPenyuluh = role.equals("penyuluh", ignoreCase = true)
+                        val isPj = role.equals("pj", ignoreCase = true) ||
+                                role.equals("penanggung jawab", ignoreCase = true) ||
+                                role.equals("penanggung-jawab", ignoreCase = true)
 
-                                    if (detailData.status == ReportStatus.VERIFIED) {
-                                        _uiState.value = ReportDetailUiState.Success(
-                                            data = detailData,
-                                            canVerify = false,
-                                            canApprove = true,
-                                            canReject = true
-                                        )
-                                    } else {
-                                        _uiState.value = ReportDetailUiState.Success(
-                                            data = detailData,
-                                            canVerify = false,
-                                            canApprove = false,
-                                            canReject = false
-                                        )
-                                    }
-                                } else {
-                                    _uiState.value = ReportDetailUiState.Success(
-                                        data = detailData,
-                                        canVerify = false,
-                                        canApprove = false,
-                                        canReject = false
-                                    )
-                                }
-                            }
-                        }
+                        val status = data.status
+
+                        val canVerify = isPenyuluh && status == ReportStatus.PENDING
+                        val canApprove = isPj && status == ReportStatus.VERIFIED
+                        val canReject = (isPenyuluh && status == ReportStatus.PENDING) ||
+                                (isPj && status == ReportStatus.VERIFIED)
+
+                        ReportDetailUiState.Success(
+                            data = data,
+                            canVerify = canVerify,
+                            canApprove = canApprove,
+                            canReject = canReject
+                        )
                     }
-                    is Resource.Error -> {
-                        if (_uiState.value !is ReportDetailUiState.Success) {
-                            _uiState.value = ReportDetailUiState.Error(result.message ?: "Terjadi kesalahan")
-                        }
-                        else {
-                        }
+                    is Resource.Error -> ReportDetailUiState.Error(result.message ?: "Terjadi kesalahan")
+                }
+            }.collect { state ->
+                _uiState.update { currentState ->
+                    if (currentState is ReportDetailUiState.Success && state is ReportDetailUiState.Success) {
+                        state.copy(
+                            isActionLoading = currentState.isActionLoading,
+                            actionMessage = currentState.actionMessage
+                        )
+                        return@collect
+                    } else {
+                        state
                     }
                 }
             }

@@ -7,8 +7,22 @@ sealed interface ReportDetailUiState {
 
     data class Success(
         val data: ReportDetail,
-        val isRefreshing: Boolean = false
+        val isRefreshing: Boolean = false,
+        val canVerify: Boolean = false,
+        val canApprove: Boolean = false,
+        val canReject: Boolean = false,
+        val isActionLoading: Boolean = false,
+        val actionMessage: String? = null,
     ) : ReportDetailUiState
 
+
     data class Error(val message: String) : ReportDetailUiState
+}
+
+sealed class ReportDetailEvent {
+    data object OnVerifyClick : ReportDetailEvent()
+    data object OnRejectClick : ReportDetailEvent()
+    data object OnApproveClick : ReportDetailEvent()
+    data object OnDismissMessage : ReportDetailEvent()
+    data object OnRefresh : ReportDetailEvent()
 }
