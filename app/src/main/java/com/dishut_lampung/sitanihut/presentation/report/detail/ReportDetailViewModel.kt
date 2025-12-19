@@ -70,7 +70,8 @@ class ReportDetailViewModel @Inject constructor(
                     if (currentState is ReportDetailUiState.Success && state is ReportDetailUiState.Success) {
                         state.copy(
                             isActionLoading = currentState.isActionLoading,
-                            actionMessage = currentState.actionMessage
+                            actionMessage = currentState.actionMessage,
+                            pendingAction = currentState.pendingAction
                         )
                         return@collect
                     } else {
@@ -83,14 +84,34 @@ class ReportDetailViewModel @Inject constructor(
 
     fun onEvent(event: ReportDetailEvent) {
         when (event) {
-            ReportDetailEvent.OnVerifyClick -> submitReview(ReportStatus.VERIFIED, "Laporan berhasil diverifikasi")
-            ReportDetailEvent.OnApproveClick -> submitReview(ReportStatus.APPROVED, "Laporan berhasil disetujui")
-            ReportDetailEvent.OnRejectClick -> submitReview(ReportStatus.REJECTED, "Laporan berhasil ditolak")
+            ReportDetailEvent.OnVerifyClick -> setPendingAction(ReportAction.VERIFY)
+            ReportDetailEvent.OnApproveClick -> setPendingAction(ReportAction.APPROVE)
+            ReportDetailEvent.OnRejectClick -> setPendingAction(ReportAction.REJECT)
+            ReportDetailEvent.OnConfirmDialog -> executePendingAction()
+            ReportDetailEvent.OnDismissDialog -> setPendingAction(null)
             ReportDetailEvent.OnRefresh -> getReportDetail()
             ReportDetailEvent.OnDismissMessage -> {
                 _uiState.update {
                     if (it is ReportDetailUiState.Success) it.copy(actionMessage = null) else it
                 }
+            }
+        }
+    }
+    private fun setPendingAction(action: ReportAction?) {
+        _uiState.update {
+            if (it is ReportDetailUiState.Success) it.copy(pendingAction = action) else it
+        }
+    }
+    private fun executePendingAction() {
+        val currentState = _uiState.value
+        if (currentState is ReportDetailUiState.Success && currentState.pendingAction != null) {
+            val action = currentState.pendingAction
+            setPendingAction(null)
+
+            when (action) {
+                ReportAction.VERIFY -> submitReview(ReportStatus.VERIFIED, "Laporan berhasil diverifikasi")
+                ReportAction.APPROVE -> submitReview(ReportStatus.APPROVED, "Laporan berhasil disetujui")
+                ReportAction.REJECT -> submitReview(ReportStatus.REJECTED, "Laporan berhasil ditolak")
             }
         }
     }

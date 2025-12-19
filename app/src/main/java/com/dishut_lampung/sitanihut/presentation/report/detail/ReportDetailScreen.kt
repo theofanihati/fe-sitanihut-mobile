@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.presentation.report.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,8 +13,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults.outlinedButtonColors
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,8 +38,13 @@ import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
 import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
+import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
+import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirmationDialog
 import com.dishut_lampung.sitanihut.presentation.components.file_uploader.ReadOnlyFileAttachment
 import com.dishut_lampung.sitanihut.presentation.components.message.ErrorMessage
+import com.dishut_lampung.sitanihut.presentation.report.form.ReportFormEvent
+import com.dishut_lampung.sitanihut.presentation.report.list.ReportListEvent
 import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
 import com.dishut_lampung.sitanihut.util.formatRupiah
@@ -116,6 +127,7 @@ private fun ReportDetailScreenPreview() {
 
         ReportDetailScreen(
             state = state,
+            onEvent = {},
             onDownloadAttachment = {}
         )
     }
@@ -130,6 +142,7 @@ fun ReportDetailRoute(
 
     ReportDetailScreen(
         state = uiState,
+        onEvent = viewModel::onEvent,
         onDownloadAttachment = { attachment ->
             openFileOrUrl(
                 context = context,
@@ -143,6 +156,7 @@ fun ReportDetailRoute(
 @Composable
 fun ReportDetailScreen(
     state: ReportDetailUiState,
+    onEvent: (ReportDetailEvent) -> Unit,
     onDownloadAttachment: (ReportAttachment) -> Unit
 ) {
     Box(
@@ -163,8 +177,53 @@ fun ReportDetailScreen(
             is ReportDetailUiState.Success -> {
                 ReportDetailContent(
                     detail = state.data,
+                    canVerify = state.canVerify,
+                    canApprove = state.canApprove,
+                    canReject = state.canReject,
+                    onEvent = onEvent,
                     onDownload = onDownloadAttachment
                 )
+                if (state.isActionLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.3f))
+                            .clickable(enabled = false) {},
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CustomCircularProgressIndicator()
+                    }
+                    state.actionMessage?.let { message ->
+                        AnimatedMessage(
+                            isVisible = state.actionMessage != null,
+                            message = state.actionMessage ?: "",
+                            messageType = MessageType.Success,
+                            onDismiss = { onEvent(ReportDetailEvent.OnDismissMessage)},
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 80.dp)
+                        )
+                    }
+                }
+                if (state.pendingAction != null) {
+                    val (actionText, actionColor) = when(state.pendingAction) {
+                        ReportAction.VERIFY -> "memverifikasi" to MaterialTheme.colorScheme.tertiary
+                        ReportAction.APPROVE -> "menyetujui" to MaterialTheme.colorScheme.tertiary
+                        ReportAction.REJECT -> "menolak" to MaterialTheme.colorScheme.error
+                    }
+                    val title = actionText.replaceFirstChar { it.titlecase() }
+
+                    CustomConfirmationDialog(
+                        title = "$title?",
+                        supportingText = "Apakah Anda yakin ingin $actionText laporan ini?",
+                        confirmButtonText = "Ya",
+                        dismissButtonText = "Batal",
+                        isLoading = false,
+                        onDismiss = { onEvent(ReportDetailEvent.OnDismissDialog) },
+                        onConfirm = { onEvent(ReportDetailEvent.OnConfirmDialog) },
+                        confirmColor = actionColor
+                    )
+                }
             }
         }
     }
@@ -173,6 +232,10 @@ fun ReportDetailScreen(
 @Composable
 fun ReportDetailContent(
     detail: ReportDetail,
+    canVerify: Boolean,
+    canApprove: Boolean,
+    canReject: Boolean,
+    onEvent: (ReportDetailEvent) -> Unit,
     onDownload: (ReportAttachment) -> Unit
 ) {
     Column(
@@ -275,6 +338,46 @@ fun ReportDetailContent(
 
         if (!detail.acceptedAt.isNullOrBlank()) {
             InfoItem("Tanggal disetujui", detail.acceptedAt)
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // BUTTON ROLE BASED
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (canReject) {
+                Button(
+                    onClick = { onEvent(ReportDetailEvent.OnRejectClick) },
+                    colors = ButtonColors(
+                        contentColor = MaterialTheme.colorScheme.surface,
+                        containerColor = MaterialTheme.colorScheme.error,
+                        disabledContainerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
+                        disabledContentColor = MaterialTheme.colorScheme.error
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Tolak")
+                }
+            }
+            if (canVerify) {
+                Button(
+                    onClick = { onEvent(ReportDetailEvent.OnVerifyClick) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Verifikasi")
+                }
+            }
+
+            if (canApprove) {
+                Button(
+                    onClick = { onEvent(ReportDetailEvent.OnApproveClick) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Setujui")
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(40.dp))

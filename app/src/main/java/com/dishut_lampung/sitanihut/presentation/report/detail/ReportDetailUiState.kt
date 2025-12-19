@@ -2,6 +2,9 @@ package com.dishut_lampung.sitanihut.presentation.report.detail
 
 import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 
+enum class ReportAction {
+    VERIFY, APPROVE, REJECT
+}
 sealed interface ReportDetailUiState {
     data object Loading : ReportDetailUiState
 
@@ -13,6 +16,7 @@ sealed interface ReportDetailUiState {
         val canReject: Boolean = false,
         val isActionLoading: Boolean = false,
         val actionMessage: String? = null,
+        val pendingAction: ReportAction? = null,
     ) : ReportDetailUiState
 
 
@@ -23,6 +27,8 @@ sealed class ReportDetailEvent {
     data object OnVerifyClick : ReportDetailEvent()
     data object OnRejectClick : ReportDetailEvent()
     data object OnApproveClick : ReportDetailEvent()
+    data object OnConfirmDialog : ReportDetailEvent()
+    data object OnDismissDialog : ReportDetailEvent()
     data object OnDismissMessage : ReportDetailEvent()
     data object OnRefresh : ReportDetailEvent()
 }
