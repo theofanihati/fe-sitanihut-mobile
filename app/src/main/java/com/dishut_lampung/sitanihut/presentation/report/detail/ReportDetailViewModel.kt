@@ -3,17 +3,25 @@ package com.dishut_lampung.sitanihut.presentation.report.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dishut_lampung.sitanihut.data.local.UserPreferences
+import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.report.ReviewReportUseCase
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ReportDetailViewModel @Inject constructor(
     private val getReportDetailUseCase: GetReportDetailUseCase,
+    private val getReviewReportUseCase: ReviewReportUseCase,
+    private val userPreferences: UserPreferences,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -49,5 +57,12 @@ class ReportDetailViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun onEvent(event: ReportDetailEvent) {
+        TODO()
+    }
+    private fun submitReview(status: ReportStatus, successMessage: String) {
+        TODO()
     }
 }
