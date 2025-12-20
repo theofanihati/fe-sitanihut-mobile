@@ -11,6 +11,12 @@ class GetPenyuluhUseCase @Inject constructor(
     private val repository: PenyuluhRepository
 ){
     operator fun invoke(userRole: String): Flow<Resource<List<Penyuluh>>>{
-        return TODO()
+        val isPj = userRole.equals("penanggung jawab", ignoreCase = true) ||
+                userRole.equals("penanggung-jawab", ignoreCase = true)
+
+        if (!isPj){
+            return flow { emit(Resource.Error("Anda tidak memiliki akses")) }
+        }
+        return repository.getPenyuluhList()
     }
 }
