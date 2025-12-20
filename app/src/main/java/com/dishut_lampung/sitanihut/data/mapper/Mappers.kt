@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.data.mapper
 
 import com.dishut_lampung.sitanihut.data.local.entity.CommodityEntity
+import com.dishut_lampung.sitanihut.data.local.entity.PenyuluhEntity
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
 import com.dishut_lampung.sitanihut.data.local.entity.RoleEntity
 import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
@@ -20,6 +21,7 @@ import com.dishut_lampung.sitanihut.domain.model.Commodity
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.MasaPanen
 import com.dishut_lampung.sitanihut.domain.model.MasaTanam
+import com.dishut_lampung.sitanihut.domain.model.Penyuluh
 import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
 import com.dishut_lampung.sitanihut.domain.model.ReportDetail
@@ -371,5 +373,18 @@ fun MasaPanen.toDto(): HarvestRequestDto {
         commodityId = this.commodityId,
         unitPrice = this.unitPrice.toDoubleOrNull() ?: 0.0,
         amount = this.amount.toIntOrNull() ?: 0,
+    )
+}
+
+fun PenyuluhEntity.toDomain(): Penyuluh {
+    return Penyuluh(
+        id = id,
+        name = name,
+        identityNumber = identityNumber,
+        position = position,
+        gender = gender,
+        kphId = kphId,
+        kphName = kphName,
+        whatsAppNumber = whatsAppNumber
     )
 }

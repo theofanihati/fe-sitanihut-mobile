@@ -19,14 +19,74 @@ class PenyuluhRepositoryImpl @Inject constructor(
 ) : PenyuluhRepository {
 
     override fun getPenyuluhList(): Flow<Resource<List<Penyuluh>>> {
-        return TODO()
+        return dao.getAllPenyuluh().map { entities ->
+            Resource.Success(entities.map { it.toDomain() })
+        }
     }
 
     override suspend fun syncPenyuluhData(): Resource<Unit> {
-        return TODO()
+        return try {
+            val response = apiService.getPenyuluhList(limit = 100)
+            val items = response.data.data
+
+            if (items.isNotEmpty()) {
+                val entities = items.map { dto ->
+                    PenyuluhEntity(
+                        id = dto.id,
+                        name = dto.name,
+                        identityNumber = dto.identityNumber,
+                        position = dto.position,
+                        gender = dto.gender,
+                        kphId = dto.kphId,
+                        kphName = dto.kphName,
+                        whatsAppNumber = dao.getPenyuluhById(dto.id)?.whatsAppNumber
+                    )
+                }
+                dao.upsertAll(entities)
+            }
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Gagal sinkronisasi data penyuluh")
+        }
     }
 
     override fun getPenyuluhDetail(id: String): Flow<Resource<Penyuluh>> {
-        return TODO()
+        return flow {
+            val localData = dao.getPenyuluhById(id)
+            if (localData != null) {
+                emit(Resource.Success(localData.toDomain()))
+            } else {
+                emit(Resource.Loading())
+            }
+
+            try {
+                val response = apiService.getPenyuluhDetail(id)
+                val dto = response.data
+
+                val newEntity = PenyuluhEntity(
+                    id = dto.id,
+                    name = dto.name,
+                    identityNumber = dto.identityNumber,
+                    position = dto.position,
+                    gender = dto.gender,
+                    kphId = dto.kphId,
+                    kphName = dto.kphName,
+                    whatsAppNumber = dto.whatsAppNumber
+                )
+                dao.upsertAll(listOf(newEntity))
+
+            } catch (e: Exception) {
+//                Log.e("PenyuluhRepo", "Gagal fetch detail: ${e.message}")
+                if (localData == null) {
+                    emit(Resource.Error("Gagal memuat data penyuluh"))
+                }
+            }
+
+            dao.getPenyuluhByIdFlow(id).collect { entity ->
+                if (entity != null) {
+                    emit(Resource.Success(entity.toDomain()))
+                }
+            }
+        }
     }
 }
