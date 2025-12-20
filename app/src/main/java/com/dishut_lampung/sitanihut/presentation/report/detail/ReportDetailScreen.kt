@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.dishut_lampung.sitanihut.domain.model.MasaPanen
 import com.dishut_lampung.sitanihut.domain.model.MasaTanam
 import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
@@ -50,6 +52,7 @@ import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
 import com.dishut_lampung.sitanihut.util.formatRupiah
 import com.dishut_lampung.sitanihut.util.openFileOrUrl
+import kotlinx.coroutines.delay
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -136,10 +139,20 @@ private fun ReportDetailScreenPreview() {
 
 @Composable
 fun ReportDetailRoute(
+    navController: NavController,
     viewModel: ReportDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val successMessage = (uiState as? ReportDetailUiState.Success)?.successMessage
+
+    LaunchedEffect(successMessage) {
+        if (successMessage != null) {
+            delay(2000)
+            viewModel.onEvent(ReportDetailEvent.OnDismissMessage)
+            navController.popBackStack()
+        }
+    }
 
     ReportDetailScreen(
         state = uiState,
@@ -158,7 +171,7 @@ fun ReportDetailRoute(
 fun ReportDetailScreen(
     state: ReportDetailUiState,
     onEvent: (ReportDetailEvent) -> Unit,
-    onDownloadAttachment: (ReportAttachment) -> Unit
+    onDownloadAttachment: (ReportAttachment) -> Unit,
 ) {
     Box(
         modifier = Modifier

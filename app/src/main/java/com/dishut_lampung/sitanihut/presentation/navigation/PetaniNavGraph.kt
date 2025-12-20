@@ -98,7 +98,7 @@ fun NavGraphBuilder.petaniNavGraph(
                 }
             )
         ){
-            ReportDetailRoute()
+            ReportDetailRoute(navController)
         }
 
         composable(route = Screen.Information.route){

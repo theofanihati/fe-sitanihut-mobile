@@ -178,7 +178,7 @@ class ReportDetailViewModelTest {
 
             val successState = awaitItem() as ReportDetailUiState.Success
             assertFalse(successState.isActionLoading)
-            assertEquals("Laporan berhasil diverifikasi", successState.actionMessage)
+            assertEquals("Laporan berhasil diverifikasi", successState.successMessage)
 
             coVerify { reviewReportUseCase(reportId, ReportStatus.VERIFIED, role) }
         }
