@@ -3,6 +3,7 @@ package com.dishut_lampung.sitanihut.domain.usecase.report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import com.dishut_lampung.sitanihut.util.Resource
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 
@@ -17,7 +18,9 @@ class ReviewReportUseCase @Inject constructor(
         if (userRole.equals("petani", ignoreCase = true)) {
             return Resource.Error("Anda tidak memiliki akses")
         }
-        val reportResult = repository.getReportById(reportId).firstOrNull()
+        val reportResult = repository.getReportById(reportId)
+            .filter { it !is Resource.Loading }
+            .firstOrNull()
 
         if (reportResult is Resource.Success && reportResult.data != null) {
             val currentStatus = reportResult.data.status

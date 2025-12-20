@@ -43,6 +43,7 @@ class ReportSyncWorker @AssistedInject constructor(
                 SyncStatus.PENDING_CREATE -> syncCreate(report)
                 SyncStatus.PENDING_UPDATE -> syncUpdate(report)
                 SyncStatus.PENDING_DELETE -> syncDelete(report)
+                SyncStatus.PENDING_REVIEW -> syncReview(report)
                 else -> true
             }
             if (!success) isSuccess = false
@@ -226,6 +227,31 @@ class ReportSyncWorker @AssistedInject constructor(
              e.printStackTrace()
              Log.e("SYNC_WORKER", "Exception during delete: ${e.message}")
              return false
+        }
+    }
+
+    private suspend fun syncReview(report: ReportEntity): Boolean {
+        Log.d("SYNC_WORKER", "Reviewing report status: ${report.id} to ${report.status}")
+        try {
+            val statusPart = report.status.toRequestBody("text/plain".toMediaTypeOrNull())
+            val methodPart = "PATCH".toRequestBody("text/plain".toMediaTypeOrNull())
+
+            val response = apiService.submitReport(
+                id = report.id,
+                method = methodPart,
+                status = statusPart
+            )
+
+            if (response.statusCode == 200) {
+                val updated = report.copy(syncStatus = SyncStatus.SYNCED)
+                reportDao.upsertAll(listOf(updated))
+                return true
+            } else {
+                return false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
         }
     }
 }

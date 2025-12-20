@@ -70,6 +70,7 @@ class ReportRepositoryImpl @Inject constructor(
         private const val OP_create = "CREATE"
         private const val OP_UPDATE = "UPDATE"
         private const val OP_DELETE = "DELETE"
+        private const val OP_REVIEW = "REVIEW"
     }
 
     fun enqueueReportOperation(operationType: String, reportId: String) {
@@ -197,13 +198,26 @@ class ReportRepositoryImpl @Inject constructor(
     override fun getReportById(id: String): Flow<Resource<ReportDetail>> {
         return flow {
             emit(Resource.Loading())
-            fetchAndSaveDetailFromNetwork(id)
+            val localData = reportDao.getReportById(id)
+            if (localData != null) {
+                emit(Resource.Success(localData.toReportDetail()))
+            }else {
+                emit(Resource.Loading())
+            }
+
+            try {
+                fetchAndSaveDetailFromNetwork(id)
+            } catch (e: Exception) {
+                Log.e("ReportRepo", "Background sync failed: ${e.message}")
+            }
 
             reportDao.getReportByIdFlow(id).collect { entity ->
                 if (entity != null) {
                     emit(Resource.Success(entity.toReportDetail()))
                 } else {
-                    emit(Resource.Error("Laporan tidak ditemukan"))
+                    if (localData == null) {
+                        emit(Resource.Error("Laporan tidak ditemukan"))
+                    }
                 }
             }
         }
@@ -255,17 +269,60 @@ class ReportRepositoryImpl @Inject constructor(
 
     override suspend fun syncReportDetail(): Resource<Unit> {
         return try {
-            val response = apiService.getLatestReports()
-            val listData = response.data.data
+            val role = userPreferences.userRole.first() ?: "petani"
+            if (role.equals("petani", ignoreCase = true)) {
+                val response = apiService.getLatestReports()
+                val listData = response.data.data
 
-            if (listData.isNotEmpty()) {
-                reportDao.upsertAll(listData.map { it.toEntity() })
-                listData.take(10).forEach { item ->
-                    fetchAndSaveDetailFromNetwork(item.id)
+                if (listData.isNotEmpty()) {
+                    reportDao.upsertAll(listData.map { it.toEntity() })
+                    listData.take(10).forEach { fetchAndSaveDetailFromNetwork(it.id) }
+                }
+
+            } else {
+                val targetStatuses = when {
+                    role.equals("penyuluh", ignoreCase = true) -> listOf(
+                        "menunggu",
+                        "diverifikasi",
+                        "disetujui",
+                        "ditolak"
+                    )
+                    role.equals("pj", ignoreCase = true) || role.contains("penanggung", ignoreCase = true) -> listOf(
+                        "diverifikasi",
+                        "disetujui",
+                        "ditolak"
+                    )
+                    else -> emptyList()
+                }
+
+                Log.d("ReportRepo", "Target status: $targetStatuses")
+
+                targetStatuses.forEach { status ->
+                    try {
+                        Log.d("ReportRepo", "Fetching reports status: $status")
+                        val response = apiService.getReports(
+                            page = 1,
+                            limit = 10,
+                            status = status
+                        )
+                        val listData = response.data.data
+
+                        if (listData.isNotEmpty()) {
+                            reportDao.upsertAll(listData.map { it.toEntity() })
+                            val limitDetail = if (status == "menunggu" || status == "diverifikasi") 10 else 5
+
+                            listData.take(limitDetail).forEach { item ->
+                                fetchAndSaveDetailFromNetwork(item.id)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("ReportRepo", "Gagal fetch status $status: ${e.message}")
+                    }
                 }
             }
             Resource.Success(Unit)
         } catch (e: Exception) {
+            Log.e("ReportRepo", "Gagal sinkronisasi: ${e.message}", e)
             Resource.Error("Gagal sinkronisasi: ${e.message}")
         }
     }
@@ -274,37 +331,15 @@ class ReportRepositoryImpl @Inject constructor(
         return try {
             val oldReport = reportDao.getReportById(reportId)
                 ?: return Resource.Error("Laporan tidak ditemukan di database lokal")
-            val newSyncStatus = if (oldReport.syncStatus == SyncStatus.PENDING_CREATE) {
-                SyncStatus.PENDING_CREATE
-            } else {
-                SyncStatus.PENDING_UPDATE
-            }
-
-            val plantingList: List<MasaTanam> = Gson().fromJson(oldReport.plantingDetailsJson, object : TypeToken<List<MasaTanam>>() {}.type) ?: emptyList()
-            val harvestList: List<MasaPanen> = Gson().fromJson(oldReport.harvestDetailsJson, object : TypeToken<List<MasaPanen>>() {}.type) ?: emptyList()
-
-            val requestDto = ReportRequestDto(
-                id = reportId,
-                updatedAt = getCurrentDate(),
-                period = oldReport.period,
-                month = oldReport.month,
-                modal = oldReport.modal ?: 0.0,
-                farmerNotes = oldReport.farmerNotes ?: "",
-                nte = oldReport.nte,
-                plantingDetails = plantingList.map { it.toDto() },
-                harvestDetails = harvestList.map { it.toDto() },
-                status = newStatus.toDbValue()
-            )
 
             val updatedEntity = oldReport.copy(
                 status = newStatus.toDbValue(),
-                syncStatus = newSyncStatus,
-                jsonPayload = gson.toJson(requestDto),
+                syncStatus = SyncStatus.PENDING_REVIEW,
                 date = getCurrentDate()
             )
 
             reportDao.upsertAll(listOf(updatedEntity))
-            enqueueReportOperation(OP_UPDATE, reportId)
+            enqueueReportOperation(OP_REVIEW, reportId)
 
             Resource.Success(Unit)
         } catch (e: Exception) {
@@ -369,6 +404,16 @@ class ReportRepositoryImpl @Inject constructor(
         try {
             val response = apiService.getReportDetail(id)
             if (response.statusCode == 200 && response.data != null) {
+                val localReport = reportDao.getReportById(id)
+                val isLocalPending = localReport?.syncStatus == SyncStatus.PENDING_UPDATE ||
+                        localReport?.syncStatus == SyncStatus.PENDING_CREATE ||
+                        localReport?.syncStatus == SyncStatus.PENDING_REVIEW
+
+                if (isLocalPending) {
+                    Log.d("ReportRepo", "Skip saving network data for ID: $id because local data is PENDING sync.")
+                    return
+                }
+
                 reportDao.upsertAll(listOf(response.data.toEntity()))
                 Log.d("ReportRepo", "Detail synced for ID: $id")
             }

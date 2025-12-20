@@ -36,5 +36,6 @@ enum class SyncStatus {
     SYNCED,         // aman di server
     PENDING_CREATE, // baru dibuat offline, belum naik
     PENDING_UPDATE, // diedit offline
-    PENDING_DELETE  // dihapus offline (soft delete ya bre)
+    PENDING_DELETE, // dihapus offline (soft delete ya bre)
+    PENDING_REVIEW, // utk penyuluh pj verif
 }

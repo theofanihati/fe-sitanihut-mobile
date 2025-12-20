@@ -1,5 +1,6 @@
 package com.dishut_lampung.sitanihut.presentation.report.detail
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -70,10 +71,10 @@ class ReportDetailViewModel @Inject constructor(
                     if (currentState is ReportDetailUiState.Success && state is ReportDetailUiState.Success) {
                         state.copy(
                             isActionLoading = currentState.isActionLoading,
-                            actionMessage = currentState.actionMessage,
+                            successMessage = currentState.successMessage,
+                            errorMessage = null,
                             pendingAction = currentState.pendingAction
                         )
-                        return@collect
                     } else {
                         state
                     }
@@ -92,7 +93,7 @@ class ReportDetailViewModel @Inject constructor(
             ReportDetailEvent.OnRefresh -> getReportDetail()
             ReportDetailEvent.OnDismissMessage -> {
                 _uiState.update {
-                    if (it is ReportDetailUiState.Success) it.copy(actionMessage = null) else it
+                    if (it is ReportDetailUiState.Success) it.copy(successMessage = null, errorMessage = null) else it
                 }
             }
         }
@@ -108,6 +109,8 @@ class ReportDetailViewModel @Inject constructor(
             val action = currentState.pendingAction
             setPendingAction(null)
 
+            Log.d("ReportDetailVM", "Action executed: $action")
+
             when (action) {
                 ReportAction.VERIFY -> submitReview(ReportStatus.VERIFIED, "Laporan berhasil diverifikasi")
                 ReportAction.APPROVE -> submitReview(ReportStatus.APPROVED, "Laporan berhasil disetujui")
@@ -116,30 +119,37 @@ class ReportDetailViewModel @Inject constructor(
         }
     }
     private fun submitReview(status: ReportStatus, successMessage: String) {
+        Log.d("ReportDetailVM", "Starting submitReview for status: $status")
         viewModelScope.launch {
             _uiState.update {
                 if (it is ReportDetailUiState.Success) it.copy(isActionLoading = true) else it
             }
 
             val role = userPreferences.userRole.first() ?: ""
+            Log.d("ReportDetailVM", "Role fetched: $role")
 
             when (val result = getReviewReportUseCase(reportId, status, role)) {
                 is Resource.Success -> {
+                    Log.d("ReportDetailVM", "UseCase Success")
                     _uiState.update {
                         if (it is ReportDetailUiState.Success) {
                             it.copy(
                                 isActionLoading = false,
-                                actionMessage = successMessage
+                                successMessage = successMessage,
+                                errorMessage = null
                             )
                         } else it
                     }
+                    getReportDetail()
                 }
                 is Resource.Error -> {
+                    Log.e("ReportDetailVM", "UseCase Error: ${result.message}")
                     _uiState.update {
                         if (it is ReportDetailUiState.Success) {
                             it.copy(
                                 isActionLoading = false,
-                                actionMessage = result.message
+                                errorMessage = result.message ?: "Gagal memproses tindakan",
+                                successMessage = null
                             )
                         } else it
                     }
