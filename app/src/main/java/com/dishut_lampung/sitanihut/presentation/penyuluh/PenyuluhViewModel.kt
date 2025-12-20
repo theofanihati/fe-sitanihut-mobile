@@ -27,10 +27,49 @@ class PenyuluhViewModel @Inject constructor(
     }
 
     fun onEvent(event: PenyuluhEvent) {
-        TODO()
+        when (event) {
+            PenyuluhEvent.OnRefresh -> fetchPenyuluh(isRefresh = true)
+            PenyuluhEvent.OnDismissError -> _uiState.update { it.copy(error = null) }
+        }
     }
 
     private fun fetchPenyuluh(isRefresh: Boolean = false) {
-        TODO()
+        viewModelScope.launch {
+            val role = userPreferences.userRole.first() ?: ""
+
+            _uiState.update {
+                it.copy(
+                    isLoading = !isRefresh,
+                    isRefreshing = isRefresh,
+                    error = null
+                )
+            }
+
+            getPenyuluhUseCase(role).collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        _uiState.update { it.copy(isLoading = true) }
+                    }
+                    is Resource.Success -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                penyuluhList = result.data ?: emptyList()
+                            )
+                        }
+                    }
+                    is Resource.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                error = result.message
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
