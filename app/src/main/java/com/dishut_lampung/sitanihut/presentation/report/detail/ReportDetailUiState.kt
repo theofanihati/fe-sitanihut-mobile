@@ -15,7 +15,8 @@ sealed interface ReportDetailUiState {
         val canApprove: Boolean = false,
         val canReject: Boolean = false,
         val isActionLoading: Boolean = false,
-        val actionMessage: String? = null,
+        val successMessage: String? = null,
+        val errorMessage: String? = null,
         val pendingAction: ReportAction? = null,
     ) : ReportDetailUiState
 

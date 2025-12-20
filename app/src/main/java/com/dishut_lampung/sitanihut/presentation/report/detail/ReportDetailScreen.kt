@@ -37,6 +37,7 @@ import com.dishut_lampung.sitanihut.domain.model.MasaTanam
 import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
 import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
+import com.dishut_lampung.sitanihut.presentation.commodity.CommodityEvent
 import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
 import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
@@ -193,17 +194,28 @@ fun ReportDetailScreen(
                     ) {
                         CustomCircularProgressIndicator()
                     }
-                    state.actionMessage?.let { message ->
-                        AnimatedMessage(
-                            isVisible = state.actionMessage != null,
-                            message = state.actionMessage ?: "",
-                            messageType = MessageType.Success,
-                            onDismiss = { onEvent(ReportDetailEvent.OnDismissMessage)},
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(bottom = 80.dp)
-                        )
-                    }
+                }
+                if (state.successMessage != null) {
+                    AnimatedMessage(
+                        isVisible = state.successMessage != null,
+                        message = state.successMessage ?: "",
+                        messageType = MessageType.Success,
+                        onDismiss = { onEvent(ReportDetailEvent.OnDismissMessage)},
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 80.dp)
+                    )
+                }
+                if (state.errorMessage != null) {
+                    AnimatedMessage(
+                        isVisible = state.errorMessage != null,
+                        message = state.errorMessage ?: "",
+                        messageType = MessageType.Error,
+                        onDismiss = { onEvent(ReportDetailEvent.OnDismissMessage) },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 80.dp)
+                    )
                 }
                 if (state.pendingAction != null) {
                     val (actionText, actionColor) = when(state.pendingAction) {
