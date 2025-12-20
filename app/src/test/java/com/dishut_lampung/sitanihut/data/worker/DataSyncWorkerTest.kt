@@ -7,6 +7,7 @@ import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
+import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import com.dishut_lampung.sitanihut.util.Resource
@@ -25,6 +26,7 @@ class DataSyncWorkerTest {
     private val mockCommodityRepo: CommodityRepository = mockk(relaxed = true)
     private val mockProfileRepo: ProfileRepository = mockk(relaxed = true)
     private val mockReportRepo: ReportRepository = mockk(relaxed = true)
+    private val mockPenyuluhRepository: PenyuluhRepository = mockk(relaxed = true)
     private val mockUserPreferences: UserPreferences = mockk(relaxed = true)
 
     @Before
@@ -52,7 +54,8 @@ class DataSyncWorkerTest {
                         mockCommodityRepo,
                         mockProfileRepo,
                         mockReportRepo,
-                        mockUserPreferences
+                        mockPenyuluhRepository,
+                        mockUserPreferences,
                     )
                 }
             })
@@ -65,6 +68,7 @@ class DataSyncWorkerTest {
         coVerify(exactly = 1) { mockCommodityRepo.syncCommodities() }
         coVerify(exactly = 1) { mockReportRepo.syncReportDetail() }
         coVerify(exactly = 1) { mockUserPreferences.updateLastSyncTime() }
+        coVerify(exactly = 1) { mockPenyuluhRepository.syncPenyuluhData() }
     }
 
     @Test
@@ -84,7 +88,8 @@ class DataSyncWorkerTest {
                         mockCommodityRepo,
                         mockProfileRepo,
                         mockReportRepo,
-                        mockUserPreferences
+                        mockPenyuluhRepository,
+                        mockUserPreferences,
                     )
                 }
             })

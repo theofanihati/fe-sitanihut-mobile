@@ -5,11 +5,13 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.dishut_lampung.sitanihut.data.local.dao.CommodityDao
+import com.dishut_lampung.sitanihut.data.local.dao.PenyuluhDao
 import com.dishut_lampung.sitanihut.data.local.dao.RemoteKeysDao
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.local.dao.RoleDao
 import com.dishut_lampung.sitanihut.data.local.dao.UserDao
 import com.dishut_lampung.sitanihut.data.local.entity.CommodityEntity
+import com.dishut_lampung.sitanihut.data.local.entity.PenyuluhEntity
 import com.dishut_lampung.sitanihut.data.local.entity.RemoteKeys
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
 import com.dishut_lampung.sitanihut.data.local.entity.RoleEntity
@@ -22,6 +24,7 @@ import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
         RoleEntity::class,
         RemoteKeys::class,
         CommodityEntity::class,
+        PenyuluhEntity::class,
 //        PetaniEntity::class,
 //        PenyuluhEntity::class,
 //        KthEntity::class,
@@ -40,6 +43,7 @@ abstract class SitanihutDatabase : RoomDatabase(){
     abstract fun roleDao(): RoleDao
     abstract fun remoteKeysDao(): RemoteKeysDao
     abstract fun commodityDao(): CommodityDao
+    abstract fun penyuluhDao(): PenyuluhDao
 //    abstract fun petaniDao(): PetaniDao
 //    abstract fun penyuluhDao(): PenyuluhDao
 //    abstract fun kthDao(): KthDao

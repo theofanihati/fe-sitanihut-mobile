@@ -9,12 +9,14 @@ import com.dishut_lampung.sitanihut.BuildConfig
 import com.dishut_lampung.sitanihut.data.local.SitanihutDatabase
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.CommodityDao
+import com.dishut_lampung.sitanihut.data.local.dao.PenyuluhDao
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.local.dao.RoleDao
 import com.dishut_lampung.sitanihut.data.local.dao.UserDao
 import com.dishut_lampung.sitanihut.data.remote.api.AuthApiService
 import com.dishut_lampung.sitanihut.data.remote.api.CommodityApiService
 import com.dishut_lampung.sitanihut.data.remote.api.HomeApiService
+import com.dishut_lampung.sitanihut.data.remote.api.PenyuluhApiService
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
 import com.dishut_lampung.sitanihut.data.remote.api.UserApiService
 import com.dishut_lampung.sitanihut.data.remote.interceptor.AuthInterceptor
@@ -22,6 +24,7 @@ import com.dishut_lampung.sitanihut.data.repository.AuthRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.CommodityRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.CompanyRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.HomeRepositoryImpl
+import com.dishut_lampung.sitanihut.data.repository.PenyuluhRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ProfileRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ReportRepositoryImpl
 import com.dishut_lampung.sitanihut.domain.model.User
@@ -29,6 +32,7 @@ import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
 import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
 import com.dishut_lampung.sitanihut.domain.repository.CompanyRepository
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
+import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ForgotPasswordUseCase
@@ -139,6 +143,12 @@ object AppModule{
 
     @Provides
     @Singleton
+    fun providePenyuluhApiService(retrofit: Retrofit): PenyuluhApiService {
+        return retrofit.create(PenyuluhApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
     fun provideAuthRepository(
         authApiService: AuthApiService,
         userApiService: UserApiService,
@@ -199,6 +209,15 @@ object AppModule{
         return CommodityRepositoryImpl(apiService, dao)
     }
 
+    @Provides
+    @Singleton
+    fun providePenyuluhRepository(
+        apiService: PenyuluhApiService,
+        dao: PenyuluhDao
+    ): PenyuluhRepository {
+        return PenyuluhRepositoryImpl(apiService, dao)
+    }
+
     // DATABASE
     @Provides
     @Singleton
@@ -230,6 +249,11 @@ object AppModule{
     @Singleton
     fun provideCommodityDao(database: SitanihutDatabase): CommodityDao {
         return database.commodityDao()
+    }
+    @Provides
+    @Singleton
+    fun providePenyuluhDao(database: SitanihutDatabase): PenyuluhDao {
+        return database.penyuluhDao()
     }
 
     // USE CASE
