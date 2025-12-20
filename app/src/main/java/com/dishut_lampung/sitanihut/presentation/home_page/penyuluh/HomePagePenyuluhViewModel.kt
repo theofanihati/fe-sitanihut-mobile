@@ -11,6 +11,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.auth.LogoutUseCase
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiState
+import com.dishut_lampung.sitanihut.presentation.home_page.petani.toUiModel
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -141,10 +142,10 @@ class HomePagePenyuluhViewModel @Inject constructor(
             ReportStatus.PENDING -> "Menunggu"
             ReportStatus.DRAFT -> "Belum diajukan"
         }
-
+        val monthSentenceCase = this.monthPeriod.replaceFirstChar { it.titlecase() }
         return ReportUiModel(
             id = this.id,
-            periodTitle = "Laporan ${this.monthPeriod} ${this.period}",
+            periodTitle = "Laporan ${monthSentenceCase} ${this.period}",
             dateDisplay = this.submissionDate,
             nteDisplay = nteFormatted,
             statusDisplay = statusText,

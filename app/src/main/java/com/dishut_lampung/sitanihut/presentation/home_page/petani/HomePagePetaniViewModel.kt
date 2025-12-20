@@ -170,7 +170,7 @@ class HomePagePetaniViewModel @Inject constructor(
     private fun submitReport(reportId: String){
         updateTemporaryState{it.copy(
             isLoading = true,
-            reportIdForOptionSheet = null,
+            reportIdToSubmit = null,
         )}
         viewModelScope.launch {
             when(val result=homeRepository.submitReport(reportId)){
