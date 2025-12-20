@@ -230,8 +230,8 @@ fun CommodityScreen(
             messageType = MessageType.Success,
             onDismiss = { onEvent(CommodityEvent.OnDismissSuccessMessage) },
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 16.dp)
+                .align(Alignment.BottomCenter)
+                .padding(top = 80.dp)
         )
 
         AnimatedMessage(
@@ -240,8 +240,8 @@ fun CommodityScreen(
             messageType = MessageType.Error,
             onDismiss = { onEvent(CommodityEvent.OnDismissError) },
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 16.dp)
+                .align(Alignment.BottomCenter)
+                .padding(top = 80.dp)
         )
     }
 }
