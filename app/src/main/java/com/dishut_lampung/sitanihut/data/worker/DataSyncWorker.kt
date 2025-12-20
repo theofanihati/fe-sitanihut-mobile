@@ -7,6 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
+import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import dagger.assisted.Assisted
@@ -19,6 +20,7 @@ class DataSyncWorker @AssistedInject constructor(
     private val commodityRepository: CommodityRepository,
     private val profileRepository: ProfileRepository,
     private val reportRepository: ReportRepository,
+    private val penyuluhRepository: PenyuluhRepository,
     private val userPreferences: UserPreferences
 ) : CoroutineWorker(appContext, workerParams) {
 
@@ -30,6 +32,8 @@ class DataSyncWorker @AssistedInject constructor(
             commodityRepository.syncCommodities()
             Log.d("SYNC_WORKER_DATA", "Mulai sync reports...")
             reportRepository.syncReportDetail()
+            Log.d("SYNC_WORKER_DATA", "Mulai sync penyuluh...")
+            penyuluhRepository.syncPenyuluhData()
             Log.d("SYNC_WORKER", "Sync selesai. Update timestamp.")
             userPreferences.updateLastSyncTime()
 
