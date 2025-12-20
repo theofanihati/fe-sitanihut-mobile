@@ -1,8 +1,7 @@
-package com.dishut_lampung.sitanihut.presentation.penyuluh
+package com.dishut_lampung.sitanihut.domain.usecase.penyuluh
 
 import com.dishut_lampung.sitanihut.domain.model.Penyuluh
 import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
-import com.dishut_lampung.sitanihut.domain.usecase.penyuluh.GetPenyuluhUseCase
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.every
 import io.mockk.mockk
