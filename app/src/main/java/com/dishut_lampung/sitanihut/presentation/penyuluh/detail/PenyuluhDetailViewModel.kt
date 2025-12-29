@@ -39,6 +39,31 @@ class PenyuluhDetailViewModel @Inject constructor(
     }
 
     private fun getDetail() {
-        TODO()
+        viewModelScope.launch {
+            getPenyuluhDetailUseCase(penyuluhId).collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        _uiState.update { it.copy(isLoading = true, error = null) }
+                    }
+                    is Resource.Success -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                penyuluh = result.data,
+                                error = null
+                            )
+                        }
+                    }
+                    is Resource.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.message
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
