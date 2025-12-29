@@ -31,7 +31,7 @@ class GetPenyuluhUseCaseTest {
         assertTrue(result is Resource.Error)
         assertEquals("Anda tidak memiliki akses", result.message)
 
-        verify(exactly = 0) { repository.getPenyuluhList() }
+        verify(exactly = 0) { repository.getPenyuluhList("") }
     }
 
     @Test
@@ -41,12 +41,12 @@ class GetPenyuluhUseCaseTest {
             Penyuluh("1", "u1", "Budi", "Penyuluh kehutanan", "pria", "id_kph_ceritanya", "kph 1")
         )
 
-        every { repository.getPenyuluhList() } returns flowOf(Resource.Success(dummyData))
+        every { repository.getPenyuluhList("") } returns flowOf(Resource.Success(dummyData))
         val result = useCase(validRole).first()
         assertTrue(result is Resource.Success)
         assertEquals(dummyData, result.data)
 
-        verify(exactly = 1) { repository.getPenyuluhList() }
+        verify(exactly = 1) { repository.getPenyuluhList("") }
     }
 
 }

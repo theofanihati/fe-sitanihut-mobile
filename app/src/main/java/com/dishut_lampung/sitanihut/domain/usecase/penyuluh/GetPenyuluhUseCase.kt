@@ -10,13 +10,13 @@ import javax.inject.Inject
 class GetPenyuluhUseCase @Inject constructor(
     private val repository: PenyuluhRepository
 ){
-    operator fun invoke(userRole: String): Flow<Resource<List<Penyuluh>>>{
+    operator fun invoke(userRole: String, query: String = ""): Flow<Resource<List<Penyuluh>>>{
         val isPj = userRole.equals("penanggung jawab", ignoreCase = true) ||
                 userRole.equals("penanggung-jawab", ignoreCase = true)
 
         if (!isPj){
             return flow { emit(Resource.Error("Anda tidak memiliki akses")) }
         }
-        return repository.getPenyuluhList()
+        return repository.getPenyuluhList(query)
     }
 }
