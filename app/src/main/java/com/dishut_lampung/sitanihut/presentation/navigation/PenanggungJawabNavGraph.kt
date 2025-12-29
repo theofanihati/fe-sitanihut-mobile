@@ -3,7 +3,9 @@ package com.dishut_lampung.sitanihut.presentation.navigation
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.dishut_lampung.sitanihut.presentation.commodity.CommodityRoute
 import com.dishut_lampung.sitanihut.presentation.home_page.kkph.HomePagePenanggungJawabRoute
@@ -11,8 +13,10 @@ import com.dishut_lampung.sitanihut.presentation.information.InformationRoute
 import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScreen
 import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutRoute
+import com.dishut_lampung.sitanihut.presentation.penyuluh.detail.PenyuluhDetailRoute
 import com.dishut_lampung.sitanihut.presentation.penyuluh.list.PenyuluhRoute
 import com.dishut_lampung.sitanihut.presentation.profile.kkph.KkphProfileRoute
+import com.dishut_lampung.sitanihut.presentation.report.detail.ReportDetailRoute
 
 fun NavGraphBuilder.kkphNavGraph(
     modifier : Modifier,
@@ -67,6 +71,16 @@ fun NavGraphBuilder.kkphNavGraph(
                 navController.navigateSingleTop("data_penyuluh/$id")
             }
             PenyuluhRoute(onNavigateToDetail=onNavigateToDetail)
+        }
+        composable(
+            route = "data_penyuluh/{id}",
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.StringType
+                }
+            )
+        ){
+            PenyuluhDetailRoute()
         }
         composable(route = Screen.Information.route){
             InformationRoute(
