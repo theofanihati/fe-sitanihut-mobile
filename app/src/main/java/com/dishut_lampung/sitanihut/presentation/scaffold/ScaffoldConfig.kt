@@ -43,6 +43,8 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         Screen.Dishut.route,
         Screen.Contact.route,
         Screen.DataCommodity.route,
+        Screen.PenanggungJawab.DataPenyuluh.route,
+//        Screen.PenanggungJawab.PenyuluhDetail.route,
         Screen.ReportList.route,
         Screen.ReportForm.route,
         "report_detail/{reportId}"-> ScaffoldConfig(

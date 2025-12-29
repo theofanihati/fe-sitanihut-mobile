@@ -11,6 +11,7 @@ import com.dishut_lampung.sitanihut.presentation.information.InformationRoute
 import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScreen
 import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutRoute
+import com.dishut_lampung.sitanihut.presentation.penyuluh.PenyuluhRoute
 import com.dishut_lampung.sitanihut.presentation.profile.kkph.KkphProfileRoute
 
 fun NavGraphBuilder.kkphNavGraph(
@@ -60,6 +61,12 @@ fun NavGraphBuilder.kkphNavGraph(
         }
         composable(route = Screen.DataCommodity.route){
             CommodityRoute()
+        }
+        composable(route = Screen.PenanggungJawab.DataPenyuluh.route){
+            val onNavigateToDetail = {id : String ->
+                navController.navigateSingleTop("data_penyuluh/$id")
+            }
+            PenyuluhRoute(onNavigateToDetail=onNavigateToDetail)
         }
         composable(route = Screen.Information.route){
             InformationRoute(
