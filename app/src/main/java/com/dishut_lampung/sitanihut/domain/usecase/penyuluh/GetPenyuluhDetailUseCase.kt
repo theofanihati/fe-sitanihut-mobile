@@ -10,6 +10,6 @@ class GetPenyuluhDetailUseCase @Inject constructor(
     private val repository: PenyuluhRepository
 ) {
     operator fun invoke(id: String): Flow<Resource<Penyuluh>> {
-        return TODO()
+        return repository.getPenyuluhDetail(id)
     }
 }
