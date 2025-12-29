@@ -35,9 +35,9 @@ class PenyuluhRepositoryImplTest {
     @Test
     fun `getPenyuluhList should emit data from DAO`() = runTest {
         val dummyEntity = PenyuluhEntity("1", "Ani Sirani", "123", "Ahli", "Pria", "kph1", "KPH A")
-        every { dao.getAllPenyuluh() } returns flowOf(listOf(dummyEntity))
+        every { dao.getAllPenyuluh(any()) } returns flowOf(listOf(dummyEntity))
 
-        val result = repository.getPenyuluhList().first()
+        val result = repository.getPenyuluhList("").first()
         assertTrue(result is Resource.Success)
         assertEquals(1, result.data?.size)
         assertEquals("Ani Sirani", result.data?.first()?.name)

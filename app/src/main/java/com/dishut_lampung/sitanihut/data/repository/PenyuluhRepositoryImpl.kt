@@ -1,6 +1,5 @@
 package com.dishut_lampung.sitanihut.data.repository
 
-import android.util.Log
 import com.dishut_lampung.sitanihut.data.local.dao.PenyuluhDao
 import com.dishut_lampung.sitanihut.data.local.entity.PenyuluhEntity
 import com.dishut_lampung.sitanihut.data.mapper.toDomain
@@ -18,8 +17,8 @@ class PenyuluhRepositoryImpl @Inject constructor(
     private val dao: PenyuluhDao
 ) : PenyuluhRepository {
 
-    override fun getPenyuluhList(): Flow<Resource<List<Penyuluh>>> {
-        return dao.getAllPenyuluh().map { entities ->
+    override fun getPenyuluhList(query: String): Flow<Resource<List<Penyuluh>>> {
+        return dao.getAllPenyuluh(query).map { entities ->
             Resource.Success(entities.map { it.toDomain() })
         }
     }

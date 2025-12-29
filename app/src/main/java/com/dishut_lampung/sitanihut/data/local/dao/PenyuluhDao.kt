@@ -12,8 +12,15 @@ interface PenyuluhDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(penyuluh: List<PenyuluhEntity>)
 
-    @Query("SELECT * FROM penyuluh")
-    fun getAllPenyuluh(): Flow<List<PenyuluhEntity>>
+    @Query("""
+        SELECT * FROM penyuluh 
+        WHERE name LIKE '%' || :query || '%' 
+        OR identityNumber LIKE '%' || :query || '%'
+        OR position LIKE '%' || :query || '%'
+        OR kphName LIKE '%' || :query || '%'
+        ORDER BY name ASC
+    """)
+    fun getAllPenyuluh(query: String): Flow<List<PenyuluhEntity>>
 
     @Query("SELECT * FROM penyuluh WHERE id = :id")
     suspend fun getPenyuluhById(id: String): PenyuluhEntity?
