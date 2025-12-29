@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.penyuluh
+package com.dishut_lampung.sitanihut.presentation.penyuluh.list
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -43,17 +43,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.domain.model.Penyuluh
-import com.dishut_lampung.sitanihut.presentation.commodity.CommodityEvent
 import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
 import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
 import com.dishut_lampung.sitanihut.presentation.components.card.PenyuluhCard
 import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomSearchTextField
-import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
-import com.dishut_lampung.sitanihut.presentation.navigation.Screen
+import com.dishut_lampung.sitanihut.presentation.penyuluh.PenyuluhEvent
+import com.dishut_lampung.sitanihut.presentation.penyuluh.PenyuluhUiState
 import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
 import kotlinx.coroutines.launch

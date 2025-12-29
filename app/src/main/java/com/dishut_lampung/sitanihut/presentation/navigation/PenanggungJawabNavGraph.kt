@@ -11,7 +11,7 @@ import com.dishut_lampung.sitanihut.presentation.information.InformationRoute
 import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScreen
 import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutRoute
-import com.dishut_lampung.sitanihut.presentation.penyuluh.PenyuluhRoute
+import com.dishut_lampung.sitanihut.presentation.penyuluh.list.PenyuluhRoute
 import com.dishut_lampung.sitanihut.presentation.profile.kkph.KkphProfileRoute
 
 fun NavGraphBuilder.kkphNavGraph(

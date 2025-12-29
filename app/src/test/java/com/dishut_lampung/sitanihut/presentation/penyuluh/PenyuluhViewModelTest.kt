@@ -3,6 +3,7 @@ package com.dishut_lampung.sitanihut.presentation.penyuluh
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.Penyuluh
 import com.dishut_lampung.sitanihut.domain.usecase.penyuluh.GetPenyuluhUseCase
+import com.dishut_lampung.sitanihut.presentation.penyuluh.list.PenyuluhViewModel
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.every
