@@ -71,14 +71,48 @@ class KthListViewModel @Inject constructor(
     }
 
     fun onEvent(event: KthEvent) {
-        TODO()
+        when (event) {
+            is KthEvent.OnSearchQueryChange -> {
+                _searchQuery.value = event.query
+            }
+            KthEvent.OnRefresh -> {
+                fetchKthData(isRefresh = true)
+            }
+            KthEvent.OnDismissError -> {
+                _error.value = null
+            }
+        }
     }
 
     private fun observeConnectivity() {
-        TODO()
+        connectivityObserver.observe()
+            .onEach { status ->
+                _isOnline.value = status == ConnectivityObserver.Status.Available
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun fetchKthData(isRefresh: Boolean = false) {
-        TODO()
+        viewModelScope.launch {
+            val role = userPreferences.userRole.first() ?: ""
+
+            _isLoading.value = !isRefresh
+
+            getKthListUseCase(role, "").collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        _isLoading.value = true
+                    }
+                    is Resource.Success -> {
+                        _isLoading.value = false
+                        _allKthData.value = result.data ?: emptyList()
+                    }
+                    is Resource.Error -> {
+                        _isLoading.value = false
+                        _error.value = result.message
+                    }
+                }
+            }
+        }
     }
 }
