@@ -8,6 +8,6 @@ class DeleteKthUseCase @Inject constructor(
     private val repository: KthRepository
 ) {
     suspend operator fun invoke(id: String): Resource<Unit> {
-        return TODO()
+        return repository.deleteKth(id)
     }
 }
