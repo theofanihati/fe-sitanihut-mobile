@@ -5,12 +5,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.dishut_lampung.sitanihut.data.local.dao.CommodityDao
+import com.dishut_lampung.sitanihut.data.local.dao.KthDao
 import com.dishut_lampung.sitanihut.data.local.dao.PenyuluhDao
 import com.dishut_lampung.sitanihut.data.local.dao.RemoteKeysDao
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.local.dao.RoleDao
 import com.dishut_lampung.sitanihut.data.local.dao.UserDao
 import com.dishut_lampung.sitanihut.data.local.entity.CommodityEntity
+import com.dishut_lampung.sitanihut.data.local.entity.KthEntity
 import com.dishut_lampung.sitanihut.data.local.entity.PenyuluhEntity
 import com.dishut_lampung.sitanihut.data.local.entity.RemoteKeys
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
@@ -26,13 +28,7 @@ import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
         CommodityEntity::class,
         PenyuluhEntity::class,
 //        PetaniEntity::class,
-//        PenyuluhEntity::class,
-//        KthEntity::class,
-//        KomoditasEntity::class,
-//        LaporanEntity::class,
-//        MasaTanamEntity::class,
-//        MasaPanenEntity::class,
-//        LampiranEntity::class
+        KthEntity::class,
     ],
     version = 2,
     exportSchema = false
@@ -45,13 +41,7 @@ abstract class SitanihutDatabase : RoomDatabase(){
     abstract fun commodityDao(): CommodityDao
     abstract fun penyuluhDao(): PenyuluhDao
 //    abstract fun petaniDao(): PetaniDao
-//    abstract fun penyuluhDao(): PenyuluhDao
-//    abstract fun kthDao(): KthDao
-//    abstract fun komoditasDao(): KomoditasDao
-//    abstract fun laporanDao(): LaporanDao
-//    abstract fun masaTanamDao(): MasaTanamDao
-//    abstract fun masaPanenDao(): MasaPanenDao
-//    abstract fun lampiranDao(): LampiranDao
+    abstract fun kthDao(): KthDao
 
     companion object {
 //        val MIGRATION = object : Migration(1, 2) {

@@ -7,6 +7,7 @@ import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
+import com.dishut_lampung.sitanihut.domain.repository.KthRepository
 import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
@@ -27,6 +28,7 @@ class DataSyncWorkerTest {
     private val mockProfileRepo: ProfileRepository = mockk(relaxed = true)
     private val mockReportRepo: ReportRepository = mockk(relaxed = true)
     private val mockPenyuluhRepository: PenyuluhRepository = mockk(relaxed = true)
+    private val mockKthRepository: KthRepository = mockk(relaxed = true)
     private val mockUserPreferences: UserPreferences = mockk(relaxed = true)
 
     @Before
@@ -55,6 +57,7 @@ class DataSyncWorkerTest {
                         mockProfileRepo,
                         mockReportRepo,
                         mockPenyuluhRepository,
+                        mockKthRepository,
                         mockUserPreferences,
                     )
                 }
@@ -69,6 +72,7 @@ class DataSyncWorkerTest {
         coVerify(exactly = 1) { mockReportRepo.syncReportDetail() }
         coVerify(exactly = 1) { mockUserPreferences.updateLastSyncTime() }
         coVerify(exactly = 1) { mockPenyuluhRepository.syncPenyuluhData() }
+        coVerify(exactly = 1) { mockKthRepository.syncKthData() }
     }
 
     @Test
@@ -89,6 +93,7 @@ class DataSyncWorkerTest {
                         mockProfileRepo,
                         mockReportRepo,
                         mockPenyuluhRepository,
+                        mockKthRepository,
                         mockUserPreferences,
                     )
                 }

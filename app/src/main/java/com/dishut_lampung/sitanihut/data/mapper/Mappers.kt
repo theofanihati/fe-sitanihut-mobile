@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.data.mapper
 
 import com.dishut_lampung.sitanihut.data.local.entity.CommodityEntity
+import com.dishut_lampung.sitanihut.data.local.entity.KthEntity
 import com.dishut_lampung.sitanihut.data.local.entity.PenyuluhEntity
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
 import com.dishut_lampung.sitanihut.data.local.entity.RoleEntity
@@ -9,6 +10,7 @@ import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
 import com.dishut_lampung.sitanihut.data.remote.dto.CommodityDto
 import com.dishut_lampung.sitanihut.data.remote.dto.HarvestRequestDto
 import com.dishut_lampung.sitanihut.data.remote.dto.HarvestResponseDto
+import com.dishut_lampung.sitanihut.data.remote.dto.KthListItemDto
 import com.dishut_lampung.sitanihut.data.remote.dto.PlantingRequestDto
 import com.dishut_lampung.sitanihut.data.remote.dto.PlantingResponseDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportDetailDto
@@ -19,6 +21,7 @@ import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDto
 import com.dishut_lampung.sitanihut.domain.model.Commodity
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
+import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.model.MasaPanen
 import com.dishut_lampung.sitanihut.domain.model.MasaTanam
 import com.dishut_lampung.sitanihut.domain.model.Penyuluh
@@ -386,5 +389,25 @@ fun PenyuluhEntity.toDomain(): Penyuluh {
         kphId = kphId,
         kphName = kphName,
         whatsAppNumber = whatsAppNumber
+    )
+}
+
+fun KthEntity.toDomain(): Kth {
+    return Kth(
+        id = id,
+        name = name,
+        desa = desa,
+        kabupaten = kabupaten,
+        kphName = kphName
+    )
+}
+
+fun KthListItemDto.toEntity(): KthEntity {
+    return KthEntity(
+        id = id,
+        name = name,
+        desa = desa,
+        kabupaten = kabupaten,
+        kphName = kphName
     )
 }

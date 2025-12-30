@@ -17,14 +17,37 @@ class KthRepositoryImpl @Inject constructor(
 ) : KthRepository {
 
     override fun getKthList(query: String): Flow<Resource<List<Kth>>> {
-        return TODO()
+        return dao.getAllKth(query).map { entities ->
+            Resource.Success(entities.map { it.toDomain() })
+        }
     }
 
     override suspend fun syncKthData(): Resource<Unit> {
-        return TODO()
+        return try {
+            val response = apiService.getKthList(limit = 100)
+            val items = response.data?.data ?: emptyList()
+
+            if (items.isNotEmpty()) {
+                val entities = items.map { it.toEntity() }
+                dao.upsertAll(entities)
+            }
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Gagal sinkronisasi data KTH")
+        }
     }
 
     override suspend fun deleteKth(id: String): Resource<Unit> {
-        return TODO()
+        return try {
+            val response = apiService.deleteKth(id)
+            if (response.statusCode == 200 || response.statusCode == 204) {
+                dao.deleteKth(id)
+                Resource.Success(Unit)
+            } else {
+                Resource.Error(response.message)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Gagal menghapus data KTH")
+        }
     }
 }
