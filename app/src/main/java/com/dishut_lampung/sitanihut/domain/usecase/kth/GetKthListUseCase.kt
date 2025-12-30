@@ -11,6 +11,12 @@ class GetKthListUseCase @Inject constructor(
     private val repository: KthRepository
 ) {
     operator fun invoke(role: String, query: String = ""): Flow<Resource<List<Kth>>> {
-        return TODO()
+        val isAllowed = role == "penyuluh" || role == "penanggung jawab"
+        if (!isAllowed) {
+            return flow {
+                emit(Resource.Error("Anda tidak memiliki akses untuk melihat data KTH."))
+            }
+        }
+        return repository.getKthList(query)
     }
 }
