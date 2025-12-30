@@ -30,6 +30,7 @@ import com.dishut_lampung.sitanihut.data.repository.KthRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.PenyuluhRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ProfileRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ReportRepositoryImpl
+import com.dishut_lampung.sitanihut.data.util.NetworkConnectivityObserver
 import com.dishut_lampung.sitanihut.domain.model.User
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
 import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
@@ -47,6 +48,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateEmailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidatePasswordUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.GetCommoditiesUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.home.GetPetaniHomeDataUseCase
+import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -113,6 +115,12 @@ object AppModule{
     @Singleton
     fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
         return WorkManager.getInstance(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideConnectivityObserver(@ApplicationContext context: Context): ConnectivityObserver {
+        return NetworkConnectivityObserver(context)
     }
 
     @Provides
