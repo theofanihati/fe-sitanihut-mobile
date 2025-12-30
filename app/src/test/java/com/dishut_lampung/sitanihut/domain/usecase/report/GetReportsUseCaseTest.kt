@@ -2,6 +2,7 @@ package com.dishut_lampung.sitanihut.domain.usecase.report
 
 import androidx.paging.PagingData
 import com.dishut_lampung.sitanihut.domain.model.Report
+import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -32,5 +33,29 @@ class GetReportsUseCaseTest {
         assertNotNull(result)
 
         verify(exactly = 1) { repository.getReports("", null) }
+    }
+
+    @Test
+    fun `invoke without arguments should call repository with default empty params and null status`() = runTest {
+        val dummyPagingData = PagingData.from(emptyList<Report>())
+        every { repository.getReports("", null) } returns flowOf(dummyPagingData)
+
+        val result = getReportsUseCase().first()
+
+        assertNotNull(result)
+        verify(exactly = 1) { repository.getReports(params = "", status = null) }
+    }
+
+    @Test
+    fun `invoke with specific params should pass arguments to repository`() = runTest {
+        val dummyPagingData = PagingData.from(emptyList<Report>())
+        val specificQuery = "Hutan Lindung"
+        val specificStatus = ReportStatus.VERIFIED
+
+        every { repository.getReports(any(), any()) } returns flowOf(dummyPagingData)
+
+        val result = getReportsUseCase(params = specificQuery, status = specificStatus).first()
+        assertNotNull(result)
+        verify(exactly = 1) { repository.getReports(params = specificQuery, status = specificStatus) }
     }
 }

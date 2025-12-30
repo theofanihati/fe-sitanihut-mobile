@@ -133,13 +133,16 @@ class ReportListViewModelTest {
         val query = "tanah"
         io.mockk.clearMocks(userPreferences)
         every { userPreferences.userRole } returns flowOf(role)
-        coEvery { getReportsUseCase(any(), any()) } returns flowOf(androidx.paging.PagingData.empty())
+        coEvery { getReportsUseCase("", any()) } returns flowOf(androidx.paging.PagingData.empty())
+        coEvery { getReportsUseCase(query, any()) } returns flowOf(androidx.paging.PagingData.empty())
 
         viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
 
         viewModel.reportPagingFlow.test {
             awaitItem()
             viewModel.onEvent(ReportListEvent.OnSearchQueryChange(query))
+
+            advanceTimeBy(301)
 
             awaitItem()
             coVerify { getReportsUseCase(query, ReportStatus.PENDING) }

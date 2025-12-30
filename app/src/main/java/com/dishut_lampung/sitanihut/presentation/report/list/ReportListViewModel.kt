@@ -55,7 +55,15 @@ class ReportListViewModel @Inject constructor(
     ) { state, role ->
         val query = state.searchQuery
         val userSelectedStatus = state.selectedStatus
-        val statusFilter = userSelectedStatus
+
+        val statusFilter = userSelectedStatus ?: when {
+            role.equals("penyuluh", ignoreCase = true) -> ReportStatus.PENDING
+
+            role.equals("penanggung jawab", ignoreCase = true) ||
+                    role.equals("penanggung-jawab", ignoreCase = true) -> ReportStatus.VERIFIED
+
+            else -> null
+        }
 
         Triple(query, statusFilter, role)
     }
@@ -64,23 +72,7 @@ class ReportListViewModel @Inject constructor(
         .flatMapLatest { (query, status, role) ->
             getReportsUseCase(query, status)
                 .map { pagingData ->
-                    pagingData.filter { report ->
-                        if (status != null) return@filter true
-
-                        when {
-                            role.equals("penyuluh", ignoreCase = true) -> {
-                                !report.status.equals("belum diajukan")
-                            }
-
-                            role.equals("penanggung jawab", ignoreCase = true) ||
-                                    role.equals("penanggung-jawab", ignoreCase = true) -> {
-                                !report.status.equals("belum diajukan") &&
-                                        !report.status.equals("menunggu")
-                            }
-                            else -> true
-                        }
-                    }
-                        .map { report -> report.toUiModel() }
+                    pagingData.map { report -> report.toUiModel() }
                 }
                 .cachedIn(viewModelScope)
         }

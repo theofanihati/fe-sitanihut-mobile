@@ -332,14 +332,22 @@ class ReportRepositoryImpl @Inject constructor(
             val oldReport = reportDao.getReportById(reportId)
                 ?: return Resource.Error("Laporan tidak ditemukan di database lokal")
 
+            val newSyncStatus = if (oldReport.syncStatus == SyncStatus.PENDING_CREATE) {
+                SyncStatus.PENDING_CREATE
+            } else {
+                SyncStatus.PENDING_REVIEW
+            }
+
             val updatedEntity = oldReport.copy(
                 status = newStatus.toDbValue(),
-                syncStatus = SyncStatus.PENDING_REVIEW,
+                syncStatus = newSyncStatus,
                 date = getCurrentDate()
             )
 
             reportDao.upsertAll(listOf(updatedEntity))
-            enqueueReportOperation(OP_REVIEW, reportId)
+            if (newSyncStatus == SyncStatus.PENDING_REVIEW) {
+                enqueueReportOperation(OP_REVIEW, reportId)
+            }
 
             Resource.Success(Unit)
         } catch (e: Exception) {

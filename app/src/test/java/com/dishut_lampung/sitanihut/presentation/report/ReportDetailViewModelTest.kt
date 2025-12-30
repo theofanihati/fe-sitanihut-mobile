@@ -7,6 +7,7 @@ import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.ReviewReportUseCase
+import com.dishut_lampung.sitanihut.presentation.report.detail.ReportAction
 import com.dishut_lampung.sitanihut.presentation.report.detail.ReportDetailEvent
 import com.dishut_lampung.sitanihut.presentation.report.detail.ReportDetailUiState
 import com.dishut_lampung.sitanihut.presentation.report.detail.ReportDetailViewModel
@@ -23,6 +24,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -166,12 +168,21 @@ class ReportDetailViewModelTest {
         io.mockk.clearMocks(userPreferences)
         every { userPreferences.userRole } returns flowOf(role)
         every { getReportDetailUseCase(reportId) } returns flowOf(Resource.Success(dummyDetail))
+        coEvery { reviewReportUseCase(reportId, ReportStatus.VERIFIED, role) } returns Resource.Success(Unit)
 
         viewModel = ReportDetailViewModel(getReportDetailUseCase, reviewReportUseCase, userPreferences, savedStateHandle)
 
         viewModel.uiState.test {
             awaitItem(); awaitItem()
             viewModel.onEvent(ReportDetailEvent.OnVerifyClick)
+
+            val dialogState = awaitItem() as ReportDetailUiState.Success
+            assertEquals(ReportAction.VERIFY, dialogState.pendingAction)
+            assertFalse(dialogState.isActionLoading)
+            viewModel.onEvent(ReportDetailEvent.OnConfirmDialog)
+
+            val dialogDismissedState = awaitItem() as ReportDetailUiState.Success
+            assertNull(dialogDismissedState.pendingAction)
 
             val loadingState = awaitItem() as ReportDetailUiState.Success
             assertTrue(loadingState.isActionLoading)

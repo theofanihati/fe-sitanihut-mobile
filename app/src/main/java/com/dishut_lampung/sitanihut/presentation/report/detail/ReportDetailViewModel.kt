@@ -109,7 +109,7 @@ class ReportDetailViewModel @Inject constructor(
             val action = currentState.pendingAction
             setPendingAction(null)
 
-            Log.d("ReportDetailVM", "Action executed: $action")
+//            Log.d("ReportDetailVM", "Action executed: $action")
 
             when (action) {
                 ReportAction.VERIFY -> submitReview(ReportStatus.VERIFIED, "Laporan berhasil diverifikasi")
@@ -119,18 +119,18 @@ class ReportDetailViewModel @Inject constructor(
         }
     }
     private fun submitReview(status: ReportStatus, successMessage: String) {
-        Log.d("ReportDetailVM", "Starting submitReview for status: $status")
+//        Log.d("ReportDetailVM", "Starting submitReview for status: $status")
         viewModelScope.launch {
             _uiState.update {
                 if (it is ReportDetailUiState.Success) it.copy(isActionLoading = true) else it
             }
 
             val role = userPreferences.userRole.first() ?: ""
-            Log.d("ReportDetailVM", "Role fetched: $role")
+//            Log.d("ReportDetailVM", "Role fetched: $role")
 
             when (val result = getReviewReportUseCase(reportId, status, role)) {
                 is Resource.Success -> {
-                    Log.d("ReportDetailVM", "UseCase Success")
+//                    Log.d("ReportDetailVM", "UseCase Success")
                     _uiState.update {
                         if (it is ReportDetailUiState.Success) {
                             it.copy(
@@ -143,7 +143,7 @@ class ReportDetailViewModel @Inject constructor(
                     getReportDetail()
                 }
                 is Resource.Error -> {
-                    Log.e("ReportDetailVM", "UseCase Error: ${result.message}")
+//                    Log.e("ReportDetailVM", "UseCase Error: ${result.message}")
                     _uiState.update {
                         if (it is ReportDetailUiState.Success) {
                             it.copy(

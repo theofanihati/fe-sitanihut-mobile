@@ -376,6 +376,7 @@ class ReportRepositoryImplTest {
     @Test
     fun `getReportById should emit Success when data found`() = runTest {
         val id = "123"
+        coEvery { reportDao.getReportById(id) } returns dummyReport
         coEvery { apiService.getReportDetail(id) } throws Exception("Skip network check")
         every { reportDao.getReportByIdFlow(id=id) } returns flowOf(dummyReport)
 
@@ -388,6 +389,7 @@ class ReportRepositoryImplTest {
     @Test
     fun `getReportById should emit Error when data not found`() = runTest {
         val id = "999"
+        coEvery { reportDao.getReportById(id) } returns null
         every { reportDao.getReportByIdFlow(id) } returns flowOf(null)
 
         val result = repository.getReportById(id).first { it !is Resource.Loading }
@@ -398,6 +400,7 @@ class ReportRepositoryImplTest {
     @Test
     fun `getReportById should fetch network detail and save to DB before returning flow`() = runTest {
         val id = "id-1"
+        coEvery { reportDao.getReportById(id) } returns null
         coEvery { apiService.getReportDetail(id) } returns ApiResponse(statusCode = 200, message = "OK", data = detailDto)
         every { reportDao.getReportByIdFlow(id) } returns flowOf(dummyReport)
         coJustRun { reportDao.upsertAll(any()) }
@@ -426,6 +429,7 @@ class ReportRepositoryImplTest {
         val id = "id-1"
         val mockResponse: retrofit2.Response<ApiResponse<ReportDetailDto>> = mockk(relaxed = true)
         every { mockResponse.isSuccessful } returns false
+        coEvery { reportDao.getReportById(id) } returns dummyReport
         coEvery { apiService.getReportDetail(id) } throws HttpException(mockResponse)
         every { reportDao.getReportByIdFlow(id) } returns flowOf(dummyReport)
 
@@ -648,6 +652,7 @@ class ReportRepositoryImplTest {
 
     @Test
     fun `syncReportDetail success should fetch list, save to DB, and fetch details for top 10`() = runTest {
+        every { userPreferences.userRole } returns flowOf("petani")
         val listDto = (1..12).map { i ->
             ReportListItemDto(
                 id = "id-$i",
@@ -693,6 +698,7 @@ class ReportRepositoryImplTest {
 
     @Test
     fun `syncReportDetail should return Success when API returns empty list`() = runTest {
+        every { userPreferences.userRole } returns flowOf("petani")
         val emptyListResponse = ApiResponse<PaginatedData<ReportListItemDto>>(
             statusCode = 200,
             message = "OK",
@@ -740,7 +746,7 @@ class ReportRepositoryImplTest {
             message = "OK",
             data = PaginatedData(count = 3, totalPages = 1, data = listDto)
         )
-
+        every { userPreferences.userRole } returns flowOf("petani")
         coEvery { apiService.getLatestReports() } returns listResponse
         coEvery { apiService.getReportDetail("id-1") } returns ApiResponse(statusCode = 200, message = "OK", data = detailDto.copy(id = "id-1"))
         coEvery { apiService.getReportDetail("id-2") } throws Exception("Detail Not Found Error") // Failure on one detail fetch
@@ -777,7 +783,7 @@ class ReportRepositoryImplTest {
                 val entity = list.first()
                 entity.id == id &&
                         entity.status == newStatus.toDbValue() &&
-                        entity.syncStatus == SyncStatus.PENDING_UPDATE
+                        entity.syncStatus == SyncStatus.PENDING_REVIEW
             })
         }
 
