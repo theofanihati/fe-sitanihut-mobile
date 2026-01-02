@@ -36,6 +36,8 @@ class DataSyncWorker @AssistedInject constructor(
             reportRepository.syncReportDetail()
             Log.d("SYNC_WORKER_DATA", "Mulai sync penyuluh...")
             penyuluhRepository.syncPenyuluhData()
+            Log.d("SYNC_WORKER_DATA", "Mulai sync kth...")
+            kthRepository.syncKthData()
             Log.d("SYNC_WORKER", "Sync selesai. Update timestamp.")
             userPreferences.updateLastSyncTime()
 
