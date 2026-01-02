@@ -10,6 +10,7 @@ import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -82,5 +83,39 @@ class KthRepositoryImplTest {
         assertTrue(result is Resource.Success)
         coVerify { apiService.deleteKth(id) }
         coVerify { dao.deleteKth(id) }
+    }
+
+    @Test
+    fun `getKthById should return mapped domain model from DAO`() = runTest {
+        val id = "123"
+        val dummyEntity = KthEntity(
+            id = id,
+            name = "KTH Test",
+            desa = "Desa Test",
+            kecamatan = "Kec Test",
+            kabupaten = "Kab Test",
+            coordinator = "Ketua Test",
+            whatsappNumber = "08123456789",
+            kphName = "KPH Test"
+        )
+
+        every { dao.getKthById(id) } returns flowOf(dummyEntity)
+
+        val result = repository.getKthById(id).first()
+        coVerify { dao.getKthById(id) }
+
+        assertEquals("KTH Test", result?.name)
+        assertEquals("Desa Test", result?.desa)
+        assertEquals("KPH Test", result?.kphName)
+    }
+
+    @Test
+    fun `getKthById should return null if data not found`() = runTest {
+        val id = "999"
+        every { dao.getKthById(id) } returns flowOf(null)
+
+        val result = repository.getKthById(id).first()
+        assertEquals(null, result)
+        coVerify { dao.getKthById(id) }
     }
 }
