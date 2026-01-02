@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.Kth
+import com.dishut_lampung.sitanihut.domain.usecase.kth.DeleteKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthListUseCase
 import com.dishut_lampung.sitanihut.presentation.kth.KthEvent
 import com.dishut_lampung.sitanihut.presentation.kth.KthUiState
@@ -24,23 +25,22 @@ import javax.inject.Inject
 @HiltViewModel
 class KthListViewModel @Inject constructor(
     private val getKthListUseCase: GetKthListUseCase,
+    private val deleteKthUseCase: DeleteKthUseCase,
     private val userPreferences: UserPreferences,
     private val connectivityObserver: ConnectivityObserver
 ) : ViewModel() {
 
+    private val _baseState = MutableStateFlow(KthUiState(isLoading = true))
     private val _searchQuery = MutableStateFlow("")
     private val _allKthData = MutableStateFlow<List<Kth>>(emptyList())
-    private val _isLoading = MutableStateFlow(false)
-    private val _error = MutableStateFlow<String?>(null)
     private val _isOnline = MutableStateFlow(true)
 
     val uiState = combine(
-        _isLoading,
+        _baseState,
         _allKthData,
         _searchQuery,
-        _error,
         _isOnline
-    ) { isLoading, allData, query, error, isOnline ->
+    ) { base, allData, query, isOnline ->
 
         val filteredList = if (query.isBlank()) {
             allData
@@ -51,11 +51,8 @@ class KthListViewModel @Inject constructor(
                         item.kphName.contains(query, ignoreCase = true)
             }
         }
-
-        KthUiState(
-            isLoading = isLoading,
+        base.copy(
             kthList = filteredList,
-            error = error,
             query = query,
             isOnline = isOnline
         )
@@ -78,12 +75,84 @@ class KthListViewModel @Inject constructor(
             KthEvent.OnRefresh -> {
                 fetchKthData(isRefresh = true)
             }
+            is KthEvent.OnMoreOptionClick -> {
+                _baseState.update {
+                    it.copy(
+                        isBottomSheetVisible = true,
+                        selectedKthId = event.id
+                    )
+                }
+            }
+            KthEvent.OnBottomSheetDismiss -> {
+                _baseState.update {
+                    it.copy(
+                        isBottomSheetVisible = false
+                    )
+                }
+            }
+            KthEvent.OnDeleteClick -> {
+                _baseState.update {
+                    it.copy(
+                        isBottomSheetVisible = false,
+                        isDeleteDialogVisible = true
+                    )
+                }
+            }
+            KthEvent.OnDeleteConfirm -> {
+                val idToDelete = _baseState.value.selectedKthId
+                if (idToDelete != null) {
+                    deleteKth(idToDelete)
+                }
+                _baseState.update { it.copy(isDeleteDialogVisible = false) }
+            }
+            KthEvent.OnDismissDeleteDialog -> {
+                _baseState.update {
+                    it.copy(
+                        isDeleteDialogVisible = false,
+                        selectedKthId = null
+                    )
+                }
+            }
             KthEvent.OnDismissError -> {
-                _error.value = null
+                _baseState.update { it.copy(errorMessage = null) }
+            }
+            KthEvent.OnDismissSuccessMessage -> {
+                _baseState.update { it.copy(successMessage = null) }
             }
         }
     }
 
+    private fun deleteKth(id: String) {
+        viewModelScope.launch {
+            _baseState.update { it.copy(isLoading = true) }
+
+            when (val result = deleteKthUseCase(id)) {
+                is Resource.Success -> {
+                    _allKthData.update { currentList ->
+                        currentList.filter { it.id != id }
+                    }
+                    _baseState.update {
+                        it.copy(
+                            isLoading = false,
+                            successMessage = "Data berhasil dihapus",
+                            selectedKthId = null,
+                            isDeleteDialogVisible = false
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _baseState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = result.message ?: "Gagal menghapus data",
+                            isDeleteDialogVisible = false
+                        )
+                    }
+                }
+                is Resource.Loading -> {}
+            }
+        }
+    }
     private fun observeConnectivity() {
         connectivityObserver.observe()
             .onEach { status ->
@@ -96,20 +165,33 @@ class KthListViewModel @Inject constructor(
         viewModelScope.launch {
             val role = userPreferences.userRole.first() ?: ""
 
-            _isLoading.value = !isRefresh
+            _baseState.update {
+                it.copy(
+                    isLoading = !isRefresh,
+                    isRefreshing = isRefresh,
+                    errorMessage = null
+                )
+            }
 
             getKthListUseCase(role, "").collect { result ->
                 when (result) {
                     is Resource.Loading -> {
-                        _isLoading.value = true
+                        _baseState.update { it.copy(isLoading = true) }
                     }
                     is Resource.Success -> {
-                        _isLoading.value = false
                         _allKthData.value = result.data ?: emptyList()
+                        _baseState.update {
+                            it.copy(isLoading = false, isRefreshing = false)
+                        }
                     }
                     is Resource.Error -> {
-                        _isLoading.value = false
-                        _error.value = result.message
+                        _baseState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                errorMessage = result.message
+                            )
+                        }
                     }
                 }
             }
