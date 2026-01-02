@@ -13,6 +13,6 @@ interface UserApiService {
         @Path("id") id: String
     ): ApiResponse<UserDetailDto>
 
-    @GET("v1/roles")
+    @GET("v1/role")
     suspend fun getRoles(): ApiResponse<List<RoleDto>>
 }

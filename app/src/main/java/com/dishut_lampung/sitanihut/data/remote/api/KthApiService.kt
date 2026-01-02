@@ -12,7 +12,7 @@ interface KthApiService {
     @GET("v1/kth")
     suspend fun getKthList(
         @Query("page") page: Int = 1,
-        @Query("limit") limit: Int = 100
+        @Query("limit") limit: Int = 50
     ): ApiResponse<PaginatedData<KthListItemDto>>
 
     @DELETE("v1/kth/{id}")

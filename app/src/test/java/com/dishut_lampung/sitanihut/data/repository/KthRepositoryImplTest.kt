@@ -61,12 +61,12 @@ class KthRepositoryImplTest {
             )
         )
 
-        coEvery { apiService.getKthList(limit = 100) } returns apiResponse
+        coEvery { apiService.getKthList(limit = 50) } returns apiResponse
         coEvery { dao.upsertAll(any()) } returns Unit
 
         val result = repository.syncKthData()
         assertTrue(result is Resource.Success)
-        coVerify { apiService.getKthList(limit = 100) }
+        coVerify { apiService.getKthList(limit = 50) }
         coVerify { dao.upsertAll(any()) }
     }
 

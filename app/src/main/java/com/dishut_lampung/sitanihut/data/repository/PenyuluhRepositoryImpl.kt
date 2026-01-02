@@ -25,7 +25,7 @@ class PenyuluhRepositoryImpl @Inject constructor(
 
     override suspend fun syncPenyuluhData(): Resource<Unit> {
         return try {
-            val response = apiService.getPenyuluhList(limit = 100)
+            val response = apiService.getPenyuluhList(limit = 50)
             val items = response.data.data
 
             if (items.isNotEmpty()) {

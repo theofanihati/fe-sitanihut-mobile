@@ -24,7 +24,7 @@ class KthRepositoryImpl @Inject constructor(
 
     override suspend fun syncKthData(): Resource<Unit> {
         return try {
-            val response = apiService.getKthList(limit = 100)
+            val response = apiService.getKthList(limit = 50)
             val items = response.data?.data ?: emptyList()
 
             if (items.isNotEmpty()) {
