@@ -50,4 +50,8 @@ class KthRepositoryImpl @Inject constructor(
             Resource.Error(e.localizedMessage ?: "Gagal menghapus data KTH")
         }
     }
+
+    override fun getKthById(id: String): Flow<Kth?> {
+        TODO("Not yet implemented")
+    }
 }

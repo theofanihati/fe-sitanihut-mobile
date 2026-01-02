@@ -9,6 +9,6 @@ class GetKthDetailUseCase @Inject constructor(
     private val repository: KthRepository
 ) {
     operator fun invoke(id: String): Flow<Kth?> {
-        return TODO()
+        return repository.getKthById(id)
     }
 }
