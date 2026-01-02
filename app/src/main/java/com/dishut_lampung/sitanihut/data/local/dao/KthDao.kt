@@ -22,6 +22,9 @@ interface KthDao {
     """)
     fun getAllKth(query: String): Flow<List<KthEntity>>
 
+    @Query("SELECT * FROM kth WHERE id = :id")
+    fun getKthById(id: String): Flow<KthEntity?>
+
     @Query("DELETE FROM kth WHERE id = :id")
     suspend fun deleteKth(id: String)
 }

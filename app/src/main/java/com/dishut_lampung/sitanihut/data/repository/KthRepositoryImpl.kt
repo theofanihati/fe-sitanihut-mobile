@@ -52,6 +52,8 @@ class KthRepositoryImpl @Inject constructor(
     }
 
     override fun getKthById(id: String): Flow<Kth?> {
-        TODO("Not yet implemented")
+        return dao.getKthById(id).map { entity ->
+            entity?.toDomain()
+        }
     }
 }
