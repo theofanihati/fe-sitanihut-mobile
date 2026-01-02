@@ -27,8 +27,23 @@ sealed class Screen(val route: String) {
     data class ReportDetail(val id : String) : Petani("report_detail/{reportId}")
 
     object DataKth : Screen("data_kth")
+    data class KthDetail(val id : String) : Screen("kth_detail/{id}")
+    object KthForm : Screen("kth_form?kthId ={id}"){
+        fun createRoute(id: String? =null): String{
+            return if (id != null){
+                "kth_form?kthId=$id"
+            }else{
+                "kth_form"
+            }
+        }
+    }
+
     object DataPetani : Screen("data_petani")
+    data class PetaniDetail(val id : String) : Screen("petani_detail/{id}")
+
+
     object UserManagement : Screen("user-management")
+    data class UserDetail(val id : String) : Screen("user_detail/{id}")
 
     sealed class Auth(route : String) : Screen(route) {
         data object Login : Screen("login_screen")
