@@ -24,10 +24,33 @@ class KthDetailViewModel  @Inject constructor(
     private val kthId: String = checkNotNull(savedStateHandle["kthId"])
 
     init {
-        TODO()
+        getDetail()
     }
 
     fun onRetry() {
-        TODO()
+        getDetail()
+    }
+
+    private fun getDetail() {
+        viewModelScope.launch {
+            getKthDetailUseCase(kthId)
+                .onStart {
+                    _uiState.update { it.copy(isLoading = true, error = null) }
+                }
+                .catch { e ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = e.localizedMessage ?: "Terjadi kesalahan")
+                    }
+                }
+                .collect { kthData ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            kth = kthData,
+                            error = if (kthData == null) "Data KTH tidak ditemukan" else null
+                        )
+                    }
+                }
+        }
     }
 }
