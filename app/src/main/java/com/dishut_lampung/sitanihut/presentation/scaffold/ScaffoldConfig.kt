@@ -33,7 +33,7 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         Screen.Penyuluh.ProfilePenyuluh.route,
         Screen.PenanggungJawab.ProfilePenanggungJawab.route,
         "data_penyuluh/{id}",
-        "kth_detail/{id}"-> ScaffoldConfig(
+        "kth_detail/{kthId}"-> ScaffoldConfig(
             showMainNav = false,
             showBackNav = true,
             topBarTheme = TopBarTheme.DARK_BACKGROUND

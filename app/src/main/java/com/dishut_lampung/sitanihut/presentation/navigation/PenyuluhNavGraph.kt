@@ -3,7 +3,9 @@ package com.dishut_lampung.sitanihut.presentation.navigation
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.dishut_lampung.sitanihut.presentation.commodity.CommodityRoute
 import com.dishut_lampung.sitanihut.presentation.home_page.penyuluh.HomePagePenyuluhRoute
@@ -11,8 +13,10 @@ import com.dishut_lampung.sitanihut.presentation.information.InformationRoute
 import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScreen
 import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutRoute
+import com.dishut_lampung.sitanihut.presentation.kth.detail.KthDetailRoute
 import com.dishut_lampung.sitanihut.presentation.kth.list.KthListRoute
 import com.dishut_lampung.sitanihut.presentation.profile.penyuluh.PenyuluhProfileRoute
+import com.dishut_lampung.sitanihut.presentation.report.detail.ReportDetailRoute
 
 fun NavGraphBuilder.penyuluhNavGraph(
     modifier : Modifier,
@@ -71,6 +75,16 @@ fun NavGraphBuilder.penyuluhNavGraph(
                     Screen.KthForm.createRoute(id = id)
                 }
             )
+        }
+        composable(
+            route = "kth_detail/{kthId}",
+            arguments = listOf(
+                navArgument("kthId") {
+                    type = NavType.StringType
+                }
+            )
+        ){
+            KthDetailRoute()
         }
         composable(route = Screen.Information.route){
             InformationRoute(

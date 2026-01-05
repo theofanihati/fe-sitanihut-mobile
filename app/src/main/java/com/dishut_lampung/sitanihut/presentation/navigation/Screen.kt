@@ -27,7 +27,7 @@ sealed class Screen(val route: String) {
     data class ReportDetail(val id : String) : Petani("report_detail/{reportId}")
 
     object DataKth : Screen("data_kth")
-    data class KthDetail(val id : String) : Screen("kth_detail/{id}")
+    data class KthDetail(val id : String) : Screen("kth_detail/{kthId}")
     object KthForm : Screen("kth_form?kthId ={id}"){
         fun createRoute(id: String? =null): String{
             return if (id != null){
