@@ -1,4 +1,4 @@
-package com.dishut_lampung.sitanihut.presentation.kth
+package com.dishut_lampung.sitanihut.presentation.kth.list
 
 import com.dishut_lampung.sitanihut.domain.model.Kth
 

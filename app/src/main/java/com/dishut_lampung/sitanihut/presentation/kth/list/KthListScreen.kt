@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -41,11 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dishut_lampung.sitanihut.R
-import com.dishut_lampung.sitanihut.domain.model.Commodity
 import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
 import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
-import com.dishut_lampung.sitanihut.presentation.components.card.CommodityCard
 import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomSearchTextField
 import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
@@ -58,9 +55,6 @@ import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.presentation.components.bottomsheet.GenericActionBottomSheet
 import com.dishut_lampung.sitanihut.presentation.components.card.KthCard
 import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirmationDialog
-import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
-import com.dishut_lampung.sitanihut.presentation.kth.KthEvent
-import com.dishut_lampung.sitanihut.presentation.kth.KthUiState
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

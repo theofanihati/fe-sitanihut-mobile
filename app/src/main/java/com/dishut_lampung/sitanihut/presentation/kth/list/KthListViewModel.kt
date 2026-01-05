@@ -6,8 +6,6 @@ import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.usecase.kth.DeleteKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthListUseCase
-import com.dishut_lampung.sitanihut.presentation.kth.KthEvent
-import com.dishut_lampung.sitanihut.presentation.kth.KthUiState
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
