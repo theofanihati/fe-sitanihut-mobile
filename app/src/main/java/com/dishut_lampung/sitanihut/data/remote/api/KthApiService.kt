@@ -1,5 +1,6 @@
 package com.dishut_lampung.sitanihut.data.remote.api
 
+import com.dishut_lampung.sitanihut.data.remote.dto.KthDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.KthListItemDto
 import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
@@ -14,6 +15,11 @@ interface KthApiService {
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 50
     ): ApiResponse<PaginatedData<KthListItemDto>>
+
+    @GET("v1/kth/{id}")
+    suspend fun getKthDetail(
+        @Path("id") id: String
+    ): ApiResponse<KthDetailDto>
 
     @DELETE("v1/kth/{id}")
     suspend fun deleteKth(

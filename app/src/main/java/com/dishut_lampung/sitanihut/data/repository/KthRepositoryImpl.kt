@@ -8,6 +8,8 @@ import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.repository.KthRepository
 import com.dishut_lampung.sitanihut.util.Resource
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -52,8 +54,25 @@ class KthRepositoryImpl @Inject constructor(
     }
 
     override fun getKthById(id: String): Flow<Kth?> {
-        return dao.getKthById(id).map { entity ->
-            entity?.toDomain()
+        return flow {
+            val localData = dao.getKthById(id).first()
+            if (localData != null) {
+                emit(localData.toDomain())
+            }
+
+            try {
+                val response = apiService.getKthDetail(id)
+                val remoteData = response.data
+                if (remoteData != null) {
+                    dao.upsertAll(listOf(remoteData.toEntity()))
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            dao.getKthById(id).collect { entity ->
+                emit(entity?.toDomain())
+            }
         }
     }
 }

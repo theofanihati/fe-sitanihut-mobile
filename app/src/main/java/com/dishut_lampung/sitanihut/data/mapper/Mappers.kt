@@ -10,6 +10,7 @@ import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
 import com.dishut_lampung.sitanihut.data.remote.dto.CommodityDto
 import com.dishut_lampung.sitanihut.data.remote.dto.HarvestRequestDto
 import com.dishut_lampung.sitanihut.data.remote.dto.HarvestResponseDto
+import com.dishut_lampung.sitanihut.data.remote.dto.KthDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.KthListItemDto
 import com.dishut_lampung.sitanihut.data.remote.dto.PlantingRequestDto
 import com.dishut_lampung.sitanihut.data.remote.dto.PlantingResponseDto
@@ -397,7 +398,10 @@ fun KthEntity.toDomain(): Kth {
         id = id,
         name = name,
         desa = desa,
+        kecamatan = kecamatan,
         kabupaten = kabupaten,
+        coordinator = coordinator,
+        whatsappNumber = whatsappNumber,
         kphName = kphName
     )
 }
@@ -408,6 +412,19 @@ fun KthListItemDto.toEntity(): KthEntity {
         name = name,
         desa = desa,
         kabupaten = kabupaten,
+        kphName = kphName
+    )
+}
+
+fun KthDetailDto.toEntity(): KthEntity {
+    return KthEntity(
+        id = id,
+        name = name,
+        desa = desa,
+        kecamatan = kecamatan,
+        kabupaten = kabupaten,
+        coordinator = coordinator,
+        whatsappNumber = whatsappNumber,
         kphName = kphName
     )
 }
