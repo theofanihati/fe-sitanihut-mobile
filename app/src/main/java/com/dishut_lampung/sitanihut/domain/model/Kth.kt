@@ -10,3 +10,14 @@ data class Kth (
     val whatsappNumber: String? = null,
     val kphName : String,
 )
+
+data class CreateKthInput(
+    val name : String = "",
+    val desa : String = "",
+    val kecamatan: String = "",
+    val kabupaten : String = "",
+    val coordinator: String = "",
+    val whatsappNumber: String = "",
+    val kphId: String = "",
+    val kphName : String = "",
+)

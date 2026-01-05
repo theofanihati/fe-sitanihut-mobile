@@ -4,6 +4,7 @@ import com.dishut_lampung.sitanihut.data.local.dao.KthDao
 import com.dishut_lampung.sitanihut.data.mapper.toDomain
 import com.dishut_lampung.sitanihut.data.mapper.toEntity
 import com.dishut_lampung.sitanihut.data.remote.api.KthApiService
+import com.dishut_lampung.sitanihut.domain.model.CreateKthInput
 import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.repository.KthRepository
 import com.dishut_lampung.sitanihut.util.Resource
@@ -74,5 +75,9 @@ class KthRepositoryImpl @Inject constructor(
                 emit(entity?.toDomain())
             }
         }
+    }
+
+    override suspend fun createKth(input: CreateKthInput): Resource<Unit> {
+        TODO()
     }
 }
