@@ -9,6 +9,6 @@ class GetKphListUseCase @Inject constructor(
     private val repository: KphRepository
 ) {
     operator fun invoke(): Flow<List<Kph>> {
-        return TODO()
+        return repository.getKphList()
     }
 }
