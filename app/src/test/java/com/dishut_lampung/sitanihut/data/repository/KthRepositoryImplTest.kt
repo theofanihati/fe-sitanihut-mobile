@@ -3,9 +3,11 @@ package com.dishut_lampung.sitanihut.data.repository
 import com.dishut_lampung.sitanihut.data.local.dao.KthDao
 import com.dishut_lampung.sitanihut.data.local.entity.KthEntity
 import com.dishut_lampung.sitanihut.data.remote.api.KthApiService
+import com.dishut_lampung.sitanihut.data.remote.dto.KthDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.KthListItemDto
 import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
+import com.dishut_lampung.sitanihut.domain.model.CreateKthInput
 import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
@@ -117,5 +119,48 @@ class KthRepositoryImplTest {
         val result = repository.getKthById(id).first()
         assertEquals(null, result)
         coVerify { dao.getKthById(id) }
+    }
+
+    @Test
+    fun `createKth should call api service with correct body`() = runTest {
+        val input = CreateKthInput(
+            name = "KTH Baru",
+            desa = "Desa A",
+            kecamatan = "Kec B",
+            kabupaten = "Kab C",
+            coordinator = "Budi",
+            whatsappNumber = "08123",
+            kphId = "1",
+            kphName = "KPH X"
+        )
+
+        val dummyResponseData = KthDetailDto(
+            id = "new-id",
+            name = "KTH Baru",
+            desa = "Desa A",
+            kecamatan = "Kec B",
+            kabupaten = "Kab C",
+            coordinator = "Budi",
+            whatsappNumber = "08123",
+            kphName = "KPH X"
+        )
+        val apiResponse = ApiResponse(
+            statusCode = 201,
+            message = "Success",
+            data = dummyResponseData
+        )
+
+        coEvery { apiService.createKth(any()) } returns apiResponse
+        coEvery { dao.upsertAll(any()) } returns Unit
+
+        val result = repository.createKth(input)
+
+        assertTrue(result is Resource.Success)
+
+        coVerify {
+            apiService.createKth(match {
+                it.name == "KTH Baru" && it.kphId == "1"
+            })
+        }
     }
 }
