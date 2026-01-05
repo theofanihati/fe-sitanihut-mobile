@@ -8,6 +8,7 @@ import com.dishut_lampung.sitanihut.data.local.entity.RoleEntity
 import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
 import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
 import com.dishut_lampung.sitanihut.data.remote.dto.CommodityDto
+import com.dishut_lampung.sitanihut.data.remote.dto.CreateKthRequestDto
 import com.dishut_lampung.sitanihut.data.remote.dto.HarvestRequestDto
 import com.dishut_lampung.sitanihut.data.remote.dto.HarvestResponseDto
 import com.dishut_lampung.sitanihut.data.remote.dto.KthDetailDto
@@ -21,6 +22,7 @@ import com.dishut_lampung.sitanihut.data.remote.dto.RoleDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDto
 import com.dishut_lampung.sitanihut.domain.model.Commodity
+import com.dishut_lampung.sitanihut.domain.model.CreateKthInput
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.model.MasaPanen
@@ -426,5 +428,17 @@ fun KthDetailDto.toEntity(): KthEntity {
         coordinator = coordinator,
         whatsappNumber = whatsappNumber,
         kphName = kphName
+    )
+}
+
+fun CreateKthInput.toDto(): CreateKthRequestDto {
+    return CreateKthRequestDto(
+        name = this.name,
+        desa = this.desa,
+        kecamatan = this.kecamatan,
+        kabupaten = this.kabupaten,
+        coordinator = this.coordinator,
+        whatsappNumber = this.whatsappNumber,
+        kphId = this.kphId
     )
 }

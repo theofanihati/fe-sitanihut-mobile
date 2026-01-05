@@ -79,6 +79,19 @@ class KthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun createKth(input: CreateKthInput): Resource<Unit> {
-        return TODO()
+        return try {
+            val requestDto = input.toDto()
+            val response = apiService.createKth(requestDto)
+
+            val newData = response.data
+            if (newData != null) {
+                dao.upsertAll(listOf(newData.toEntity()))
+            }
+
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Error(e.localizedMessage ?: "Gagal membuat KTH")
+        }
     }
 }
