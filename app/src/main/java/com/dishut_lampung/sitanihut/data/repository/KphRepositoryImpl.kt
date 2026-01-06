@@ -17,10 +17,27 @@ class KphRepositoryImpl @Inject constructor(
 ) : KphRepository {
 
     override fun getKphList(): Flow<List<Kph>> {
-        return TODO()
+        return dao.getAllKph().map { entities ->
+            entities.map { it.toDomain() }
+        }
     }
 
     override suspend fun syncKphData(): Resource<Unit> {
-        return TODO()
+        return try {
+            val response = apiService.getKphList()
+            if (response.statusCode == 200 && response.data != null) {
+                val kphEntities = response.data.map { it.toEntity() }
+
+                dao.deleteAll()
+                dao.insertAll(kphEntities)
+
+                Resource.Success(Unit)
+            } else {
+                Resource.Error(response.message ?: "Gagal mengambil data KPH")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Error(e.localizedMessage ?: "Terjadi kesalahan koneksi")
+        }
     }
 }
