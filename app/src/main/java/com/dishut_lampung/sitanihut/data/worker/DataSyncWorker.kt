@@ -7,6 +7,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
+import com.dishut_lampung.sitanihut.domain.repository.KphRepository
 import com.dishut_lampung.sitanihut.domain.repository.KthRepository
 import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
@@ -23,6 +24,7 @@ class DataSyncWorker @AssistedInject constructor(
     private val reportRepository: ReportRepository,
     private val penyuluhRepository: PenyuluhRepository,
     private val kthRepository: KthRepository,
+    private val kphRepository: KphRepository,
     private val userPreferences: UserPreferences
 ) : CoroutineWorker(appContext, workerParams) {
 
@@ -38,6 +40,8 @@ class DataSyncWorker @AssistedInject constructor(
             penyuluhRepository.syncPenyuluhData()
             Log.d("SYNC_WORKER_DATA", "Mulai sync kth...")
             kthRepository.syncKthData()
+            Log.d("SYNC_WORKER_DATA", "Mulai sync kph...")
+            kphRepository.syncKphData()
             Log.d("SYNC_WORKER", "Sync selesai. Update timestamp.")
             userPreferences.updateLastSyncTime()
 
