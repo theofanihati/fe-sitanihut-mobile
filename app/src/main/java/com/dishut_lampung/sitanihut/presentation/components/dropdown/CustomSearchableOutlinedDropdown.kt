@@ -9,10 +9,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,41 +26,58 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import com.dishut_lampung.sitanihut.domain.model.Commodity
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomSearchableOutlinedDropdown(
+fun <T> CustomSearchableOutlinedDropdown(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
-    onOptionSelected: (Commodity) -> Unit,
-    options: List<Commodity>,
+    onOptionSelected: (T) -> Unit,
+    options: List<T>,
+    itemLabel: (T) -> String = { it.toString() },
     label: String,
-    placeholder: String = "Pilih Komoditas",
+    placeholder: String = "Pilih Opsi",
     isError: Boolean = false,
     errorMessage: String? = null,
     asteriskAtEnd: Boolean = false,
     rounded: Int = 40,
+    enabled: Boolean = true,
     borderColor: Color = MaterialTheme.colorScheme.tertiary,
-    bgColor: Color = Color.White
+    bgColor: Color = Color.White,
+    debounceTime: Long = 500L
 ) {
     var expanded by remember { mutableStateOf(false) }
     val isErrorState = isError || errorMessage != null
-    val filteredOptions = options.filter {
-        it.name.contains(value, ignoreCase = true)
+    var filteredOptions by remember { mutableStateOf(options) }
+
+    LaunchedEffect(value, options) {
+        if (value.isEmpty()) {
+            filteredOptions = options
+        } else {
+            delay(debounceTime)
+
+            filteredOptions = options.filter {
+                itemLabel(it).contains(value, ignoreCase = true)
+            }
+        }
     }
 
     Column(modifier = modifier) {
         ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
+            expanded = expanded && enabled,
+            onExpandedChange = { if (enabled) expanded = !expanded }
         ) {
             OutlinedTextField(
                 value = value,
                 onValueChange = {
-                    onValueChange(it)
-                    expanded = true
+                    if (enabled) {
+                        onValueChange(it)
+                        expanded = true
+                    }
                 },
+                enabled = enabled,
                 readOnly = false,
                 label = { Text(buildAnnotatedString {
                     append(label)
@@ -93,7 +112,7 @@ fun CustomSearchableOutlinedDropdown(
                     errorSupportingTextColor = MaterialTheme.colorScheme.error
                 ),
                 modifier = Modifier
-                    .menuAnchor()
+                    .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = enabled)
                     .fillMaxWidth()
             )
 
@@ -103,16 +122,17 @@ fun CustomSearchableOutlinedDropdown(
                     onDismissRequest = { expanded = false },
                     modifier = Modifier.background(bgColor)
                 ) {
-                    filteredOptions.forEach { commodity ->
+                    filteredOptions.forEach { item ->
                         DropdownMenuItem(
                             text = {
                                 Text(
-                                    text = commodity.name,
+                                    text = itemLabel(item),
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             },
                             onClick = {
-                                onOptionSelected(commodity)
+                                onOptionSelected(item)
+//                                onValueChange(itemLabel(item))
                                 expanded = false
                             },
                             contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding

@@ -387,6 +387,7 @@ fun PlantingItemCard(
                     modifier = Modifier.weight(1f),
                     value = item.commodityName,
                     asteriskAtEnd = true,
+                    itemLabel = { commodity -> commodity.name },
                     onValueChange = { name ->
                         onEvent(ReportFormEvent.OnPlantingItemChange(index, item.copy(commodityName = name)))
                     },
@@ -519,6 +520,7 @@ fun HarvestItemCard(
 
             CustomSearchableOutlinedDropdown(
                 value = item.commodityName,
+                itemLabel = { commodity -> commodity.name },
                 onValueChange = { name ->
                     onEvent(ReportFormEvent.OnHarvestItemChange(index, item.copy(commodityName = name)))
                 },
