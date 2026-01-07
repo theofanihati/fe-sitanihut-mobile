@@ -24,16 +24,37 @@ class KphRepositoryImpl @Inject constructor(
 
     override suspend fun syncKphData(): Resource<Unit> {
         return try {
-            val response = apiService.getKphList()
-            if (response.statusCode == 200 && response.data != null) {
-                val kphEntities = response.data.map { it.toEntity() }
+            val pageOneResponse = apiService.getKphList(page = 1)
 
-                dao.deleteAll()
-                dao.insertAll(kphEntities)
+            if (pageOneResponse.statusCode == 200 && pageOneResponse.data != null) {
+                val paginationData = pageOneResponse.data
+                val allKphData = paginationData.data.toMutableList()
+                val totalPages = paginationData.totalPages
 
-                Resource.Success(Unit)
+                if (totalPages > 1) {
+                    for (page in 2..totalPages) {
+                        try {
+                            val nextResponse = apiService.getKphList(page = page)
+                            if (nextResponse.statusCode == 200 && nextResponse.data != null) {
+                                allKphData.addAll(nextResponse.data.data)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+                if (allKphData.isNotEmpty()) {
+                    val kphEntities = allKphData.map { it.toEntity() }
+
+                    dao.deleteAll()
+                    dao.insertAll(kphEntities)
+//                    android.util.Log.d("REPO_KPH", "Total data tersimpan: ${kphEntities.size}")
+                    Resource.Success(Unit)
+                } else {
+                    Resource.Success(Unit)
+                }
             } else {
-                Resource.Error(response.message ?: "Gagal mengambil data KPH")
+                Resource.Error(pageOneResponse.message ?: "Gagal mengambil data KPH")
             }
         } catch (e: Exception) {
             e.printStackTrace()
