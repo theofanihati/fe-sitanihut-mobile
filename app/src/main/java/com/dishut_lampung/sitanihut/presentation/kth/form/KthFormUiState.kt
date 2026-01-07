@@ -39,11 +39,15 @@ data class KthFormUiState (
 sealed class KthFormUiEvent {
     data class OnNameChange(val value: String) : KthFormUiEvent()
     data class OnDesaSelected(val value: String) : KthFormUiEvent()
+    data class OnKabupatenSearchTextChange(val text: String) : KthFormUiEvent()
+    data class OnKecamatanSearchTextChange(val text: String) : KthFormUiEvent()
+    data class OnDesaSearchTextChange(val text: String) : KthFormUiEvent()
     data class OnKecamatanSelected(val value: String) : KthFormUiEvent()
     data class OnKabupatenSelected(val value: String) : KthFormUiEvent()
     data class OnCoordinatorChange(val value: String) : KthFormUiEvent()
     data class OnWhatsappChange(val value: String) : KthFormUiEvent()
     data class OnKphSelected(val kph: Kph) : KthFormUiEvent()
+    data class OnKphSearchTextChange(val text: String) : KthFormUiEvent()
 
     data object OnSubmit : KthFormUiEvent()
     object OnDismissMessage : KthFormUiEvent()

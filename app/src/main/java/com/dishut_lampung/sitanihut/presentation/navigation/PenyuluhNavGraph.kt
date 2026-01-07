@@ -14,9 +14,9 @@ import com.dishut_lampung.sitanihut.presentation.information.about_app.AboutScre
 import com.dishut_lampung.sitanihut.presentation.information.contact.ContactScreen
 import com.dishut_lampung.sitanihut.presentation.information.about_company.DishutRoute
 import com.dishut_lampung.sitanihut.presentation.kth.detail.KthDetailRoute
+import com.dishut_lampung.sitanihut.presentation.kth.form.KthFormRoute
 import com.dishut_lampung.sitanihut.presentation.kth.list.KthListRoute
 import com.dishut_lampung.sitanihut.presentation.profile.penyuluh.PenyuluhProfileRoute
-import com.dishut_lampung.sitanihut.presentation.report.detail.ReportDetailRoute
 
 fun NavGraphBuilder.penyuluhNavGraph(
     modifier : Modifier,
@@ -75,6 +75,18 @@ fun NavGraphBuilder.penyuluhNavGraph(
                     Screen.KthForm.createRoute(id = id)
                 }
             )
+        }
+        composable(
+            route = Screen.KthForm.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ){
+            KthFormRoute(navController = navController)
         }
         composable(
             route = "kth_detail/{kthId}",

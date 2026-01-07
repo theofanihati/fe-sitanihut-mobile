@@ -50,6 +50,7 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         Screen.KthForm.route,
         Screen.ReportList.route,
         Screen.ReportForm.route,
+        Screen.KthForm.route,
         "report_detail/{reportId}"-> ScaffoldConfig(
             showMainNav = false,
             showBackNav = true,
