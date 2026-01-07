@@ -1,5 +1,6 @@
 package com.dishut_lampung.sitanihut.presentation.kth.form
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,12 +35,22 @@ class KthFormViewModel @Inject constructor(
 
     init {
         loadKphOptions()
+        loadKabupatenOptions()
     }
 
     fun onEvent(event: KthFormUiEvent) {
         when (event) {
             is KthFormUiEvent.OnNameChange -> {
                 _uiState.update { it.copy(name = event.value, nameError = null) }
+            }
+            is KthFormUiEvent.OnKabupatenSearchTextChange -> {
+                _uiState.update { it.copy(selectedKabupaten = event.text) }
+            }
+            is KthFormUiEvent.OnKecamatanSearchTextChange -> {
+                _uiState.update { it.copy(selectedKecamatan = event.text) }
+            }
+            is KthFormUiEvent.OnDesaSearchTextChange -> {
+                _uiState.update { it.copy(selectedDesa = event.text) }
             }
             is KthFormUiEvent.OnKabupatenSelected -> {
                 updateKabupaten(event.value)
@@ -54,7 +65,29 @@ class KthFormViewModel @Inject constructor(
                 _uiState.update { it.copy(coordinator = event.value, coordinatorError = null) }
             }
             is KthFormUiEvent.OnWhatsappChange -> {
-                _uiState.update { it.copy(whatsappNumber = event.value, whatsappError = null) }
+                _uiState.update { it.copy(whatsappNumber = event.value) }
+
+                val phoneRegex = Regex("^(08[0-9]{8,14}|\\+628[0-9]{8,14})$")
+                var errorMsg: String? = null
+
+                if (event.value.isNotEmpty()) {
+                    if (!event.value.matches(phoneRegex)) {
+                        errorMsg = "Masukkan nomor valid (08.. atau +628..) tanpa spasi"
+                    } else if (event.value.length > 14) {
+                        errorMsg = "Nomor telepon maksimal 14 digit"
+                    }else if (event.value.length < 10) {
+                        errorMsg = "Nomor telepon minimal 10 digit"
+                    }
+                }
+                _uiState.update { it.copy(whatsappError = errorMsg) }
+            }
+            is KthFormUiEvent.OnKphSearchTextChange -> {
+                _uiState.update {
+                    it.copy(
+                        selectedKphName = event.text,
+                        selectedKphId = ""
+                    )
+                }
             }
             is KthFormUiEvent.OnKphSelected -> {
                 _uiState.update {
@@ -92,8 +125,17 @@ class KthFormViewModel @Inject constructor(
 
     private fun loadKphOptions() {
         getKphListUseCase().onEach { kphList ->
+            Log.d("DEBUG_KPH", "Data KPH dari DB: ${kphList.size} item")
             _uiState.update { it.copy(kphOptions = kphList) }
         }.launchIn(viewModelScope)
+    }
+
+    private fun loadKabupatenOptions() {
+        val kabupatenList = WilayahLampungData.getKabupatenList()
+
+        _uiState.update {
+            it.copy(kabupatenOptions = kabupatenList)
+        }
     }
 
     private fun updateKabupaten(kabupaten: String) {
