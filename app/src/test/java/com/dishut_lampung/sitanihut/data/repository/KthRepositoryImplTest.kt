@@ -182,4 +182,69 @@ class KthRepositoryImplTest {
             })
         }
     }
+
+    @Test
+    fun `updateKth should call api service and return Success when status is 200`() = runTest {
+        val id = "123"
+        val input = CreateKthInput(
+            name = "KTH Update",
+            desa = "Desa Update",
+            kecamatan = "Kec Update",
+            kabupaten = "Kab U",
+            coordinator = "Coord Update",
+            whatsappNumber = "08199",
+            kphId = "2",
+            kphName = "KPH Y"
+        )
+
+        val apiResponse = ApiResponse<Unit>(
+            statusCode = 200,
+            message = "Success Update",
+            data = Unit
+        )
+
+        coEvery { apiService.updateKth(eq(id), any()) } returns apiResponse
+        val result = repository.updateKth(id, input)
+        assertTrue(result is Resource.Success)
+
+        coVerify {
+            apiService.updateKth(eq(id), match {
+                it.name == "KTH Update" && it.whatsappNumber == "08199"
+            })
+        }
+    }
+
+    @Test
+    fun `updateKth should return Error when API returns non-200 status`() = runTest {
+        val id = "123"
+        val input = CreateKthInput(
+            name = "KTH Update", desa = "Update", kecamatan = "Update", kabupaten = "Update",
+            coordinator = "Update", whatsappNumber = "08", kphId = "1", kphName = "Update"
+        )
+        val apiResponse = ApiResponse<Unit>(
+            statusCode = 400,
+            message = "Validasi Gagal",
+            data = Unit
+        )
+
+        coEvery { apiService.updateKth(id, any()) } returns apiResponse
+        val result = repository.updateKth(id, input)
+        assertTrue(result is Resource.Error)
+        assertEquals("Validasi Gagal", (result as Resource.Error).errorMessage)
+
+        coVerify { apiService.updateKth(id, any()) }
+    }
+
+    @Test
+    fun `updateKth should return Error when Exception occurs`() = runTest {
+        val id = "123"
+        val input = CreateKthInput(
+            name = "KTH Error", desa = "", kecamatan = "", kabupaten = "",
+            coordinator = "", whatsappNumber = "", kphId = "", kphName = ""
+        )
+        coEvery { apiService.updateKth(id, any()) } throws RuntimeException("No Internet Connection")
+        val result = repository.updateKth(id, input)
+        assertTrue(result is Resource.Error)
+        assertEquals("No Internet Connection", (result as Resource.Error).errorMessage)
+    }
 }

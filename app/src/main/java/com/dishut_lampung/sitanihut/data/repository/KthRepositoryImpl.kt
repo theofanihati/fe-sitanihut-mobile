@@ -98,4 +98,8 @@ class KthRepositoryImpl @Inject constructor(
             Resource.Error(e.localizedMessage ?: "Gagal membuat KTH")
         }
     }
+
+    override suspend fun updateKth(id: String, input: CreateKthInput): Resource<Unit> {
+        return TODO()
+    }
 }

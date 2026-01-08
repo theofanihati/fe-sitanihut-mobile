@@ -11,4 +11,5 @@ interface KthRepository {
     suspend fun syncKthData(): Resource<Unit>
     fun getKthDetail(id: String): Flow<Resource<Kth>>
     suspend fun createKth(input: CreateKthInput): Resource<Unit>
+    suspend fun updateKth(id: String, input: CreateKthInput): Resource<Unit>
 }
