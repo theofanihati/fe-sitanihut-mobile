@@ -433,6 +433,18 @@ fun KthDetailDto.toEntity(): KthEntity {
         kphName = kphName
     )
 }
+fun KthDetailDto.toDomain(): Kth {
+    return Kth(
+        id = id,
+        name = name,
+        desa = desa,
+        kecamatan = kecamatan,
+        kabupaten = kabupaten,
+        coordinator = coordinator,
+        whatsappNumber = whatsappNumber,
+        kphName = kphName
+    )
+}
 
 fun CreateKthInput.toDto(): CreateKthRequestDto {
     return CreateKthRequestDto(

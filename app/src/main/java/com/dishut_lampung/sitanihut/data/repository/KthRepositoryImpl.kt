@@ -100,6 +100,20 @@ class KthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateKth(id: String, input: CreateKthInput): Resource<Unit> {
-        return TODO()
+        return try {
+            val requestDto = input.toDto()
+            val response = apiService.updateKth(id, requestDto)
+
+            if (response.statusCode == 200) {
+                // val updatedData = response.data
+                // if (updatedData != null) dao.upsertAll(listOf(updatedData.toEntity()))
+                Resource.Success(Unit)
+            } else {
+                Resource.Error(response.message ?: "Gagal mengupdate data")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Error(e.localizedMessage ?: "Terjadi kesalahan jaringan")
+        }
     }
 }

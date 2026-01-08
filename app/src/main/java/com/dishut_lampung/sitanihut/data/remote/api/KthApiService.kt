@@ -8,6 +8,7 @@ import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -28,6 +29,12 @@ interface KthApiService {
     suspend fun createKth(
         @Body request: CreateKthRequestDto
     ): ApiResponse<KthDetailDto>
+
+    @PATCH("v1/kth/{id}")
+    suspend fun updateKth(
+        @Path("id") id: String,
+        @Body request: CreateKthRequestDto
+    ): ApiResponse<Unit>
 
     @DELETE("v1/kth/{id}")
     suspend fun deleteKth(
