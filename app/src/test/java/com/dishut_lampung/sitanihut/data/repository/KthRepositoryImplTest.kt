@@ -1,5 +1,6 @@
 package com.dishut_lampung.sitanihut.data.repository
 
+import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.data.local.dao.KthDao
 import com.dishut_lampung.sitanihut.data.local.entity.KthEntity
 import com.dishut_lampung.sitanihut.data.remote.api.KthApiService
@@ -16,6 +17,8 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -88,7 +91,7 @@ class KthRepositoryImplTest {
     }
 
     @Test
-    fun `getKthById should return mapped domain model from DAO`() = runTest {
+    fun `getKthDetail should return mapped domain model from DAO`() = runTest {
         val id = "123"
         val dummyEntity = KthEntity(
             id = id,
@@ -103,21 +106,37 @@ class KthRepositoryImplTest {
 
         every { dao.getKthById(id) } returns flowOf(dummyEntity)
 
-        val result = repository.getKthById(id).first()
-        coVerify { dao.getKthById(id) }
+        repository.getKthDetail(id).test {
+            val firstItem = awaitItem()
+            assertTrue(firstItem is Resource.Loading)
 
-        assertEquals("KTH Test", result?.name)
-        assertEquals("Desa Test", result?.desa)
-        assertEquals("KPH Test", result?.kphName)
+            val secondItem = awaitItem()
+            assertTrue(secondItem is Resource.Success)
+
+            val data = (secondItem as Resource.Success).data
+            assertEquals("KTH Test", data?.name)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+        coVerify { dao.getKthById(id) }
     }
 
     @Test
-    fun `getKthById should return null if data not found`() = runTest {
+    fun `getKthDetail should emit Error if data not found`() = runTest {
         val id = "999"
+        val dummyEmptyData = KthDetailDto(
+            id = "", name = "", desa = "", kecamatan = "",
+            kabupaten = "", coordinator = "", whatsappNumber = "", kphName = ""
+        )
         every { dao.getKthById(id) } returns flowOf(null)
 
-        val result = repository.getKthById(id).first()
-        assertEquals(null, result)
+        val errorResponse = ApiResponse<KthDetailDto>(404, "Not Found", dummyEmptyData)
+        coEvery { apiService.getKthDetail(id) } returns errorResponse
+
+        val result = repository.getKthDetail(id).toList()
+        assertTrue(result.first() is Resource.Loading)
+        assertTrue(result.last() is Resource.Error)
+        assertEquals("Not Found", (result.last() as Resource.Error).errorMessage)
         coVerify { dao.getKthById(id) }
     }
 

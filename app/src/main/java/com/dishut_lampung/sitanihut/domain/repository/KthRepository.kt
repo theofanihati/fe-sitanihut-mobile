@@ -9,8 +9,6 @@ interface KthRepository {
     fun getKthList(query: String): Flow<Resource<List<Kth>>>
     suspend fun deleteKth(id: String): Resource<Unit>
     suspend fun syncKthData(): Resource<Unit>
-    fun getKthById(id: String): Flow<Kth?>
-    suspend fun createKth(input: CreateKthInput): Resource<Unit>
     fun getKthDetail(id: String): Flow<Resource<Kth>>
-    suspend fun updateKth(id: String, input: CreateKthInput): Resource<Unit>
+    suspend fun createKth(input: CreateKthInput): Resource<Unit>
 }

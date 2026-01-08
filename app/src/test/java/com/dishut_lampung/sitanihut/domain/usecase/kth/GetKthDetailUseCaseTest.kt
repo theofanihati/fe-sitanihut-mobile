@@ -2,6 +2,7 @@ package com.dishut_lampung.sitanihut.domain.usecase.kth
 
 import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.repository.KthRepository
+import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -31,10 +32,10 @@ class GetKthDetailUseCaseTest {
             kphName = "KPH X"
         )
 
-        every { repository.getKthById(id) } returns flowOf(expectedKth)
+        every { repository.getKthDetail(id) } returns flowOf(Resource.Success(expectedKth))
 
         val result = useCase(id).first()
-        assertEquals(expectedKth, result)
-        verify { repository.getKthById(id) }
+        assertEquals(expectedKth, result.data)
+        verify { repository.getKthDetail(id) }
     }
 }

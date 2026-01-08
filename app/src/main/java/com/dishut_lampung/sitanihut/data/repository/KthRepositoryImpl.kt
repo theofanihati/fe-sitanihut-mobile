@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 class KthRepositoryImpl @Inject constructor(
     private val apiService: KthApiService,
@@ -55,26 +56,29 @@ class KthRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getKthById(id: String): Flow<Kth?> {
-        return flow {
+    override fun getKthDetail(id: String): Flow<Resource<Kth>> = flow {
+        emit(Resource.Loading())
+
+        try {
             val localData = dao.getKthById(id).first()
             if (localData != null) {
-                emit(localData.toDomain())
+                emit(Resource.Success(localData.toDomain()))
             }
 
-            try {
-                val response = apiService.getKthDetail(id)
-                val remoteData = response.data
-                if (remoteData != null) {
-                    dao.upsertAll(listOf(remoteData.toEntity()))
+            val response = apiService.getKthDetail(id)
+            val remoteData = response.data
+
+            if (response.statusCode == 200 && remoteData != null) {
+                dao.upsertAll(listOf(remoteData.toEntity()))
+                emit(Resource.Success(remoteData.toDomain()))
+            } else {
+                if (localData == null) {
+                    emit(Resource.Error(response.message ?: "Data tidak ditemukan"))
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
             }
-
-            dao.getKthById(id).collect { entity ->
-                emit(entity?.toDomain())
-            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(Resource.Error(e.localizedMessage ?: "Gagal memuat data"))
         }
     }
 

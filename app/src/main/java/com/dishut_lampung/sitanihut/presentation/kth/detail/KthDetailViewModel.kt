@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthDetailUseCase
+import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,13 +43,30 @@ class KthDetailViewModel  @Inject constructor(
                         it.copy(isLoading = false, error = e.localizedMessage ?: "Terjadi kesalahan")
                     }
                 }
-                .collect { kthData ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            kth = kthData,
-                            error = if (kthData == null) "Data KTH tidak ditemukan" else null
-                        )
+                .collect { result ->
+                    when (result) {
+                        is Resource.Loading -> {
+                            _uiState.update {
+                                it.copy(isLoading = true, error = null)
+                            }
+                        }
+                        is Resource.Success -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    kth = result.data,
+                                    error = if (result.data == null) "Data tidak ditemukan" else null
+                                )
+                            }
+                        }
+                        is Resource.Error -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    error = result.message ?: "Terjadi kesalahan"
+                                )
+                            }
+                        }
                     }
                 }
         }

@@ -6,6 +6,7 @@ import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthDetailUseCase
 import com.dishut_lampung.sitanihut.presentation.kth.detail.KthDetailViewModel
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
+import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
@@ -42,7 +44,10 @@ class KthDetailViewModelTest {
         val dummyKth = Kth(id, "KTH Mawar", "Desa A", "Kec B", "Kab C", "Ketua A", "081", "KPH X")
 
         every { savedStateHandle.get<String>("kthId") } returns id
-        every { getKthDetailUseCase(id) } returns flowOf(dummyKth)
+        every { getKthDetailUseCase(id) } returns flowOf(
+            Resource.Loading(),
+            Resource.Success(dummyKth)
+        )
 
         viewModel = KthDetailViewModel(getKthDetailUseCase, savedStateHandle)
         viewModel.uiState.test {
@@ -87,7 +92,10 @@ class KthDetailViewModelTest {
     fun `init should handle data not found (null)`() = runTest {
         val id = "999"
         every { savedStateHandle.get<String>("kthId") } returns id
-        every { getKthDetailUseCase(id) } returns flowOf(null)
+        every { getKthDetailUseCase(id) } returns flowOf(
+            Resource.Loading(),
+            Resource.Error("Data tidak ditemukan")
+        )
 
         viewModel = KthDetailViewModel(getKthDetailUseCase, savedStateHandle)
         viewModel.uiState.test {
@@ -98,6 +106,7 @@ class KthDetailViewModelTest {
 
             assertFalse(state.isLoading)
             assertNull(state.kth)
+            assertNotNull(state.error)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -111,9 +120,15 @@ class KthDetailViewModelTest {
         every { getKthDetailUseCase(id) } answers {
             callCount++
             if (callCount == 1) {
-                flow { throw RuntimeException("Error Pertama") }
+                flowOf(
+                    Resource.Loading(),
+                    Resource.Error("Error Pertama")
+                )
             } else {
-                flowOf(dummyKth)
+                flowOf(
+                    Resource.Loading(),
+                    Resource.Success(dummyKth)
+                )
             }
         }
 
