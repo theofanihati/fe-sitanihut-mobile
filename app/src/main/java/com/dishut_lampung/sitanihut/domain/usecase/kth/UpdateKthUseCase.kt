@@ -9,6 +9,6 @@ class UpdateKthUseCase @Inject constructor(
     private val repository: KthRepository
 ) {
     suspend operator fun invoke(id: String, input: CreateKthInput): Resource<Unit> {
-        return TODO()
+        return repository.updateKth(id, input)
     }
 }
