@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.domain.model.CreateKthInput
 import com.dishut_lampung.sitanihut.domain.usecase.kph.GetKphListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.CreateKthUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthDetailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.kth.UpdateKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.ValidateKthInputUseCase
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.Resource
@@ -23,6 +25,8 @@ import javax.inject.Inject
 @HiltViewModel
 class KthFormViewModel @Inject constructor(
     private val createKthUseCase: CreateKthUseCase,
+    private val getKthDetailUseCase: GetKthDetailUseCase,
+    private val updateKthUseCase: UpdateKthUseCase,
     private val validateKthInputUseCase: ValidateKthInputUseCase,
     private val getKphListUseCase: GetKphListUseCase,
     private val savedStateHandle: SavedStateHandle
@@ -31,11 +35,15 @@ class KthFormViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(KthFormUiState())
     val uiState = _uiState.asStateFlow()
 
-    private val currentKthId: String? = savedStateHandle.get<String>("kthId")
+    private val currentKthId: String? = savedStateHandle.get<String>("id")
 
     init {
         loadKphOptions()
         loadKabupatenOptions()
+
+        if (currentKthId != null) {
+            loadExistingKthData(currentKthId)
+        }
     }
 
     fun onEvent(event: KthFormUiEvent) {
@@ -67,7 +75,7 @@ class KthFormViewModel @Inject constructor(
             is KthFormUiEvent.OnWhatsappChange -> {
                 _uiState.update { it.copy(whatsappNumber = event.value) }
 
-                val phoneRegex = Regex("^(08[0-9]{8,14}|\\+628[0-9]{8,14})$")
+                val phoneRegex = Regex("^(08|\\+628)[0-9]*$")
                 var errorMsg: String? = null
 
                 if (event.value.isNotEmpty()) {
@@ -82,10 +90,18 @@ class KthFormViewModel @Inject constructor(
                 _uiState.update { it.copy(whatsappError = errorMsg) }
             }
             is KthFormUiEvent.OnKphSearchTextChange -> {
-                _uiState.update {
-                    it.copy(
-                        selectedKphName = event.text,
-                        selectedKphId = ""
+                _uiState.update { state ->
+                    val newText = event.text
+                    if (newText == state.selectedKphName && state.selectedKphId.isNotEmpty()) {
+                        return@update state
+                    }
+                    val matchingOption = state.kphOptions.find {
+                        it.name.equals(newText, ignoreCase = true)
+                    }
+
+                    state.copy(
+                        selectedKphName = newText,
+                        selectedKphId = matchingOption?.id ?: ""
                     )
                 }
             }
@@ -113,7 +129,7 @@ class KthFormViewModel @Inject constructor(
             is KthFormUiEvent.OnShowUserMessage -> {
                 viewModelScope.launch {
                     _uiState.update { it.copy(successMessage = null, error = null) }
-                   if (event.type == MessageType.Success) {
+                    if (event.type == MessageType.Success) {
                         _uiState.update { it.copy(successMessage = event.message) }
                     } else {
                         _uiState.update { it.copy(error = event.message) }
@@ -125,7 +141,7 @@ class KthFormViewModel @Inject constructor(
 
     private fun loadKphOptions() {
         getKphListUseCase().onEach { kphList ->
-            Log.d("DEBUG_KPH", "Data KPH dari DB: ${kphList.size} item")
+//            Log.d("DEBUG_KPH", "Data KPH dari DB: ${kphList.size} item")
             _uiState.update { it.copy(kphOptions = kphList) }
         }.launchIn(viewModelScope)
     }
@@ -136,6 +152,10 @@ class KthFormViewModel @Inject constructor(
         _uiState.update {
             it.copy(kabupatenOptions = kabupatenList)
         }
+    }
+
+    private fun loadExistingKthData(id: String) {
+        TODO()
     }
 
     private fun updateKabupaten(kabupaten: String) {

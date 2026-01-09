@@ -2,8 +2,11 @@ package com.dishut_lampung.sitanihut.presentation.kth.form
 
 import androidx.lifecycle.SavedStateHandle
 import com.dishut_lampung.sitanihut.domain.model.Kph
+import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.usecase.kph.GetKphListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.CreateKthUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthDetailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.kth.UpdateKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.ValidateKthInputUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ListValidationResult
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
@@ -35,6 +38,8 @@ class KthFormViewModelTest {
     private val createKthUseCase: CreateKthUseCase = mockk()
     private val validateKthInputUseCase: ValidateKthInputUseCase = mockk()
     private val getKphListUseCase: GetKphListUseCase = mockk()
+    private val getKthDetailUseCase: GetKthDetailUseCase = mockk()
+    private val updateKthUseCase: UpdateKthUseCase = mockk()
     private val savedStateHandle: SavedStateHandle = mockk(relaxed = true)
 
     @Before
@@ -42,7 +47,7 @@ class KthFormViewModelTest {
         mockkObject(WilayahLampungData)
         every {WilayahLampungData.getKecamatanByKabupaten("Lampung Selatan") } returns listOf("Kalianda", "Natar")
         every {WilayahLampungData.getDesaByKecamatan("Lampung Selatan", "Kalianda") } returns listOf("Way Urang", "Maja")
-        every { savedStateHandle.get<String>("kthId") } returns null
+        every { savedStateHandle.get<String>("id") } returns null
         val dummyKphList = listOf(Kph("1", "KPH Batutegi"), Kph("2", "KPH Liwa"))
         every { getKphListUseCase() } returns flowOf(dummyKphList)
 
@@ -50,6 +55,8 @@ class KthFormViewModelTest {
 
         viewModel = KthFormViewModel(
             createKthUseCase,
+            getKthDetailUseCase,
+            updateKthUseCase,
             validateKthInputUseCase,
             getKphListUseCase,
             savedStateHandle
@@ -62,6 +69,73 @@ class KthFormViewModelTest {
         val state = viewModel.uiState.value
         assertEquals(2, state.kphOptions.size)
         assertEquals("KPH Batutegi", state.kphOptions[0].name)
+    }
+
+    @Test
+    fun `init with id loads existing data correctly`() = runTest {
+        val editStateHandle = mockk<SavedStateHandle>(relaxed = true)
+        every { editStateHandle.get<String>("id") } returns "kth-123"
+
+        val existingKth = Kth(
+            id = "kth-123",
+            name = "KTH Lama",
+            kabupaten = "Lampung Selatan",
+            kecamatan = "Kalianda",
+            desa = "Maja",
+            coordinator = "Pak Ketua",
+            whatsappNumber = "081234567890",
+            kphId = "1",
+            kphName = "KPH Batutegi",
+        )
+        every { getKthDetailUseCase("kth-123") } returns flowOf(Resource.Success(existingKth))
+
+        val editViewModel = KthFormViewModel(
+            createKthUseCase,
+            getKthDetailUseCase,
+            updateKthUseCase,
+            validateKthInputUseCase,
+            getKphListUseCase,
+            editStateHandle
+        )
+
+        advanceUntilIdle()
+
+        val state = editViewModel.uiState.value
+        assertTrue(state.isEditMode)
+        assertEquals("KTH Lama", state.name)
+        assertEquals("Lampung Selatan", state.selectedKabupaten)
+        assertEquals("Kalianda", state.selectedKecamatan)
+        assertEquals("Maja", state.selectedDesa)
+        assertEquals("KPH Batutegi", state.selectedKphName)
+        assertEquals("1", state.selectedKphId)
+    }
+
+    @Test
+    fun `submit existing kth calls update usecase`() = runTest {
+        val editStateHandle = mockk<SavedStateHandle>(relaxed = true)
+        every { editStateHandle.get<String>("id") } returns "kth-123"
+
+        every { getKthDetailUseCase("kth-123") } returns flowOf(Resource.Success(mockk(relaxed = true)))
+        coEvery { updateKthUseCase(any(), any()) } returns Resource.Success(Unit)
+
+        val editViewModel = KthFormViewModel(
+            createKthUseCase,
+            getKthDetailUseCase,
+            updateKthUseCase,
+            validateKthInputUseCase,
+            getKphListUseCase,
+            editStateHandle
+        )
+
+        advanceUntilIdle()
+
+        editViewModel.onEvent(KthFormUiEvent.OnSubmit)
+        advanceUntilIdle()
+
+        coVerify { updateKthUseCase(eq("kth-123"), any()) }
+        coVerify(exactly = 0) { createKthUseCase(any()) }
+
+        assertEquals("Berhasil disimpan!", editViewModel.uiState.value.successMessage)
     }
 
     @Test
@@ -84,6 +158,35 @@ class KthFormViewModelTest {
         assertEquals("Kalianda", state.selectedKecamatan)
         assertEquals(listOf("Way Urang", "Maja"), state.desaOptions)
         assertEquals("", state.selectedDesa)
+    }
+    @Test
+    fun `kph search text auto selects id if name matches`() = runTest {
+        advanceUntilIdle()
+
+        viewModel.onEvent(KthFormUiEvent.OnKphSearchTextChange("KPH Batu"))
+        val state1 = viewModel.uiState.value
+        assertEquals("KPH Batu", state1.selectedKphName)
+        assertEquals("", state1.selectedKphId)
+
+        viewModel.onEvent(KthFormUiEvent.OnKphSearchTextChange("kph batutegi"))
+        val state2 = viewModel.uiState.value
+        assertEquals("kph batutegi", state2.selectedKphName)
+        assertEquals("1", state2.selectedKphId)
+    }
+
+    @Test
+    fun `whatsapp realtime validation logic`() = runTest {
+        viewModel.onEvent(KthFormUiEvent.OnWhatsappChange("08123456789"))
+        assertNull(viewModel.uiState.value.whatsappError)
+
+        viewModel.onEvent(KthFormUiEvent.OnWhatsappChange("0812abc"))
+        assertEquals("Masukkan nomor valid (08.. atau +628..) tanpa spasi", viewModel.uiState.value.whatsappError)
+
+        viewModel.onEvent(KthFormUiEvent.OnWhatsappChange("08123"))
+        assertEquals("Nomor telepon minimal 10 digit", viewModel.uiState.value.whatsappError)
+
+        viewModel.onEvent(KthFormUiEvent.OnWhatsappChange("0812345678912345"))
+        assertEquals("Nomor telepon maksimal 14 digit", viewModel.uiState.value.whatsappError)
     }
 
     @Test
