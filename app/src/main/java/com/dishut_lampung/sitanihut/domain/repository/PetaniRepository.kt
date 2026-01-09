@@ -10,6 +10,6 @@ interface PetaniRepository {
     suspend fun deletePetani(id: String): Resource<Unit>
     suspend fun syncPetaniData(): Resource<Unit>
     fun getPetaniDetail(id: String): Flow<Resource<Petani>>
-//    suspend fun createPetani(input: CreatePetaniInput): Resource<Unit>
-//    suspend fun updatePetani(id: String, input: CreatePetaniInput): Resource<Unit>
+    suspend fun createPetani(input: CreatePetaniInput): Resource<Unit>
+    suspend fun updatePetani(id: String, input: CreatePetaniInput): Resource<Unit>
 }

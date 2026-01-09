@@ -17,13 +17,13 @@ data class Petani(
 )
 
 data class CreatePetaniInput(
-    val name: String? = "",
-    val identityNumber: String? = "",
-    val gender: String? = "",
-    val address: String? = "",
-    val whatsAppNumber: String? = "",
-    val lastEducation: String? = "",
-    val sideJob: String? = "",
-    val landArea: Double? = null,
-    val kthId: String? = "",
+    val name: String = "",
+    val identityNumber: String = "",
+    val gender: String = "",
+    val address: String = "",
+    val whatsAppNumber: String = "",
+    val lastEducation: String = "",
+    val sideJob: String = "",
+    val landArea: Double = 0.0,
+    val kthId: String = "",
 )
