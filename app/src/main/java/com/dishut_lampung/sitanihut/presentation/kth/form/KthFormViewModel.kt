@@ -155,7 +155,42 @@ class KthFormViewModel @Inject constructor(
     }
 
     private fun loadExistingKthData(id: String) {
-        TODO()
+        getKthDetailUseCase(id).onEach { result ->
+            when (result) {
+                is Resource.Loading -> {
+                    _uiState.update { it.copy(isLoading = true) }
+                }
+                is Resource.Success -> {
+                    val data = result.data
+                    if (data != null) {
+                        val kecamatanList = WilayahLampungData.getKecamatanByKabupaten(data.kabupaten)
+                        val desaList = WilayahLampungData.getDesaByKecamatan(data.kabupaten, data.kecamatan ?: "")
+
+                        _uiState.update { state ->
+                            state.copy(
+                                isLoading = false,
+                                isEditMode = true,
+                                name = data.name,
+                                coordinator = data.coordinator ?: "",
+                                whatsappNumber = data.whatsappNumber ?: "",
+                                selectedKabupaten = data.kabupaten,
+                                kecamatanOptions = kecamatanList,
+                                selectedKecamatan = data.kecamatan ?: "",
+                                desaOptions = desaList,
+                                selectedDesa = data.desa,
+                                selectedKphId = data.kphId ?: "",
+                                selectedKphName = data.kphName ?: ""
+                            )
+                        }
+                    }
+                }
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(isLoading = false, error = result.message)
+                    }
+                }
+            }
+        }.launchIn(viewModelScope)
     }
 
     private fun updateKabupaten(kabupaten: String) {
@@ -220,7 +255,11 @@ class KthFormViewModel @Inject constructor(
                 return@launch
             }
 
-            val result = createKthUseCase(input)
+            val result = if (currentKthId == null) {
+                createKthUseCase(input)
+            } else {
+                updateKthUseCase(currentKthId, input)
+            }
 
             when (result) {
                 is Resource.Success -> {
