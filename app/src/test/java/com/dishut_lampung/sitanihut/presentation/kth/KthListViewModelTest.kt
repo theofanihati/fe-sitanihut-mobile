@@ -214,6 +214,41 @@ class KthListViewModelTest {
     }
 
     @Test
+    fun `Delete when offline should not call usecase and show error message`() = runTest {
+        val itemToDelete = Kth("1", "Offline Delete", "", "", "", "", "", "")
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(listOf(itemToDelete)))
+
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
+
+        viewModel = KthListViewModel(getKthListUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(KthEvent.OnMoreOptionClick("1"))
+            awaitItem()
+
+            viewModel.onEvent(KthEvent.OnDeleteClick)
+            awaitItem()
+
+            viewModel.onEvent(KthEvent.OnDeleteConfirm)
+
+            var errorState = awaitItem()
+            while (errorState.errorMessage == null) {
+                errorState = awaitItem()
+            }
+
+            assertEquals("Tidak ada koneksi internet", errorState.errorMessage)
+            assertFalse(errorState.isDeleteDialogVisible)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        coVerify(exactly = 0) { deleteKthUseCase(any()) }
+    }
+
+    @Test
     fun `Dismiss should clear states`() = runTest {
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))

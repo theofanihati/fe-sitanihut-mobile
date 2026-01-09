@@ -11,6 +11,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.UpdateKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.ValidateKthInputUseCase
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
+import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.Resource
 import com.dishut_lampung.sitanihut.util.WilayahLampungData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,6 +30,7 @@ class KthFormViewModel @Inject constructor(
     private val updateKthUseCase: UpdateKthUseCase,
     private val validateKthInputUseCase: ValidateKthInputUseCase,
     private val getKphListUseCase: GetKphListUseCase,
+    private val connectivityObserver: ConnectivityObserver,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -38,6 +40,7 @@ class KthFormViewModel @Inject constructor(
     private val currentKthId: String? = savedStateHandle.get<String>("id")
 
     init {
+        observeConnectivity()
         loadKphOptions()
         loadKabupatenOptions()
 
@@ -139,6 +142,16 @@ class KthFormViewModel @Inject constructor(
         }
     }
 
+    private fun observeConnectivity() {
+        connectivityObserver.observe()
+            .onEach { status ->
+                _uiState.update {
+                    it.copy(isOnline = status == ConnectivityObserver.Status.Available)
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
     private fun loadKphOptions() {
         getKphListUseCase().onEach { kphList ->
 //            Log.d("DEBUG_KPH", "Data KPH dari DB: ${kphList.size} item")
@@ -220,6 +233,11 @@ class KthFormViewModel @Inject constructor(
     }
 
     private fun submitKth() {
+        if (!_uiState.value.isOnline) {
+            _uiState.update { it.copy(error = "Tidak ada koneksi internet") }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 

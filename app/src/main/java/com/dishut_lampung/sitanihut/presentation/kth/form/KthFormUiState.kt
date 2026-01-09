@@ -10,6 +10,7 @@ data class KthFormUiState (
     val isFormValid: Boolean = false,
     val showConfirmDialog: Boolean = false,
     val isEditMode: Boolean = false,
+    val isOnline: Boolean = true,
 
     val name: String = "",
     val nameError: String? = null,

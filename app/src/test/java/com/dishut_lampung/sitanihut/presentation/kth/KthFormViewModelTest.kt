@@ -10,6 +10,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.kth.UpdateKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.ValidateKthInputUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ListValidationResult
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
+import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import com.dishut_lampung.sitanihut.util.Wilayah
@@ -40,6 +41,7 @@ class KthFormViewModelTest {
     private val getKphListUseCase: GetKphListUseCase = mockk()
     private val getKthDetailUseCase: GetKthDetailUseCase = mockk()
     private val updateKthUseCase: UpdateKthUseCase = mockk()
+    private val connectivityObserver: ConnectivityObserver = mockk()
     private val savedStateHandle: SavedStateHandle = mockk(relaxed = true)
 
     @Before
@@ -50,7 +52,7 @@ class KthFormViewModelTest {
         every { savedStateHandle.get<String>("id") } returns null
         val dummyKphList = listOf(Kph("1", "KPH Batutegi"), Kph("2", "KPH Liwa"))
         every { getKphListUseCase() } returns flowOf(dummyKphList)
-
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
         every { validateKthInputUseCase.execute(any()) } returns ListValidationResult(true)
 
         viewModel = KthFormViewModel(
@@ -59,6 +61,7 @@ class KthFormViewModelTest {
             updateKthUseCase,
             validateKthInputUseCase,
             getKphListUseCase,
+            connectivityObserver,
             savedStateHandle
         )
     }
@@ -95,6 +98,7 @@ class KthFormViewModelTest {
             updateKthUseCase,
             validateKthInputUseCase,
             getKphListUseCase,
+            connectivityObserver,
             editStateHandle
         )
 
@@ -124,6 +128,7 @@ class KthFormViewModelTest {
             updateKthUseCase,
             validateKthInputUseCase,
             getKphListUseCase,
+            connectivityObserver,
             editStateHandle
         )
 
@@ -287,5 +292,31 @@ class KthFormViewModelTest {
         assertFalse(state.isLoading)
         assertEquals("Gagal koneksi ke server", state.error)
         assertFalse(state.showConfirmDialog)
+    }
+
+    @Test
+    fun `submit fails when offline`() = runTest {
+        val offlineObserver: ConnectivityObserver = mockk()
+        every { offlineObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
+
+        val offlineViewModel = KthFormViewModel(
+            createKthUseCase,
+            getKthDetailUseCase,
+            updateKthUseCase,
+            validateKthInputUseCase,
+            getKphListUseCase,
+            offlineObserver,
+            savedStateHandle
+        )
+        advanceUntilIdle()
+
+        offlineViewModel.onEvent(KthFormUiEvent.OnSubmit)
+        advanceUntilIdle()
+
+        val state = offlineViewModel.uiState.value
+
+        coVerify(exactly = 0) { createKthUseCase(any()) }
+        coVerify(exactly = 0) { updateKthUseCase(any(), any()) }
+        assertEquals("Tidak ada koneksi internet", state.error)
     }
 }

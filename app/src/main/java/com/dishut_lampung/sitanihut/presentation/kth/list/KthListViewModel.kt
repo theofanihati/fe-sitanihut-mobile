@@ -6,6 +6,7 @@ import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.usecase.kth.DeleteKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthListUseCase
+import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -117,10 +118,30 @@ class KthListViewModel @Inject constructor(
             KthEvent.OnDismissSuccessMessage -> {
                 _baseState.update { it.copy(successMessage = null) }
             }
+            is KthEvent.OnShowUserMessage -> {
+                viewModelScope.launch {
+                    _baseState.update { it.copy(successMessage = null, errorMessage = null) }
+
+                    if (event.type == MessageType.Success) {
+                        _baseState.update { it.copy(successMessage = event.message) }
+                    } else {
+                        _baseState.update { it.copy(errorMessage = event.message) }
+                    }
+                }
+            }
         }
     }
 
     private fun deleteKth(id: String) {
+        if (!_isOnline.value) {
+            _baseState.update {
+                it.copy(
+                    errorMessage = "Tidak ada koneksi internet",
+                    isDeleteDialogVisible = false
+                )
+            }
+            return
+        }
         viewModelScope.launch {
             _baseState.update { it.copy(isLoading = true) }
 

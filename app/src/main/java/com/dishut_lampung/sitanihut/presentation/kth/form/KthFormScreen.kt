@@ -109,6 +109,7 @@ fun KthFormScreen(
     onEvent: (KthFormUiEvent) -> Unit,
 ) {
     val isUpdate = uiState.isEditMode
+    val isFormEnabled = !uiState.isLoading && uiState.isOnline
     val buttonText = if (isUpdate) "Perbarui" else "Simpan"
 
     Box(
@@ -147,6 +148,7 @@ fun KthFormScreen(
                     modifier = Modifier.fillMaxWidth(),
                     rounded = 40,
                     error = uiState.nameError,
+                    isEnabled = isFormEnabled,
                 )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -164,6 +166,7 @@ fun KthFormScreen(
                     },
                     options = uiState.kabupatenOptions,
                     errorMessage = uiState.kabupatenError,
+                    enabled = isFormEnabled,
                 )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -181,7 +184,7 @@ fun KthFormScreen(
                     },
                     options = uiState.kecamatanOptions,
                     errorMessage = uiState.kecamatanError,
-                    enabled = uiState.selectedKabupaten.isNotEmpty(),
+                    enabled = isFormEnabled && uiState.selectedKabupaten.isNotEmpty(),
                 )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -199,7 +202,7 @@ fun KthFormScreen(
                     },
                     options = uiState.desaOptions,
                     errorMessage = uiState.desaError,
-                    enabled = uiState.selectedKecamatan.isNotEmpty(),
+                    enabled = isFormEnabled && uiState.selectedKecamatan.isNotEmpty(),
                 )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -213,6 +216,7 @@ fun KthFormScreen(
                     modifier = Modifier.fillMaxWidth(),
                     rounded = 40,
                     error = uiState.coordinatorError,
+                    isEnabled = isFormEnabled,
                 )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -226,6 +230,7 @@ fun KthFormScreen(
                     modifier = Modifier.fillMaxWidth(),
                     rounded = 40,
                     error = uiState.whatsappError,
+                    isEnabled = isFormEnabled,
                 )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -245,6 +250,7 @@ fun KthFormScreen(
                         onEvent(KthFormUiEvent.OnKphSearchTextChange(newText))
                     },
                     errorMessage = uiState.kphError,
+                    enabled = isFormEnabled
                 )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -257,9 +263,9 @@ fun KthFormScreen(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.tertiary
                 ),
-                enabled = !uiState.isLoading
+                enabled = isFormEnabled
             ) {
-                Text(text = buttonText)
+                Text(text = if (uiState.isOnline) buttonText else "Offline (Hanya Lihat)")
             }
 
             Spacer(modifier = Modifier.height(50.dp))

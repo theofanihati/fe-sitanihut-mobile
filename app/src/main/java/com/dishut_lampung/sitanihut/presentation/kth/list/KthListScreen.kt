@@ -215,11 +215,7 @@ fun KthListScreen(
                             item = kth,
                             isOnline = state.isOnline,
                             onClick = {onNavigateToDetail(kth.id)},
-                            onActionClick = {
-                                if (state.isOnline) {
-                                    onEvent(KthEvent.OnMoreOptionClick(kth.id))
-                                }
-                            }
+                            onActionClick = { onEvent(KthEvent.OnMoreOptionClick(kth.id)) }
                         )
                     }
                 }
@@ -237,9 +233,11 @@ fun KthListScreen(
                     state.selectedKthId?.let { onNavigateToEdit(it) }
                 },
                 onDeleteClick = {
-                    onEvent(KthEvent.OnDeleteClick)
+                    if (state.isOnline) {
+                        onEvent(KthEvent.OnDeleteClick)
+                    }
                 },
-                isEditable = state.isOnline
+                isEditable = state.isOnline,
             )
         }
 
@@ -256,7 +254,18 @@ fun KthListScreen(
         }
 
         FloatingActionButton(
-            onClick = onNavigateToAddKth,
+            onClick = {
+                if (state.isOnline) {
+                    onNavigateToAddKth()
+                } else {
+                    onEvent(
+                        KthEvent.OnShowUserMessage(
+                            "Mode Offline: Tidak bisa menambah data",
+                            MessageType.Error
+                        )
+                    )
+                }
+            },
             containerColor = MaterialTheme.colorScheme.secondary,
             contentColor = MaterialTheme.colorScheme.onSecondary,
             modifier = Modifier
