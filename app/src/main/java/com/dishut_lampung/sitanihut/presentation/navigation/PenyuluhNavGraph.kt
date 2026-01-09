@@ -72,7 +72,9 @@ fun NavGraphBuilder.penyuluhNavGraph(
                     navController.navigateSingleTop("kth_detail/$id")
                 },
                 onNavigateToEdit = { id : String ->
-                    Screen.KthForm.createRoute(id = id)
+                    navController.navigateSingleTop(
+                        Screen.KthForm.createRoute(id = id)
+                    )
                 }
             )
         }

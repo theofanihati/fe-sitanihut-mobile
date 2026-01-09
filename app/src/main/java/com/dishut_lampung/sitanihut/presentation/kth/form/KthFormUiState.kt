@@ -9,6 +9,7 @@ data class KthFormUiState (
     val successMessage: String? = null,
     val isFormValid: Boolean = false,
     val showConfirmDialog: Boolean = false,
+    val isEditMode: Boolean = false,
 
     val name: String = "",
     val nameError: String? = null,

@@ -108,7 +108,7 @@ fun KthFormScreen(
     uiState: KthFormUiState,
     onEvent: (KthFormUiEvent) -> Unit,
 ) {
-    val isUpdate = false
+    val isUpdate = uiState.isEditMode
     val buttonText = if (isUpdate) "Perbarui" else "Simpan"
 
     Box(
@@ -302,7 +302,6 @@ fun KthFormScreen(
         )
 
         if (uiState.showConfirmDialog) {
-            val isUpdate = false
             val dialogTitle = if (isUpdate) "Memperbarui?" else "Menyimpan?"
             val actionMsg = if (isUpdate) "memperbarui" else "menyimpan"
             val confirmText = if (isUpdate) "Perbarui" else "Simpan"
