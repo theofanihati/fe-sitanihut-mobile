@@ -10,5 +10,6 @@ data class KthDetailDto(
     @SerializedName("kabupaten") val kabupaten: String,
     @SerializedName("koordinator") val coordinator: String?,
     @SerializedName("nomor_wa") val whatsappNumber: String?,
-    @SerializedName("asal_kph") val kphName: String
+    @SerializedName("asal_kph") val kphName: String,
+    @SerializedName("id_kph") val kphId: String?,
 )

@@ -126,7 +126,7 @@ class KthRepositoryImplTest {
         val id = "999"
         val dummyEmptyData = KthDetailDto(
             id = "", name = "", desa = "", kecamatan = "",
-            kabupaten = "", coordinator = "", whatsappNumber = "", kphName = ""
+            kabupaten = "", coordinator = "", whatsappNumber = "", kphId = "", kphName = ""
         )
         every { dao.getKthById(id) } returns flowOf(null)
 
@@ -161,6 +161,7 @@ class KthRepositoryImplTest {
             kabupaten = "Kab C",
             coordinator = "Budi",
             whatsappNumber = "08123",
+            kphId = "1",
             kphName = "KPH X"
         )
         val apiResponse = ApiResponse(

@@ -9,6 +9,7 @@ data class Kth (
     val coordinator: String? = null,
     val whatsappNumber: String? = null,
     val kphName : String,
+    val kphId: String? = null
 )
 
 data class CreateKthInput(

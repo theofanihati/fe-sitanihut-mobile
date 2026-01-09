@@ -442,7 +442,8 @@ fun KthDetailDto.toDomain(): Kth {
         kabupaten = kabupaten,
         coordinator = coordinator,
         whatsappNumber = whatsappNumber,
-        kphName = kphName
+        kphName = kphName,
+        kphId = kphId
     )
 }
 
