@@ -21,26 +21,98 @@ class PetaniRepositoryImpl @Inject constructor(
 ): PetaniRepository {
 
     override fun getPetaniList(query: String): Flow<Resource<List<Petani>>> {
-        return TODO()
+        return dao.getAllPetani(query).map { entities ->
+            Resource.Success(entities.map { it.toDomain() })
+        }
     }
 
     override suspend fun syncPetaniData(): Resource<Unit> {
-        return TODO()
+        return try {
+            val response = apiService.getPetaniList(limit = 50)
+            val items = response.data?.data ?: emptyList()
+
+            if (items.isNotEmpty()) {
+                val entities = items.map { it.toEntity() }
+                dao.upsertAll(entities)
+            }
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Gagal sinkronisasi data Petani")
+        }
     }
 
     override suspend fun deletePetani(id: String): Resource<Unit> {
-        return TODO()
+        return try {
+            val response = apiService.deletePetani(id)
+            if (response.statusCode == 200 || response.statusCode == 204) {
+                dao.deletePetani(id)
+                Resource.Success(Unit)
+            } else {
+                Resource.Error(response.message)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Gagal menghapus data KTH")
+        }
     }
 
     override fun getPetaniDetail(id: String): Flow<Resource<Petani>> = flow {
-        TODO()
+        emit(Resource.Loading())
+
+        try {
+            val localData = dao.getPetaniById(id).first()
+            if (localData != null) {
+                emit(Resource.Success(localData.toDomain()))
+            }
+
+            val response = apiService.getPetaniDetail(id)
+            val remoteData = response.data
+
+            if (response.statusCode == 200 && remoteData != null) {
+                dao.upsertAll(listOf(remoteData.toEntity()))
+                emit(Resource.Success(remoteData.toDomain()))
+            } else {
+                if (localData == null) {
+                    emit(Resource.Error(response.message ?: "Data tidak ditemukan"))
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(Resource.Error(e.localizedMessage ?: "Gagal memuat data"))
+        }
     }
 
     override suspend fun createPetani(input: CreatePetaniInput): Resource<Unit> {
-        return TODO()
+        return try {
+            val requestDto = input.toDto()
+            val response = apiService.createPetani(requestDto)
+
+            val newData = response.data
+            if (newData != null) {
+                dao.upsertAll(listOf(newData.toEntity()))
+            }
+
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Error(e.localizedMessage ?: "Gagal menambah petani baru")
+        }
     }
 
     override suspend fun updatePetani(id: String, input: CreatePetaniInput): Resource<Unit> {
-        return TODO()
+        return try {
+            val requestDto = input.toDto()
+            val response = apiService.updatePetani(id, requestDto)
+
+            if (response.statusCode == 200) {
+                // val updatedData = response.data
+                // if (updatedData != null) dao.upsertAll(listOf(updatedData.toEntity()))
+                Resource.Success(Unit)
+            } else {
+                Resource.Error(response.message ?: "Gagal mengupdate data")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Error(e.localizedMessage ?: "Terjadi kesalahan jaringan")
+        }
     }
 }

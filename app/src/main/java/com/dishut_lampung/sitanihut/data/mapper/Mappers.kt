@@ -4,17 +4,21 @@ import com.dishut_lampung.sitanihut.data.local.entity.CommodityEntity
 import com.dishut_lampung.sitanihut.data.local.entity.KphEntity
 import com.dishut_lampung.sitanihut.data.local.entity.KthEntity
 import com.dishut_lampung.sitanihut.data.local.entity.PenyuluhEntity
+import com.dishut_lampung.sitanihut.data.local.entity.PetaniEntity
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
 import com.dishut_lampung.sitanihut.data.local.entity.RoleEntity
 import com.dishut_lampung.sitanihut.data.local.entity.SyncStatus
 import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
 import com.dishut_lampung.sitanihut.data.remote.dto.CommodityDto
 import com.dishut_lampung.sitanihut.data.remote.dto.CreateKthRequestDto
+import com.dishut_lampung.sitanihut.data.remote.dto.CreatePetaniRequestDto
 import com.dishut_lampung.sitanihut.data.remote.dto.HarvestRequestDto
 import com.dishut_lampung.sitanihut.data.remote.dto.HarvestResponseDto
 import com.dishut_lampung.sitanihut.data.remote.dto.KphDto
 import com.dishut_lampung.sitanihut.data.remote.dto.KthDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.KthListItemDto
+import com.dishut_lampung.sitanihut.data.remote.dto.PetaniDetailDto
+import com.dishut_lampung.sitanihut.data.remote.dto.PetaniListItemDto
 import com.dishut_lampung.sitanihut.data.remote.dto.PlantingRequestDto
 import com.dishut_lampung.sitanihut.data.remote.dto.PlantingResponseDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportDetailDto
@@ -25,12 +29,14 @@ import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDto
 import com.dishut_lampung.sitanihut.domain.model.Commodity
 import com.dishut_lampung.sitanihut.domain.model.CreateKthInput
+import com.dishut_lampung.sitanihut.domain.model.CreatePetaniInput
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
 import com.dishut_lampung.sitanihut.domain.model.Kph
 import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.model.MasaPanen
 import com.dishut_lampung.sitanihut.domain.model.MasaTanam
 import com.dishut_lampung.sitanihut.domain.model.Penyuluh
+import com.dishut_lampung.sitanihut.domain.model.Petani
 import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
 import com.dishut_lampung.sitanihut.domain.model.ReportDetail
@@ -467,5 +473,77 @@ fun KphDto.toEntity(): KphEntity {
     return KphEntity(
         id = id,
         name = name
+    )
+}
+
+fun PetaniEntity.toDomain(): Petani {
+    return Petani(
+        id = id,
+        name = name,
+        identityNumber = identityNumber,
+        gender = gender,
+        address = address,
+        whatsAppNumber = whatsAppNumber,
+        lastEducation = lastEducation,
+        sideJob = sideJob,
+        landArea = landArea,
+        kphName = kphName,
+        kthName = kthName
+    )
+}
+
+fun PetaniListItemDto.toEntity(): PetaniEntity{
+    return PetaniEntity(
+        id = id,
+        name = name,
+        identityNumber = identityNumber,
+        kthName = kthName,
+        kphName = kphName,
+    )
+}
+
+fun PetaniDetailDto.toEntity(): PetaniEntity{
+    return PetaniEntity(
+        id = id,
+        name = name,
+        identityNumber = identityNumber,
+        gender = gender,
+        address = address,
+        whatsAppNumber = whatsAppNumber,
+        lastEducation = lastEducation,
+        sideJob = sideJob,
+        landArea = landArea,
+        kphName = kphName,
+        kthName = kthName
+    )
+}
+
+fun PetaniDetailDto.toDomain(): Petani{
+    return Petani(
+        id = id,
+        name = name,
+        identityNumber = identityNumber,
+        gender = gender,
+        address = address,
+        whatsAppNumber = whatsAppNumber,
+        lastEducation = lastEducation,
+        sideJob = sideJob,
+        landArea = landArea,
+        kphName = kphName,
+        kthName = kthName,
+    )
+}
+
+fun CreatePetaniInput.toDto(): CreatePetaniRequestDto{
+    return CreatePetaniRequestDto(
+        name = this.name,
+        identityNumber = this.identityNumber,
+        gender = this.gender,
+        address = this.address,
+        whatsAppNumber = this.whatsAppNumber,
+        lastEducation = this.lastEducation,
+        sideJob = this.sideJob,
+        landArea = this.landArea,
+        kthId = this.kthId,
     )
 }
