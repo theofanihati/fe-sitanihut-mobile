@@ -8,6 +8,6 @@ class DeletePetaniUseCase @Inject constructor(
     private val repository: PetaniRepository
 ) {
     suspend operator fun invoke(id: String): Resource<Unit> {
-        return TODO()
+        return repository.deletePetani(id)
     }
 }
