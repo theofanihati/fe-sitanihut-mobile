@@ -10,6 +10,6 @@ class GetPetaniDetailUseCase @Inject constructor(
     private val repository: PetaniRepository
 ) {
     operator fun invoke(id: String): Flow<Resource<Petani>> {
-        return TODO()
+        return repository.getPetaniDetail(id)
     }
 }
