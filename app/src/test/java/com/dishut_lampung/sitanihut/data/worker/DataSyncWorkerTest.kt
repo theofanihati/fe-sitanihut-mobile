@@ -10,6 +10,7 @@ import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
 import com.dishut_lampung.sitanihut.domain.repository.KphRepository
 import com.dishut_lampung.sitanihut.domain.repository.KthRepository
 import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
+import com.dishut_lampung.sitanihut.domain.repository.PetaniRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import com.dishut_lampung.sitanihut.util.Resource
@@ -31,6 +32,7 @@ class DataSyncWorkerTest {
     private val mockPenyuluhRepository: PenyuluhRepository = mockk(relaxed = true)
     private val mockKthRepository: KthRepository = mockk(relaxed = true)
     private val mockKphRepository: KphRepository = mockk(relaxed = true)
+    private val mockPetaniRepository: PetaniRepository = mockk(relaxed = true)
     private val mockUserPreferences: UserPreferences = mockk(relaxed = true)
 
     @Before
@@ -61,6 +63,7 @@ class DataSyncWorkerTest {
                         mockPenyuluhRepository,
                         mockKthRepository,
                         mockKphRepository,
+                        mockPetaniRepository,
                         mockUserPreferences,
                     )
                 }
@@ -77,6 +80,7 @@ class DataSyncWorkerTest {
         coVerify(exactly = 1) { mockPenyuluhRepository.syncPenyuluhData() }
         coVerify(exactly = 1) { mockKthRepository.syncKthData() }
         coVerify(exactly = 1) { mockKphRepository.syncKphData() }
+        coVerify(exactly = 1) { mockPetaniRepository.syncPetaniData() }
     }
 
     @Test
@@ -99,6 +103,7 @@ class DataSyncWorkerTest {
                         mockPenyuluhRepository,
                         mockKthRepository,
                         mockKphRepository,
+                        mockPetaniRepository,
                         mockUserPreferences,
                     )
                 }

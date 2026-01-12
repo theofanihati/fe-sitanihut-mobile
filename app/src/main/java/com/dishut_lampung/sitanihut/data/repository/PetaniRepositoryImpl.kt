@@ -51,7 +51,7 @@ class PetaniRepositoryImpl @Inject constructor(
                 Resource.Error(response.message)
             }
         } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Gagal menghapus data KTH")
+            Resource.Error(e.localizedMessage ?: "Gagal menghapus data Petani")
         }
     }
 

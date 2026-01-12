@@ -9,5 +9,5 @@ data class PetaniListItemDto(
     @SerializedName("id_kth") val kthId: String,
     @SerializedName("asal_kth") val kthName: String,
     @SerializedName("id_kph") val kphId: String,
-    @SerializedName("asal_kph") val kphName: String,
+    @SerializedName("nama_kph") val kphName: String,
 )

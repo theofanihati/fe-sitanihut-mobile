@@ -2,7 +2,11 @@ package com.dishut_lampung.sitanihut.presentation.petani.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkManager
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
+import com.dishut_lampung.sitanihut.data.worker.DataSyncWorker
 import com.dishut_lampung.sitanihut.domain.model.Petani
 import com.dishut_lampung.sitanihut.domain.usecase.petani.DeletePetaniUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.GetPetaniListUseCase
@@ -26,7 +30,8 @@ class PetaniListViewModel @Inject constructor(
     private val getPetaniListUseCase: GetPetaniListUseCase,
     private val deletePetaniUseCase: DeletePetaniUseCase,
     private val userPreferences: UserPreferences,
-    private val connectivityObserver: ConnectivityObserver
+    private val connectivityObserver: ConnectivityObserver,
+    private val workManager: WorkManager
 ) : ViewModel() {
 
     private val _baseState = MutableStateFlow(PetaniListUiState(isLoading = true))
@@ -76,6 +81,8 @@ class PetaniListViewModel @Inject constructor(
                 _searchQuery.value = event.query
             }
             PetaniEvent.OnRefresh -> {
+                _baseState.update { it.copy(isRefreshing = true) }
+                triggerManualSync()
                 fetchPetaniData(isRefresh = true)
             }
             is PetaniEvent.OnMoreOptionClick -> {
@@ -225,5 +232,17 @@ class PetaniListViewModel @Inject constructor(
                 }
             }
         }
+    }
+    private fun triggerManualSync() {
+        if (!_isOnline.value) {
+            _baseState.update { it.copy(isRefreshing = false) }
+            return
+        }
+
+        val syncRequest = OneTimeWorkRequestBuilder<DataSyncWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .build()
+
+        workManager.enqueue(syncRequest)
     }
 }

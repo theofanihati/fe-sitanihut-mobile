@@ -10,6 +10,7 @@ import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
 import com.dishut_lampung.sitanihut.domain.repository.KphRepository
 import com.dishut_lampung.sitanihut.domain.repository.KthRepository
 import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
+import com.dishut_lampung.sitanihut.domain.repository.PetaniRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import dagger.assisted.Assisted
@@ -25,6 +26,7 @@ class DataSyncWorker @AssistedInject constructor(
     private val penyuluhRepository: PenyuluhRepository,
     private val kthRepository: KthRepository,
     private val kphRepository: KphRepository,
+    private val petaniRepository: PetaniRepository,
     private val userPreferences: UserPreferences
 ) : CoroutineWorker(appContext, workerParams) {
 
@@ -42,6 +44,8 @@ class DataSyncWorker @AssistedInject constructor(
             kthRepository.syncKthData()
             Log.d("SYNC_WORKER_DATA", "Mulai sync kph...")
             kphRepository.syncKphData()
+            Log.d("SYNC_WORKER_DATA", "Mulai sync petani...")
+            petaniRepository.syncPetaniData()
             Log.d("SYNC_WORKER", "Sync selesai. Update timestamp.")
             userPreferences.updateLastSyncTime()
 
