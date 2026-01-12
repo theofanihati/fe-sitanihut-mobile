@@ -9,6 +9,6 @@ class CreatePetaniUseCase @Inject constructor(
     private val repository: PetaniRepository
 ) {
     suspend operator fun invoke(input: CreatePetaniInput): Resource<Unit> {
-        return TODO()
+        return repository.createPetani(input)
     }
 }
