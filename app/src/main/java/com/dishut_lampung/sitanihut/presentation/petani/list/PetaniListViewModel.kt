@@ -9,6 +9,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.petani.GetPetaniListUseCase
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@HiltViewModel
 class PetaniListViewModel @Inject constructor(
     private val getPetaniListUseCase: GetPetaniListUseCase,
     private val deletePetaniUseCase: DeletePetaniUseCase,

@@ -15,6 +15,7 @@ sealed class Screen(val route: String) {
     object DataCommodity : Screen("data_commodity")
 
     object ReportList : Petani("report_list")
+    data class ReportDetail(val id : String) : Petani("report_detail/{reportId}")
     object ReportForm : Petani("report_form?reportId={reportId}") {
         fun createRoute(reportId: String? = null): String {
             return if (reportId != null) {
@@ -24,7 +25,6 @@ sealed class Screen(val route: String) {
             }
         }
     }
-    data class ReportDetail(val id : String) : Petani("report_detail/{reportId}")
 
     object DataKth : Screen("data_kth")
     data class KthDetail(val id : String) : Screen("kth_detail/{kthId}")
@@ -40,7 +40,15 @@ sealed class Screen(val route: String) {
 
     object DataPetani : Screen("data_petani")
     data class PetaniDetail(val id : String) : Screen("petani_detail/{id}")
-
+    object PetaniForm : Screen("petani_form?petaniId={id}"){
+        fun createRoute(id: String? =null): String{
+            return if (id != null){
+                "petani_form?petaniId=$id"
+            }else{
+                "petani_form"
+            }
+        }
+    }
 
     object UserManagement : Screen("user-management")
     data class UserDetail(val id : String) : Screen("user_detail/{id}")

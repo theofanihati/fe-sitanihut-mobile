@@ -8,6 +8,7 @@ import com.dishut_lampung.sitanihut.data.local.dao.CommodityDao
 import com.dishut_lampung.sitanihut.data.local.dao.KphDao
 import com.dishut_lampung.sitanihut.data.local.dao.KthDao
 import com.dishut_lampung.sitanihut.data.local.dao.PenyuluhDao
+import com.dishut_lampung.sitanihut.data.local.dao.PetaniDao
 import com.dishut_lampung.sitanihut.data.local.dao.RemoteKeysDao
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.local.dao.RoleDao
@@ -16,6 +17,7 @@ import com.dishut_lampung.sitanihut.data.local.entity.CommodityEntity
 import com.dishut_lampung.sitanihut.data.local.entity.KphEntity
 import com.dishut_lampung.sitanihut.data.local.entity.KthEntity
 import com.dishut_lampung.sitanihut.data.local.entity.PenyuluhEntity
+import com.dishut_lampung.sitanihut.data.local.entity.PetaniEntity
 import com.dishut_lampung.sitanihut.data.local.entity.RemoteKeys
 import com.dishut_lampung.sitanihut.data.local.entity.ReportEntity
 import com.dishut_lampung.sitanihut.data.local.entity.RoleEntity
@@ -29,11 +31,11 @@ import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
         RemoteKeys::class,
         CommodityEntity::class,
         PenyuluhEntity::class,
-//        PetaniEntity::class,
+        PetaniEntity::class,
         KthEntity::class,
         KphEntity::class,
     ],
-    version = 2,
+    version = 1,
     exportSchema = false
 )
 abstract class SitanihutDatabase : RoomDatabase(){
@@ -43,9 +45,9 @@ abstract class SitanihutDatabase : RoomDatabase(){
     abstract fun remoteKeysDao(): RemoteKeysDao
     abstract fun commodityDao(): CommodityDao
     abstract fun penyuluhDao(): PenyuluhDao
-//    abstract fun petaniDao(): PetaniDao
     abstract fun kthDao(): KthDao
     abstract fun kphDao(): KphDao
+    abstract fun petaniDao(): PetaniDao
 
     companion object {
 //        val MIGRATION = object : Migration(1, 2) {

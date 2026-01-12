@@ -12,6 +12,7 @@ import com.dishut_lampung.sitanihut.data.local.dao.CommodityDao
 import com.dishut_lampung.sitanihut.data.local.dao.KphDao
 import com.dishut_lampung.sitanihut.data.local.dao.KthDao
 import com.dishut_lampung.sitanihut.data.local.dao.PenyuluhDao
+import com.dishut_lampung.sitanihut.data.local.dao.PetaniDao
 import com.dishut_lampung.sitanihut.data.local.dao.ReportDao
 import com.dishut_lampung.sitanihut.data.local.dao.RoleDao
 import com.dishut_lampung.sitanihut.data.local.dao.UserDao
@@ -21,6 +22,7 @@ import com.dishut_lampung.sitanihut.data.remote.api.HomeApiService
 import com.dishut_lampung.sitanihut.data.remote.api.KphApiService
 import com.dishut_lampung.sitanihut.data.remote.api.KthApiService
 import com.dishut_lampung.sitanihut.data.remote.api.PenyuluhApiService
+import com.dishut_lampung.sitanihut.data.remote.api.PetaniApiService
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
 import com.dishut_lampung.sitanihut.data.remote.api.UserApiService
 import com.dishut_lampung.sitanihut.data.remote.interceptor.AuthInterceptor
@@ -31,6 +33,7 @@ import com.dishut_lampung.sitanihut.data.repository.HomeRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.KphRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.KthRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.PenyuluhRepositoryImpl
+import com.dishut_lampung.sitanihut.data.repository.PetaniRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ProfileRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ReportRepositoryImpl
 import com.dishut_lampung.sitanihut.data.util.NetworkConnectivityObserver
@@ -42,6 +45,7 @@ import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.repository.KphRepository
 import com.dishut_lampung.sitanihut.domain.repository.KthRepository
 import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
+import com.dishut_lampung.sitanihut.domain.repository.PetaniRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ForgotPasswordUseCase
@@ -177,6 +181,12 @@ object AppModule{
 
     @Provides
     @Singleton
+    fun providePetaniApiService(retrofit: Retrofit): PetaniApiService {
+        return retrofit.create(PetaniApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
     fun provideAuthRepository(
         authApiService: AuthApiService,
         userApiService: UserApiService,
@@ -264,6 +274,15 @@ object AppModule{
         return KphRepositoryImpl(apiService, dao)
     }
 
+    @Provides
+    @Singleton
+    fun providePetaniRepository(
+        apiService: PetaniApiService,
+        dao: PetaniDao
+    ): PetaniRepository {
+        return PetaniRepositoryImpl(apiService, dao)
+    }
+
     // DATABASE
     @Provides
     @Singleton
@@ -310,6 +329,11 @@ object AppModule{
     @Singleton
     fun provideKphDao(db: SitanihutDatabase): KphDao {
         return db.kphDao()
+    }
+    @Provides
+    @Singleton
+    fun providePetaniDao(db: SitanihutDatabase): PetaniDao {
+        return db.petaniDao()
     }
 
     // USE CASE
