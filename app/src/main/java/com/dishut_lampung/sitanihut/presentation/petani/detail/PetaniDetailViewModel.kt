@@ -28,10 +28,55 @@ class PetaniDetailViewModel @Inject constructor(
     private val kthId: String = checkNotNull(savedStateHandle["id"])
 
     init {
-        TODO()
+        viewModelScope.launch {
+            val role = userPreferences.userRole.first() ?: ""
+            _uiState.update { it.copy(userRole = role) }
+
+            getDetail()
+        }
     }
 
     fun onRetry() {
-       TODO()
+        getDetail()
+    }
+
+    private fun getDetail() {
+        viewModelScope.launch {
+            getPetaniDetailUseCase(kthId)
+                .onStart {
+                    _uiState.update { it.copy(isLoading = true, error = null) }
+                }
+                .catch { e ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = e.localizedMessage ?: "Terjadi kesalahan")
+                    }
+                }
+                .collect { result ->
+                    when (result) {
+                        is Resource.Loading -> {
+                            _uiState.update {
+                                it.copy(isLoading = true, error = null)
+                            }
+                        }
+                        is Resource.Success -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    petani = result.data,
+                                    error = if (result.data == null) "Data tidak ditemukan" else null
+                                )
+                            }
+                        }
+                        is Resource.Error -> {
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    error = result.message ?: "Terjadi kesalahan"
+                                )
+                            }
+                        }
+                    }
+                }
+        }
     }
 }
