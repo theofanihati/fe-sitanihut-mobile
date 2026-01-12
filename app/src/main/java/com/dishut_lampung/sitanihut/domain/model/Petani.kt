@@ -24,6 +24,7 @@ data class CreatePetaniInput(
     val whatsAppNumber: String = "",
     val lastEducation: String = "",
     val sideJob: String = "",
-    val landArea: Double = 0.0,
+    val landArea: String = "",
+    val kphId: String = "",
     val kthId: String = "",
 )
