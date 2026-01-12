@@ -187,7 +187,7 @@ class PetaniRepositoryImplTest {
             whatsAppNumber = "081234567890",
             lastEducation = "SMA",
             sideJob = "Merajut",
-            landArea = 100.0,
+            landArea = "100",
             kthId = "1",
         )
 
@@ -237,7 +237,7 @@ class PetaniRepositoryImplTest {
             whatsAppNumber = "08199",
             lastEducation = "SMA",
             sideJob = "Merajut",
-            landArea = 100.0,
+            landArea = "100",
             kthId = "1",
         )
 
@@ -265,7 +265,7 @@ class PetaniRepositoryImplTest {
             name = "KTH Update",
             identityNumber = "", gender = "", address = "",
             whatsAppNumber = "", lastEducation = "", sideJob = "",
-            landArea = 0.0,
+            landArea = "0",
         )
         val apiResponse = ApiResponse<Unit>(
             statusCode = 400,
@@ -291,7 +291,7 @@ class PetaniRepositoryImplTest {
             whatsAppNumber = "",
             lastEducation = "",
             sideJob = "",
-            landArea = 0.0,
+            landArea = "0",
             kthId = "0",
         )
         coEvery { apiService.updatePetani(id, any()) } throws RuntimeException("No Internet Connection")

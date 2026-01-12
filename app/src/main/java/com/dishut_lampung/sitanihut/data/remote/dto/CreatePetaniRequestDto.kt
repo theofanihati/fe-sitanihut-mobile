@@ -10,6 +10,6 @@ data class CreatePetaniRequestDto (
     @SerializedName("nomor_wa") val whatsAppNumber: String,
     @SerializedName("pendidikan_terakhir") val lastEducation: String,
     @SerializedName("pekerjaan_sampingan") val sideJob: String,
-    @SerializedName("luas_lahan") val landArea: Double,
+    @SerializedName("luas_lahan") val landArea: String,
     @SerializedName("id_kth") val kthId: String,
 )
