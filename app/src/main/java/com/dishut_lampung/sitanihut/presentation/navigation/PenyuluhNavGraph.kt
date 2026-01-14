@@ -17,6 +17,7 @@ import com.dishut_lampung.sitanihut.presentation.kth.detail.KthDetailRoute
 import com.dishut_lampung.sitanihut.presentation.kth.form.KthFormRoute
 import com.dishut_lampung.sitanihut.presentation.kth.list.KthListRoute
 import com.dishut_lampung.sitanihut.presentation.petani.detail.PetaniDetailRoute
+import com.dishut_lampung.sitanihut.presentation.petani.form.PetaniFormRoute
 import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniListRoute
 import com.dishut_lampung.sitanihut.presentation.profile.penyuluh.PenyuluhProfileRoute
 
@@ -117,6 +118,18 @@ fun NavGraphBuilder.penyuluhNavGraph(
                     )
                 }
             )
+        }
+        composable(
+            route = Screen.PetaniForm.route,
+            arguments = listOf(
+                navArgument("id") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ){
+            PetaniFormRoute(navController = navController)
         }
         composable(
             route = "petani_detail/{id}",
