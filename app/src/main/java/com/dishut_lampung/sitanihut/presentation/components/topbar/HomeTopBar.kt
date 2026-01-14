@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.presentation.components.topbar
 
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -38,11 +39,16 @@ import com.dishut_lampung.sitanihut.R
 fun HomeTopBar(
     nama: String,
     role: String,
-    imageUrl: String?,
     onLogoutClick: () -> Unit,
     modifier: Modifier = Modifier,
     onProfileClick: (String) -> Unit,
 ) {
+    val avatarResId = when (role.lowercase()) {
+        "petani" -> R.drawable.avatar_1
+        "penyuluh" -> R.drawable.avatar_2
+        "penanggung jawab" -> R.drawable.avatar_3
+        else -> R.drawable.avatar_1
+    }
     TopAppBar(
         modifier = modifier,
         colors = TopAppBarDefaults.topAppBarColors(
@@ -59,14 +65,9 @@ fun HomeTopBar(
                     }
                     .padding(vertical = 4.dp, horizontal = 4.dp),
             ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
-                        .crossfade(true)
-                        .build(),
+                Image(
+                    painter = painterResource(id = avatarResId),
                     contentDescription = "Foto Profil",
-                    placeholder = painterResource(id = R.drawable.placeholder_profile_picture),
-                    error = painterResource(id = R.drawable.error_profile_picture),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(48.dp)

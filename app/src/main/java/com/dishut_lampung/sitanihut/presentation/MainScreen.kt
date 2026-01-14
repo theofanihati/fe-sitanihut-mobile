@@ -82,7 +82,6 @@ fun MainScreen(
                     HomeTopBar(
                         nama = userProfile.name,
                         role = userProfile.role,
-                        imageUrl = userProfile.imageUrl,
                         onLogoutClick = {
                             showLogoutDialog = true
                         },
