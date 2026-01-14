@@ -16,4 +16,6 @@ data class PetaniEntity(
     val landArea: Double? = null,
     val kphName: String,
     val kthName: String,
+    val kphId: String,
+    val kthId: String,
 )

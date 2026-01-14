@@ -56,7 +56,7 @@ class KthRepositoryImplTest {
 
     @Test
     fun `syncKthData should fetch from API and upsert to DAO`() = runTest {
-        val dummyDto = KthListItemDto("1", "KTH Mekar", "Desa ABC", "Kab XYZ","KPH C")
+        val dummyDto = KthListItemDto("1", "KTH Mekar", "Desa ABC", "Kab XYZ","123","KPH C")
         val apiResponse = ApiResponse(
             statusCode = 200,
             message = "Success",

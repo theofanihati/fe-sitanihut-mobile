@@ -36,8 +36,6 @@ class DataSyncWorker @AssistedInject constructor(
             profileRepository.syncUserDetail()
             Log.d("SYNC_WORKER_DATA", "Mulai sync commodities...")
             commodityRepository.syncCommodities()
-            Log.d("SYNC_WORKER_DATA", "Mulai sync reports...")
-            reportRepository.syncReportDetail()
             Log.d("SYNC_WORKER_DATA", "Mulai sync penyuluh...")
             penyuluhRepository.syncPenyuluhData()
             Log.d("SYNC_WORKER_DATA", "Mulai sync kth...")
@@ -46,6 +44,8 @@ class DataSyncWorker @AssistedInject constructor(
             kphRepository.syncKphData()
             Log.d("SYNC_WORKER_DATA", "Mulai sync petani...")
             petaniRepository.syncPetaniData()
+            Log.d("SYNC_WORKER_DATA", "Mulai sync reports...")
+            reportRepository.syncReportDetail()
             Log.d("SYNC_WORKER", "Sync selesai. Update timestamp.")
             userPreferences.updateLastSyncTime()
 

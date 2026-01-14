@@ -12,8 +12,8 @@ data class PetaniDetailDto(
     @SerializedName("pendidikan_terakhir") val lastEducation: String?,
     @SerializedName("pekerjaan_sampingan") val sideJob: String?,
     @SerializedName("luas_lahan") val landArea: Double?,
-    @SerializedName("id_kth") val kthId: String?,
+    @SerializedName("id_kth") val kthId: String,
     @SerializedName("asal_kth") val kthName: String,
-    @SerializedName("id_kph") val kphId: String?,
+    @SerializedName("id_kph") val kphId: String,
     @SerializedName("nama_kph") val kphName: String,
 )

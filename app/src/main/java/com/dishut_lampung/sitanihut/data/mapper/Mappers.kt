@@ -413,6 +413,7 @@ fun KthEntity.toDomain(): Kth {
         kabupaten = kabupaten,
         coordinator = coordinator,
         whatsappNumber = whatsappNumber,
+        kphId = kphId,
         kphName = kphName
     )
 }
@@ -423,6 +424,7 @@ fun KthListItemDto.toEntity(): KthEntity {
         name = name,
         desa = desa,
         kabupaten = kabupaten,
+        kphId = kphId,
         kphName = kphName
     )
 }
@@ -436,6 +438,7 @@ fun KthDetailDto.toEntity(): KthEntity {
         kabupaten = kabupaten,
         coordinator = coordinator,
         whatsappNumber = whatsappNumber,
+        kphId = kphId,
         kphName = kphName
     )
 }
@@ -487,7 +490,9 @@ fun PetaniEntity.toDomain(): Petani {
         lastEducation = lastEducation,
         sideJob = sideJob,
         landArea = landArea,
+        kphId = kphId,
         kphName = kphName,
+        kthId = kthId,
         kthName = kthName
     )
 }
@@ -498,7 +503,9 @@ fun PetaniListItemDto.toEntity(): PetaniEntity{
         name = name,
         identityNumber = identityNumber,
         kthName = kthName,
+        kthId = kthId,
         kphName = kphName,
+        kphId = kphId,
     )
 }
 
@@ -513,7 +520,9 @@ fun PetaniDetailDto.toEntity(): PetaniEntity{
         lastEducation = lastEducation,
         sideJob = sideJob,
         landArea = landArea,
+        kphId = kphId,
         kphName = kphName,
+        kthId = kthId,
         kthName = kthName
     )
 }
@@ -529,7 +538,9 @@ fun PetaniDetailDto.toDomain(): Petani{
         lastEducation = lastEducation,
         sideJob = sideJob,
         landArea = landArea,
+        kphId = kphId,
         kphName = kphName,
+        kthId = kthId,
         kthName = kthName,
     )
 }

@@ -50,7 +50,9 @@ class PetaniRepositoryImplTest {
             lastEducation = "SMA",
             sideJob = "Merajut",
             landArea = 100.0,
+            kphId = "123",
             kphName = "KPH C",
+            kthId = "123",
             kthName = "KTH C"
         )
         val expectedDomain = Petani(
@@ -134,7 +136,9 @@ class PetaniRepositoryImplTest {
             lastEducation = "SMA",
             sideJob = "Merajut",
             landArea = 100.0,
+            kphId = "123",
             kphName = "KPH C",
+            kthId = "123",
             kthName = "KTH C",
         )
 

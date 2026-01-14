@@ -7,5 +7,6 @@ data class KthListItemDto(
     @SerializedName("nama_kth") val name: String,
     @SerializedName("desa") val desa: String,
     @SerializedName("kabupaten") val kabupaten: String,
+    @SerializedName("id_kph") val kphId: String,
     @SerializedName("asal_kph") val kphName: String
 )

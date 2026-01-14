@@ -85,7 +85,14 @@ class PetaniFormViewModel @Inject constructor(
             }
 
             is PetaniFormEvent.OnIdentityNumberChange -> {
-                _uiState.update { it.copy(identityNumber = event.value, identityNumberError = null) }
+                if (event.value.all { it.isDigit() } && event.value.length <= 16) {
+                    _uiState.update {
+                        it.copy(
+                            identityNumber = event.value,
+                            identityNumberError = null
+                        )
+                    }
+                }
             }
 
             is PetaniFormEvent.OnGenderChange -> {
@@ -123,7 +130,12 @@ class PetaniFormViewModel @Inject constructor(
             }
 
             is PetaniFormEvent.OnLandAreaChange -> {
-                _uiState.update { it.copy(landArea = event.value, landAreaError = null) }
+                val isNumberOrDot = event.value.all { it.isDigit() || it == '.' }
+                val dotCount = event.value.count { it == '.' }
+
+                if (isNumberOrDot && dotCount <= 1) {
+                    _uiState.update { it.copy(landArea = event.value, landAreaError = null) }
+                }
             }
 
             is PetaniFormEvent.OnKphSearchTextChange -> {
@@ -247,6 +259,15 @@ class PetaniFormViewModel @Inject constructor(
             .onEach { result ->
                 if (result is Resource.Success) {
                     val fullList = result.data ?: emptyList()
+                    if (fullList.isNotEmpty()) {
+                        val sample = fullList[0]
+                        android.util.Log.d("DEBUG_KTH", "--- CEK DATA ---")
+                        android.util.Log.d("DEBUG_KTH", "1. User KPH ID (Target): '$kphId'")
+                        android.util.Log.d("DEBUG_KTH", "2. Data API KPH ID: '${sample.kphId}'") // Cek apakah ini null?
+                        android.util.Log.d("DEBUG_KTH", "3. Data API Nama: '${sample.name}'")   // Cek apakah ini null?
+                    } else {
+                        android.util.Log.d("DEBUG_KTH", "List dari DB Kosong!")
+                    }
                     val filteredKth = fullList.filter { it.kphId == kphId }
 
                     allKthInKph = filteredKth
@@ -263,6 +284,10 @@ class PetaniFormViewModel @Inject constructor(
                 }
                 is Resource.Success -> {
                     val data = result.data
+                    android.util.Log.d("DEBUG_PETANI", "=== CEK DATA MASUK VIEWMODEL ===")
+                    android.util.Log.d("DEBUG_PETANI", "Nama: ${data?.name}")
+                    android.util.Log.d("DEBUG_PETANI", "KPH ID: '${data?.kphId}' (Harus ada isinya)")
+                    android.util.Log.d("DEBUG_PETANI", "KTH ID: '${data?.kthId}' (Harus ada isinya)")
                     if (data != null) {
                         _uiState.update { state ->
                             state.copy(
