@@ -195,6 +195,33 @@ class PetaniFormViewModelTest {
     }
 
     @Test
+    fun `submit existing petani DOES NOT call update usecase WHEN no data changed`() = runTest{
+        val originalPetani = mockk<Petani>(relaxed = true) {
+            every { id } returns "petani-123"
+            every { name } returns "Nama Lama"
+            every { kphId } returns "kph-1"
+            every { kthId } returns "kth-1"
+        }
+        val editStateHandle = mockk<SavedStateHandle>(relaxed = true)
+        every { editStateHandle.get<String>("id") } returns "petani-123"
+
+        every { getPetaniDetailUseCase("petani-123") } returns flowOf(Resource.Success(originalPetani))
+        coEvery { updatePetaniUseCase(any(), any()) } returns Resource.Success(Unit)
+
+        val editViewModel = PetaniFormViewModel(
+            createPetaniUseCase, getPetaniDetailUseCase, updatePetaniUseCase,
+            validatePetaniInputUseCase, getKphListUseCase, getKthListUseCase,
+            userPreferences, getUserDetailUseCase, connectivityObserver, editStateHandle
+        )
+        advanceUntilIdle()
+        editViewModel.onEvent(PetaniFormEvent.OnSubmit)
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { updatePetaniUseCase(any(), any()) }
+        assertEquals("Tidak ada perubahan data", editViewModel.uiState.value.successMessage)
+    }
+
+    @Test
     fun `kth search text filters options locally`() = runTest {
         advanceUntilIdle()
         viewModel.onEvent(PetaniFormEvent.OnKthSearchTextChange("KTH Z"))
@@ -316,8 +343,7 @@ class PetaniFormViewModelTest {
         assertEquals("Nomor tidak valid", state.whatsAppNumberError)
         assertEquals("Perbaiki input", state.error)
     }
-
-
+    
     @Test
     fun `submit success (create) calls create usecase`() = runTest {
         coEvery { createPetaniUseCase(any()) } returns Resource.Success(Unit)
