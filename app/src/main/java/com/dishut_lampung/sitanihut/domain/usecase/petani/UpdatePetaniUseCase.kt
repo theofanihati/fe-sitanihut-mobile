@@ -8,7 +8,7 @@ import javax.inject.Inject
 class UpdatePetaniUseCase @Inject constructor(
     private val repository: PetaniRepository
 ) {
-    suspend operator fun invoke(id: String, input: CreatePetaniInput): Resource<Unit> {
-        return repository.updatePetani(id, input)
+    suspend operator fun invoke(id: String, changes: Map<String, Any?>): Resource<Unit> {
+        return repository.updatePetani(id, changes)
     }
 }

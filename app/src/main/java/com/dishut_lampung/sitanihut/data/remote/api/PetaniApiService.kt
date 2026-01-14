@@ -33,7 +33,7 @@ interface PetaniApiService {
     @PATCH("v1/petani/{id}")
     suspend fun updatePetani(
         @Path("id") id: String,
-        @Body request: CreatePetaniRequestDto
+        @Body request: Map<String, @JvmSuppressWildcards Any?>
     ): ApiResponse<Unit>
 
     @DELETE("v1/petani/{id}")

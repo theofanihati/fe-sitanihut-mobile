@@ -25,28 +25,28 @@ class UpdatePetaniUseCaseTest {
     @Test
     fun `invoke should return Success when repository update is successful`() = runTest {
         val id = "123"
-        val input = mockk<CreatePetaniInput>(relaxed = true)
+        val changes = mapOf<String, Any?>("nama_petani" to "Fani Update")
         val expectedResult = Resource.Success(Unit)
 
-        coEvery { repository.updatePetani(id, input) } returns expectedResult
+        coEvery { repository.updatePetani(id, changes) } returns expectedResult
 
-        val result = useCase(id, input)
+        val result = useCase(id, changes)
         assertEquals(expectedResult, result)
 
-        coVerify(exactly = 1) { repository.updatePetani(id, input) }
+        coVerify(exactly = 1) { repository.updatePetani(id, changes) }
     }
 
     @Test
     fun `invoke should return Error when repository update fails`() = runTest {
         val id = "123"
-        val input = mockk<CreatePetaniInput>(relaxed = true)
+        val changes = mapOf<String, Any?>("nama_petani" to "Fani Update")
         val errorMessage = "Gagal update data"
         val expectedResult = Resource.Error<Unit>(errorMessage)
 
-        coEvery { repository.updatePetani(id, input) } returns expectedResult
+        coEvery { repository.updatePetani(id, changes) } returns expectedResult
 
-        val result = useCase(id, input)
+        val result = useCase(id, changes)
         assertEquals(expectedResult, result)
-        coVerify(exactly = 1) { repository.updatePetani(id, input) }
+        coVerify(exactly = 1) { repository.updatePetani(id, changes) }
     }
 }

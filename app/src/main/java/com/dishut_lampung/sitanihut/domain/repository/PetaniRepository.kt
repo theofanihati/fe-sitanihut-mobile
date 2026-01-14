@@ -11,5 +11,5 @@ interface PetaniRepository {
     suspend fun syncPetaniData(): Resource<Unit>
     fun getPetaniDetail(id: String): Flow<Resource<Petani>>
     suspend fun createPetani(input: CreatePetaniInput): Resource<Unit>
-    suspend fun updatePetani(id: String, input: CreatePetaniInput): Resource<Unit>
+    suspend fun updatePetani(id: String, changes: Map<String, Any?>): Resource<Unit>
 }

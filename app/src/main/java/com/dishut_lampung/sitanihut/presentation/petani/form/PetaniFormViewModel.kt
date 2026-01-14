@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.CreatePetaniInput
 import com.dishut_lampung.sitanihut.domain.model.Kth
+import com.dishut_lampung.sitanihut.domain.model.Petani
 import com.dishut_lampung.sitanihut.domain.usecase.kph.GetKphListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.CreatePetaniUseCase
@@ -45,6 +46,7 @@ class PetaniFormViewModel @Inject constructor(
 
     private val currentPetaniId: String? = savedStateHandle.get<String>("id")
     private var allKthInKph: List<Kth> = emptyList()
+    private var originalData: Petani? = null
 
     init {
         observeConnectivity()
@@ -261,12 +263,12 @@ class PetaniFormViewModel @Inject constructor(
                     val fullList = result.data ?: emptyList()
                     if (fullList.isNotEmpty()) {
                         val sample = fullList[0]
-                        android.util.Log.d("DEBUG_KTH", "--- CEK DATA ---")
-                        android.util.Log.d("DEBUG_KTH", "1. User KPH ID (Target): '$kphId'")
-                        android.util.Log.d("DEBUG_KTH", "2. Data API KPH ID: '${sample.kphId}'") // Cek apakah ini null?
-                        android.util.Log.d("DEBUG_KTH", "3. Data API Nama: '${sample.name}'")   // Cek apakah ini null?
+//                        android.util.Log.d("DEBUG_KTH", "--- CEK DATA ---")
+//                        android.util.Log.d("DEBUG_KTH", "1. User KPH ID (Target): '$kphId'")
+//                        android.util.Log.d("DEBUG_KTH", "2. Data API KPH ID: '${sample.kphId}'")
+//                        android.util.Log.d("DEBUG_KTH", "3. Data API Nama: '${sample.name}'")
                     } else {
-                        android.util.Log.d("DEBUG_KTH", "List dari DB Kosong!")
+//                        android.util.Log.d("DEBUG_KTH", "List DB Kosong!")
                     }
                     val filteredKth = fullList.filter { it.kphId == kphId }
 
@@ -284,10 +286,11 @@ class PetaniFormViewModel @Inject constructor(
                 }
                 is Resource.Success -> {
                     val data = result.data
-                    android.util.Log.d("DEBUG_PETANI", "=== CEK DATA MASUK VIEWMODEL ===")
-                    android.util.Log.d("DEBUG_PETANI", "Nama: ${data?.name}")
-                    android.util.Log.d("DEBUG_PETANI", "KPH ID: '${data?.kphId}' (Harus ada isinya)")
-                    android.util.Log.d("DEBUG_PETANI", "KTH ID: '${data?.kthId}' (Harus ada isinya)")
+//                    android.util.Log.d("DEBUG_PETANI", "=== CEK DATA MASUK VIEWMODEL ===")
+//                    android.util.Log.d("DEBUG_PETANI", "Nama: ${data?.name}")
+//                    android.util.Log.d("DEBUG_PETANI", "KPH ID: '${data?.kphId}' (Harus ada isinya)")
+//                    android.util.Log.d("DEBUG_PETANI", "KTH ID: '${data?.kthId}' (Harus ada isinya)")
+                    originalData = data
                     if (data != null) {
                         _uiState.update { state ->
                             state.copy(
@@ -330,70 +333,102 @@ class PetaniFormViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            val input = CreatePetaniInput(
-                name = _uiState.value.name,
-                identityNumber = _uiState.value.identityNumber,
-                gender = _uiState.value.gender,
-                address = _uiState.value.address,
-                whatsAppNumber = _uiState.value.whatsAppNumber,
-                lastEducation = _uiState.value.lastEducation,
-                sideJob = _uiState.value.sideJob ,
-                landArea = _uiState.value.landArea,
-                kphId = _uiState.value.selectedKphId,
-                kthId = _uiState.value.selectedKthId,
-            )
+            if (currentPetaniId == null) {
+                val input = CreatePetaniInput(
+                    name = _uiState.value.name,
+                    identityNumber = _uiState.value.identityNumber,
+                    gender = _uiState.value.gender,
+                    address = _uiState.value.address,
+                    whatsAppNumber = _uiState.value.whatsAppNumber,
+                    lastEducation = _uiState.value.lastEducation,
+                    sideJob = _uiState.value.sideJob,
+                    landArea = _uiState.value.landArea,
+                    kphId = _uiState.value.selectedKphId,
+                    kthId = _uiState.value.selectedKthId,
+                )
 
-            val validationResult = validatePetaniInputUseCase.execute(input)
+                val validationResult = validatePetaniInputUseCase.execute(input)
 
-            if (!validationResult.successful) {
-                val errors = validationResult.fieldErrors
-                _uiState.update { state ->
-                    state.copy(
+                if (!validationResult.successful) {
+                    val errors = validationResult.fieldErrors
+                    _uiState.update { state ->
+                        state.copy(
+                            isLoading = false,
+                            error = validationResult.errorMessage,
+                            showConfirmDialog = false,
+                            nameError = errors["name"],
+                            identityNumberError = errors["identityNumber"],
+                            genderError = errors["gender"],
+                            addressError = errors["address"],
+                            whatsAppNumberError = errors["whatsAppNumber"],
+                            lastEducationError = errors["lastEducation"],
+                            sideJobError = errors["sideJob"],
+                            landAreaError = errors["landArea"],
+                            kphError = errors["kphId"] ?: errors["kph_name"],
+                            kthError = errors["kthId"] ?: errors["kth_name"]
+                        )
+                    }
+                    return@launch
+                }
+            val result = createPetaniUseCase(input)
+            handleResult(result)
+            } else {
+                val changes = mutableMapOf<String, Any?>()
+                val current = _uiState.value
+                val old = originalData
+
+                if (old != null) {
+                    if (current.name != old.name) changes["nama_petani"] = current.name
+
+                    if (current.identityNumber != old.identityNumber) changes["nik"] = current.identityNumber
+
+                    if (current.gender != old.gender) changes["jenis_kelamin"] = current.gender
+                    if (current.address != old.address) changes["alamat"] = current.address
+                    if (current.whatsAppNumber != old.whatsAppNumber) changes["nomor_wa"] = current.whatsAppNumber
+                    if (current.lastEducation != old.lastEducation) changes["pendidikan_terakhir"] = current.lastEducation
+                    if (current.sideJob != old.sideJob) changes["pekerjaan_sampingan"] = current.sideJob
+
+                    val newLandArea = current.landArea.toDoubleOrNull()
+                    if (newLandArea != old.landArea) {
+                        changes["luas_lahan"] = newLandArea
+                    }
+
+                    if (current.selectedKphId != old.kphId) changes["id_kph"] = current.selectedKphId
+                    if (current.selectedKthId != old.kthId) changes["id_kth"] = current.selectedKthId
+                }
+
+                if (changes.isEmpty()) {
+                    _uiState.update { it.copy(isLoading = false, successMessage = "Tidak ada perubahan data") }
+                    return@launch
+                }
+
+                val result = updatePetaniUseCase(currentPetaniId, changes)
+                handleResult(result)
+            }
+        }
+    }
+
+    private fun <T> handleResult(result: Resource<T>) { // Tambahkan <T>
+        when (result) {
+            is Resource.Success -> {
+                _uiState.update {
+                    it.copy(
                         isLoading = false,
-                        error = validationResult.errorMessage,
-                        showConfirmDialog = false,
-                        nameError = errors["name"],
-                        identityNumberError = errors["identityNumber"],
-                        genderError = errors["gender"],
-                        addressError = errors["address"],
-                        whatsAppNumberError = errors["whatsAppNumber"],
-                        lastEducationError = errors["lastEducation"],
-                        sideJobError = errors["sideJob"],
-                        landAreaError = errors["landArea"],
-                        kphError = errors["kphId"] ?: errors["kph_name"],
-                        kthError = errors["kthId"] ?: errors["kth_name"]
+                        successMessage = "Berhasil disimpan!",
+                        showConfirmDialog = false
                     )
                 }
-                return@launch
             }
-
-            val result = if (currentPetaniId == null) {
-                createPetaniUseCase(input)
-            } else {
-                updatePetaniUseCase(currentPetaniId, input)
-            }
-
-            when (result) {
-                is Resource.Success -> {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            successMessage = "Berhasil disimpan!",
-                            showConfirmDialog = false,
-                        )
-                    }
+            is Resource.Error -> {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = result.message,
+                        showConfirmDialog = false
+                    )
                 }
-                is Resource.Error -> {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = result.message,
-                            showConfirmDialog = false
-                        )
-                    }
-                }
-                else -> {}
             }
+            else -> {}
         }
     }
 }

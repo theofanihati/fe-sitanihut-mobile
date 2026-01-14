@@ -98,21 +98,12 @@ class PetaniRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updatePetani(id: String, input: CreatePetaniInput): Resource<Unit> {
+    override suspend fun updatePetani(id: String, changes: Map<String, Any?>): Resource<Unit> {
         return try {
-            val requestDto = input.toDto()
-            val response = apiService.updatePetani(id, requestDto)
-
-            if (response.statusCode == 200) {
-                // val updatedData = response.data
-                // if (updatedData != null) dao.upsertAll(listOf(updatedData.toEntity()))
-                Resource.Success(Unit)
-            } else {
-                Resource.Error(response.message ?: "Gagal mengupdate data")
-            }
+            apiService.updatePetani(id, changes)
+            Resource.Success(Unit)
         } catch (e: Exception) {
-            e.printStackTrace()
-            Resource.Error(e.localizedMessage ?: "Terjadi kesalahan jaringan")
+            Resource.Error(e.message ?: "Gagal update")
         }
     }
 }

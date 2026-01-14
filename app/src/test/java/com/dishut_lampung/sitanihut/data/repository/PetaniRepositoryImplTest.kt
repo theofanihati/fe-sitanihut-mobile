@@ -233,16 +233,9 @@ class PetaniRepositoryImplTest {
     @Test
     fun `updateKth should call api service and return Success when status is 200`() = runTest {
         val id = "123"
-        val input = CreatePetaniInput(
-            name = "Petani Update",
-            identityNumber = "1234567890123456",
-            gender = "Laki-laki",
-            address = "Jl. Raya",
-            whatsAppNumber = "08199",
-            lastEducation = "SMA",
-            sideJob = "Merajut",
-            landArea = "100",
-            kthId = "1",
+        val changes = mapOf(
+            "nama_petani" to "Petani Update",
+            "nomor_wa" to "08199"
         )
 
         val apiResponse = ApiResponse<Unit>(
@@ -252,12 +245,12 @@ class PetaniRepositoryImplTest {
         )
 
         coEvery { apiService.updatePetani(eq(id), any()) } returns apiResponse
-        val result = repository.updatePetani(id, input)
+        val result = repository.updatePetani(id, changes)
         assertTrue(result is Resource.Success)
 
         coVerify {
-            apiService.updatePetani(eq(id), match {
-                it.name == "Petani Update" && it.whatsAppNumber == "08199"
+            apiService.updatePetani(eq(id), match { map ->
+                map["nama_petani"] == "Petani Update" && map["nomor_wa"] == "08199"
             })
         }
     }
@@ -265,11 +258,8 @@ class PetaniRepositoryImplTest {
     @Test
     fun `updateKth should return Error when API returns non-200 status`() = runTest {
         val id = "123"
-        val input = CreatePetaniInput(
-            name = "KTH Update",
-            identityNumber = "", gender = "", address = "",
-            whatsAppNumber = "", lastEducation = "", sideJob = "",
-            landArea = "0",
+        val changes = mapOf(
+            "nama_petani" to "KTH Update"
         )
         val apiResponse = ApiResponse<Unit>(
             statusCode = 400,
@@ -277,8 +267,8 @@ class PetaniRepositoryImplTest {
             data = Unit
         )
 
-        coEvery { apiService.updatePetani(id, any()) } returns apiResponse
-        val result = repository.updatePetani(id, input)
+        coEvery { apiService.updatePetani(id, any()) } throws RuntimeException("Validasi Gagal")
+        val result = repository.updatePetani(id, changes)
         assertTrue(result is Resource.Error)
         assertEquals("Validasi Gagal", (result as Resource.Error).errorMessage)
 
@@ -288,18 +278,9 @@ class PetaniRepositoryImplTest {
     @Test
     fun `updateKth should return Error when Exception occurs`() = runTest {
         val id = "123"
-        val input = CreatePetaniInput(
-            name = "Petani Error", identityNumber = "",
-            gender = "",
-            address = "",
-            whatsAppNumber = "",
-            lastEducation = "",
-            sideJob = "",
-            landArea = "0",
-            kthId = "0",
-        )
+        val changes = mapOf<String, Any?>()
         coEvery { apiService.updatePetani(id, any()) } throws RuntimeException("No Internet Connection")
-        val result = repository.updatePetani(id, input)
+        val result = repository.updatePetani(id, changes)
         assertTrue(result is Resource.Error)
         assertEquals("No Internet Connection", (result as Resource.Error).errorMessage)
     }

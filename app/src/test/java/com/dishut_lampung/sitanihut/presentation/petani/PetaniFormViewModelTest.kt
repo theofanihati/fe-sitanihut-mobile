@@ -160,10 +160,16 @@ class PetaniFormViewModelTest {
 
     @Test
     fun `submit existing petani calls update usecase`() = runTest{
+        val originalPetani = mockk<Petani>(relaxed = true) {
+            every { id } returns "petani-123"
+            every { name } returns "Nama Lama"
+            every { kphId } returns "kph-1"
+            every { kthId } returns "kth-1"
+        }
         val editStateHandle = mockk<SavedStateHandle>(relaxed = true)
         every { editStateHandle.get<String>("id") } returns "petani-123"
 
-        every { getPetaniDetailUseCase("petani-123") } returns flowOf(Resource.Success(mockk(relaxed = true)))
+        every { getPetaniDetailUseCase("petani-123") } returns flowOf(Resource.Success(originalPetani))
         coEvery { updatePetaniUseCase(any(), any()) } returns Resource.Success(Unit)
 
         val editViewModel = PetaniFormViewModel(
@@ -172,11 +178,16 @@ class PetaniFormViewModelTest {
             userPreferences, getUserDetailUseCase, connectivityObserver, editStateHandle
         )
         advanceUntilIdle()
-
+        editViewModel.onEvent(PetaniFormEvent.OnNameChange("Nama Baru"))
         editViewModel.onEvent(PetaniFormEvent.OnSubmit)
         advanceUntilIdle()
 
-        coVerify { updatePetaniUseCase(eq("petani-123"), any()) }
+        coVerify {
+            updatePetaniUseCase(
+                eq("petani-123"),
+                match { map -> map["nama_petani"] == "Nama Baru" } // Cek isi map
+            )
+        }
         coVerify(exactly = 0) { createPetaniUseCase(any()) }
 
         assertEquals("Berhasil disimpan!", editViewModel.uiState.value.successMessage)
