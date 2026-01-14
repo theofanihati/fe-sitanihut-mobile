@@ -196,10 +196,10 @@ fun BottomSection(
         CustomOutlinedTextField(
             value = state.email,
             onValueChange = { onEmailChange(it) },
-            label = "Email Pengguna",
-            placeholder = "Contoh: dishut@example.com",
+            label = "Email / NIP / NIK",
+            placeholder = "Isi dengan NIK/NIP/email terdaftar",
             asteriskAtEnd = true,
-            keyboardType = KeyboardType.Email,
+            keyboardType = KeyboardType.Text,
             error = state.emailError,
             modifier = Modifier.fillMaxWidth(),
             rounded = 40,

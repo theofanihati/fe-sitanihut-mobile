@@ -5,7 +5,7 @@ import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.model.User
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginUseCase
-import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateEmailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateLoginInputUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ValidationResult
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import io.mockk.coEvery
@@ -26,29 +26,23 @@ class LoginViewModelTest {
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule()
 
-    private lateinit var loginUseCase: LoginUseCase
-    private lateinit var validateEmailUseCase: ValidateEmailUseCase
-    private lateinit var homeRepository: HomeRepository
+    private var loginUseCase: LoginUseCase = mockk()
+    private var validateLoginInputUseCase: ValidateLoginInputUseCase = mockk(relaxed = true)
 
     private lateinit var viewModel: LoginViewModel
 
     @Before
     fun setUp() {
-        loginUseCase = mockk()
-        validateEmailUseCase = mockk(relaxed = true)
-        homeRepository = mockk(relaxed = true)
-
         viewModel = LoginViewModel(
             loginUseCase,
-            validateEmailUseCase,
-            homeRepository
+            validateLoginInputUseCase
         )
     }
 
     @Test
     fun `onEvent OnEmailChange, state should be updated with new email`() {
         val newEmail = "test@example.com"
-        every { validateEmailUseCase(newEmail) } returns ValidationResult(successful = true)
+        every { validateLoginInputUseCase(newEmail) } returns ValidationResult(successful = true)
         viewModel.onEvent(LoginEvent.OnEmailChange(newEmail))
 
         assertEquals(newEmail, viewModel.loginState.email)
@@ -67,7 +61,7 @@ class LoginViewModelTest {
     @Test
     fun `onEvent OnLoginClick with invalid email, state should show email error`() {
         val invalidEmail = "invalid-email"
-        every { validateEmailUseCase(invalidEmail) } returns ValidationResult(false, "Format email tidak valid")
+        every { validateLoginInputUseCase(invalidEmail) } returns ValidationResult(false, "Format email tidak valid")
 
         viewModel.onEvent(LoginEvent.OnEmailChange(invalidEmail))
         viewModel.onEvent(LoginEvent.OnPasswordChange("anypassword"))
@@ -82,7 +76,7 @@ class LoginViewModelTest {
         val email = "valid@email.com"
         val password = "validpassword"
 
-        every { validateEmailUseCase(email) } returns ValidationResult(true)
+        every { validateLoginInputUseCase(email) } returns ValidationResult(true)
 
         val dummyUser = User(
             id = "1",
@@ -105,7 +99,7 @@ class LoginViewModelTest {
     fun `onEvent OnLoginClick with valid data but login fails, state should show general error`() = runTest {
         val email = "valid@email.com"
         val password = "wrongpassword"
-        every { validateEmailUseCase(email) } returns ValidationResult(true)
+        every { validateLoginInputUseCase(email) } returns ValidationResult(true)
 
         coEvery { loginUseCase(email, password) } returns AuthResult.Error("Password salah")
 

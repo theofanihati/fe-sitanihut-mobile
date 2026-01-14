@@ -6,9 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.ViewModel
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
-import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginUseCase
-import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateEmailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateLoginInputUseCase
 import com.dishut_lampung.sitanihut.presentation.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,8 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
-    private val validateEmailUseCase: ValidateEmailUseCase,
-    private val homeRepository: HomeRepository,
+    private val validateLoginInputUseCase: ValidateLoginInputUseCase,
 ) : ViewModel() {
 
     private var pendingDestinationRoute: String = "home_screen_petani"
@@ -34,7 +32,7 @@ class LoginViewModel @Inject constructor(
     fun onEvent(event: LoginEvent) {
         when (event) {
             is LoginEvent.OnEmailChange -> {
-                val emailResult = validateEmailUseCase(event.email)
+                val emailResult = validateLoginInputUseCase(event.email)
                 loginState = loginState.copy(
                     email = event.email,
                     emailError = emailResult.errorMessage,
@@ -77,12 +75,11 @@ class LoginViewModel @Inject constructor(
                     _eventFlow.emit(UiEvent.NavigateToHome(pendingDestinationRoute))
                 }
             }
-            else -> {}
         }
     }
 
     private fun submitData() {
-        val emailResult = validateEmailUseCase(loginState.email)
+        val emailResult = validateLoginInputUseCase(loginState.email)
         val isPasswordEmpty = loginState.password.isBlank()
 
         val hasError = !emailResult.successful || isPasswordEmpty
