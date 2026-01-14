@@ -141,7 +141,6 @@ fun PenyuluhScreen(
             onRefresh = onRefresh,
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
         ) {
             Column(
                 modifier = Modifier
