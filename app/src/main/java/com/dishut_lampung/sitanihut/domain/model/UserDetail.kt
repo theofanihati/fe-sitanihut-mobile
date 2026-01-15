@@ -20,3 +20,28 @@ data class UserDetail(
     val landArea: Double? = null,
     val position: String? = ""
 )
+
+data class CreateUserInput(
+    val email: String = "",
+    val password: String = "",
+    val confirmPassword: String = "",
+    val roleId: String = "",
+    val role: String = "",
+    val name: String = "",
+    val identityNumber: String = "",
+    val gender: String = "",
+    val address: String= "",
+    val whatsAppNumber: String = "",
+
+    val lastEducation: String = "",
+    val sideJob: String = "",
+    val landArea: String = "",
+
+    val position: String = "",
+
+    val kphId: String = "",
+    val kphName: String = "",
+    val kthId: String = "",
+    val kthName: String = "",
+    val isEditMode: Boolean = false,
+)
