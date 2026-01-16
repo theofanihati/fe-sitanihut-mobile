@@ -101,6 +101,18 @@ class UserRepositoryImplTest {
     }
 
     @Test
+    fun `syncUserData should return Error when API throws exception`() = runTest {
+        coEvery { apiService.getUserList(any()) } throws RuntimeException("Network Error")
+
+        val result = repository.syncUserData()
+
+        assertTrue(result is Resource.Error)
+        assertEquals("Network Error", (result as Resource.Error).errorMessage)
+
+        coVerify(exactly = 0) { userDao.upsertAll(any()) }
+    }
+
+    @Test
     fun `deleteUser should call API and delete from DAO`() = runTest {
         val id = "1"
         val apiResponse = ApiResponse<Unit>(200, "Deleted", Unit)
@@ -112,6 +124,21 @@ class UserRepositoryImplTest {
         assertTrue(result is Resource.Success)
         coVerify { apiService.deleteUser(id) }
         coVerify { userDao.deleteUser(id) }
+    }
+
+    @Test
+    fun `deleteUser should return Error when API returns failure status`() = runTest {
+        val id = "1"
+        val apiResponse = ApiResponse<Unit>(400, "Gagal menghapus user", Unit)
+
+        coEvery { apiService.deleteUser(id) } returns apiResponse
+
+        val result = repository.deleteUser(id)
+
+        assertTrue(result is Resource.Error)
+        assertEquals("Gagal menghapus user", (result as Resource.Error).errorMessage)
+
+        coVerify(exactly = 0) { userDao.deleteUser(id) }
     }
 
     @Test
