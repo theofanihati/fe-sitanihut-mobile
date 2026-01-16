@@ -8,6 +8,6 @@ class UpdateUserUseCase @Inject constructor(
     private val repository: UserRepository
 ) {
     suspend operator fun invoke(id: String, changes: Map<String, Any?>): Resource<Unit> {
-        return TODO()
+        return repository.updateUser(id, changes)
     }
 }
