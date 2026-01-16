@@ -13,6 +13,12 @@ class GetUserListUseCase @Inject constructor(
     private val repository: UserRepository
 ){
     operator fun invoke(role: String, query: String = ""): Flow<Resource<List<UserDetail>>> {
-        return TODO()
+        val isAllowed = role == "penyuluh" || role == "penanggung jawab"
+        if (!isAllowed) {
+            return flow {
+                emit(Resource.Error("Anda tidak memiliki akses untuk melihat data KTH."))
+            }
+        }
+        return repository.getUserList(query)
     }
 }
