@@ -25,34 +25,112 @@ class UserRepositoryImpl @Inject constructor(
 ): UserRepository {
 
     override fun getUserList(query: String): Flow<Resource<List<UserDetail>>> {
-        return TODO()
+        return dao.getAllUser(query).map { entities ->
+            Resource.Success(entities.map { it.toDomain() })
+        }
     }
 
     override suspend fun syncUserData(): Resource<Unit> {
-        return TODO()
+        return try {
+            val response = apiService.getUserList(limit = 50)
+            val items = response.data?.data ?: emptyList()
+
+            if (items.isNotEmpty()) {
+                val entities = items.map { it.toEntity() }
+                dao.upsertAll(entities)
+            }
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Gagal sinkronisasi data User")
+        }
     }
 
     override suspend fun deleteUser(id: String): Resource<Unit> {
-        return TODO()
+        return try {
+            val response = apiService.deleteUser(id)
+            if (response.statusCode == 200 || response.statusCode == 204) {
+                dao.deleteUser(id)
+                Resource.Success(Unit)
+            } else {
+                Resource.Error(response.message)
+            }
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Gagal menghapus data User")
+        }
     }
 
     override fun getUserDetail(id: String): Flow<Resource<UserDetail>> = flow {
-        TODO()
+        emit(Resource.Loading())
+
+        try {
+            val localData = dao.getUserById(id).first()
+            if (localData != null) {
+                emit(Resource.Success(localData.toDomain()))
+            }
+
+            val response = apiService.getUserDetail(id)
+            val remoteData = response.data
+
+            val roleName = resolveRoleName(remoteData?.roleId ?: "")
+
+            if (response.statusCode == 200 && remoteData != null) {
+                val userEntity = remoteData.toEntity(roleName)
+                dao.upsertAll(listOf(userEntity))
+                emit(Resource.Success(userEntity.toDomain()))
+            } else {
+                if (localData == null) {
+                    emit(Resource.Error(response.message ?: "Data tidak ditemukan"))
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(Resource.Error(e.localizedMessage ?: "Gagal memuat data"))
+        }
     }
 
     override suspend fun createUser(input: CreateUserInput): Resource<Unit> {
-        return TODO()
+        return try {
+            val requestDto = input.toDto()
+            val response = apiService.createUser(requestDto)
+
+            val newData = response.data
+            val roleName = resolveRoleName(newData.roleId)
+
+            if (newData != null) {
+                dao.upsertAll(listOf(newData.toEntity(roleName)))
+            }
+
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Error(e.localizedMessage ?: "Gagal menambah user baru")
+        }
     }
 
     override suspend fun updateUser(id: String, changes: Map<String, Any?>): Resource<Unit> {
-        return TODO()
+        return try {
+            apiService.updateUser(id, changes)
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Gagal update")
+        }
     }
 
     private suspend fun resolveRoleName(roleId: String): String {
-        TODO()
+        roleDao.getRoleName(roleId)?.let { return it }
+        try {
+            fetchAndCacheRoles()
+            roleDao.getRoleName(roleId)?.let { return it }
+        } catch (e: Exception) {
+        }
+
+        val prefRole = userPreferences.userRole.first()
+        return prefRole?.replaceFirstChar { it.uppercase() } ?: "Pengguna"
     }
 
     private suspend fun fetchAndCacheRoles() {
-        TODO()
+        val rolesResponse = apiService.getRoles()
+        val roleEntities = rolesResponse.data.map { it.toEntity() }
+        roleDao.insertRoles(roleEntities)
     }
 }
