@@ -8,6 +8,6 @@ class DeleteUserUseCase @Inject constructor(
     private val repository: UserRepository
 ) {
     suspend operator fun invoke(id: String): Resource<Unit> {
-        return TODO()
+        return repository.deleteUser(id)
     }
 }
