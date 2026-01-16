@@ -13,6 +13,7 @@ import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
 import com.dishut_lampung.sitanihut.domain.repository.PetaniRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
+import com.dishut_lampung.sitanihut.domain.repository.UserRepository
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.*
 import kotlinx.coroutines.test.runTest
@@ -33,6 +34,7 @@ class DataSyncWorkerTest {
     private val mockKthRepository: KthRepository = mockk(relaxed = true)
     private val mockKphRepository: KphRepository = mockk(relaxed = true)
     private val mockPetaniRepository: PetaniRepository = mockk(relaxed = true)
+    private val mockUserRepository: UserRepository = mockk(relaxed = true)
     private val mockUserPreferences: UserPreferences = mockk(relaxed = true)
 
     @Before
@@ -64,6 +66,7 @@ class DataSyncWorkerTest {
                         mockKthRepository,
                         mockKphRepository,
                         mockPetaniRepository,
+                        mockUserRepository,
                         mockUserPreferences,
                     )
                 }
@@ -104,6 +107,7 @@ class DataSyncWorkerTest {
                         mockKthRepository,
                         mockKphRepository,
                         mockPetaniRepository,
+                        mockUserRepository,
                         mockUserPreferences,
                     )
                 }

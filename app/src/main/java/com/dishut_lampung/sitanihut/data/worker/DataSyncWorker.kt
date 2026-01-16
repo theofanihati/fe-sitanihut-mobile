@@ -13,6 +13,7 @@ import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
 import com.dishut_lampung.sitanihut.domain.repository.PetaniRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
+import com.dishut_lampung.sitanihut.domain.repository.UserRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -27,13 +28,16 @@ class DataSyncWorker @AssistedInject constructor(
     private val kthRepository: KthRepository,
     private val kphRepository: KphRepository,
     private val petaniRepository: PetaniRepository,
+    private val userRepository: UserRepository,
     private val userPreferences: UserPreferences
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
         return try {
-            Log.d("SYNC_WORKER_DATA", "Mulai sync user...")
+            Log.d("SYNC_WORKER_DATA", "Mulai sync profile user...")
             profileRepository.syncUserDetail()
+            Log.d("SYNC_WORKER_DATA", "Mulai sync list user...")
+            userRepository.syncUserData()
             Log.d("SYNC_WORKER_DATA", "Mulai sync commodities...")
             commodityRepository.syncCommodities()
             Log.d("SYNC_WORKER_DATA", "Mulai sync penyuluh...")
