@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -45,13 +44,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.domain.model.Penyuluh
-import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
-import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
-import com.dishut_lampung.sitanihut.presentation.components.card.PenyuluhCard
-import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomSearchTextField
 import com.dishut_lampung.sitanihut.presentation.penyuluh.PenyuluhEvent
 import com.dishut_lampung.sitanihut.presentation.penyuluh.PenyuluhUiState
+import com.dishut_lampung.sitanihut.presentation.shared.components.CustomCircularProgressIndicator
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.AnimatedMessage
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.card.PenyuluhCard
+import com.dishut_lampung.sitanihut.presentation.shared.components.textfield.CustomSearchTextField
 import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import kotlinx.coroutines.launch

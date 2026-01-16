@@ -13,7 +13,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import java.util.Locale
 
 fun copyUriToInternalStorage(context: Context, uri: Uri): String? {

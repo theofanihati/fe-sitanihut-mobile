@@ -17,9 +17,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirmationDialog
-import com.dishut_lampung.sitanihut.presentation.components.topbar.DetailTopBar
-import com.dishut_lampung.sitanihut.presentation.components.topbar.HomeTopBar
+import com.dishut_lampung.sitanihut.presentation.shared.components.dialog.CustomConfirmationDialog
+import com.dishut_lampung.sitanihut.presentation.shared.components.topbar.DetailTopBar
+import com.dishut_lampung.sitanihut.presentation.shared.components.topbar.HomeTopBar
 import com.dishut_lampung.sitanihut.presentation.shared.navigation.NavGraph
 import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
 import com.dishut_lampung.sitanihut.presentation.shared.scaffold.TopBarTheme

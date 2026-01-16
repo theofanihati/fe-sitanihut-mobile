@@ -49,14 +49,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.domain.model.Petani
-import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
-import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
-import com.dishut_lampung.sitanihut.presentation.components.bottomsheet.GenericActionBottomSheet
-// Pastikan kamu sudah punya PetaniCard yang mirip KthCard
-import com.dishut_lampung.sitanihut.presentation.components.card.PetaniCard
-import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirmationDialog
-import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomSearchTextField
+import com.dishut_lampung.sitanihut.presentation.shared.components.CustomCircularProgressIndicator
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.AnimatedMessage
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.bottomsheet.GenericActionBottomSheet
+import com.dishut_lampung.sitanihut.presentation.shared.components.card.PetaniCard
+import com.dishut_lampung.sitanihut.presentation.shared.components.dialog.CustomConfirmationDialog
+import com.dishut_lampung.sitanihut.presentation.shared.components.textfield.CustomSearchTextField
 import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import kotlinx.coroutines.launch

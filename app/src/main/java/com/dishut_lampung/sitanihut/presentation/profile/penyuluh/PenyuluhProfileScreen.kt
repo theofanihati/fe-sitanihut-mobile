@@ -1,6 +1,5 @@
 package com.dishut_lampung.sitanihut.presentation.profile.penyuluh
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -19,11 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -46,10 +41,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
-import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
-import com.dishut_lampung.sitanihut.presentation.components.card.KphKthCard
-import com.dishut_lampung.sitanihut.presentation.profile.penyuluh.PenyuluhProfileViewModel
+import com.dishut_lampung.sitanihut.presentation.shared.components.CustomCircularProgressIndicator
+import com.dishut_lampung.sitanihut.presentation.shared.components.card.KphKthCard
 import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens
+
 @Preview(showBackground = true, name = "Petani Profile")
 @Composable
 fun PenyuluhProfileScreenPreview() {

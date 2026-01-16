@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -54,16 +53,16 @@ import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.model.ReportUiModel
-import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
-import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
-import com.dishut_lampung.sitanihut.presentation.components.bottomsheet.ReportFilterPengajuanBottomSheet
-import com.dishut_lampung.sitanihut.presentation.components.bottomsheet.ReportOptionBottomSheet
-import com.dishut_lampung.sitanihut.presentation.components.card.ReportCard
-import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirmationDialog
-import com.dishut_lampung.sitanihut.presentation.components.message.ErrorMessage
-import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomSearchTextField
 import com.dishut_lampung.sitanihut.presentation.home_page.petani.toUiModel
+import com.dishut_lampung.sitanihut.presentation.shared.components.CustomCircularProgressIndicator
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.AnimatedMessage
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.bottomsheet.ReportFilterPengajuanBottomSheet
+import com.dishut_lampung.sitanihut.presentation.shared.components.bottomsheet.ReportOptionBottomSheet
+import com.dishut_lampung.sitanihut.presentation.shared.components.card.ReportCard
+import com.dishut_lampung.sitanihut.presentation.shared.components.dialog.CustomConfirmationDialog
+import com.dishut_lampung.sitanihut.presentation.shared.components.message.ErrorMessage
+import com.dishut_lampung.sitanihut.presentation.shared.components.textfield.CustomSearchTextField
 import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import kotlinx.coroutines.flow.flowOf
@@ -170,10 +169,10 @@ fun ReportListRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportListScreen(
+    modifier: Modifier = Modifier,
     viewModel: ReportListViewModel = hiltViewModel(),
     state: ReportListUiState,
     pagingItems: androidx.paging.compose.LazyPagingItems<ReportUiModel>,
-    modifier: Modifier = Modifier,
     onEvent: (ReportListEvent) -> Unit,
     onNavigateToAddReport: () -> Unit,
     onNavigateToDetail: (String) -> Unit,

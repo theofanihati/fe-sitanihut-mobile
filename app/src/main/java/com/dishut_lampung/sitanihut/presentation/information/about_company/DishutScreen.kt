@@ -18,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -31,12 +30,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.dishut_lampung.sitanihut.R
-import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
-import com.dishut_lampung.sitanihut.presentation.components.carousel.CarouselItemData
-import com.dishut_lampung.sitanihut.presentation.components.carousel.CustomCarousel
 import com.dishut_lampung.sitanihut.presentation.information.InformationEvent
 import com.dishut_lampung.sitanihut.presentation.information.InformationState
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.AnimatedMessage
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.carousel.CarouselItemData
+import com.dishut_lampung.sitanihut.presentation.shared.components.carousel.CustomCarousel
 import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 

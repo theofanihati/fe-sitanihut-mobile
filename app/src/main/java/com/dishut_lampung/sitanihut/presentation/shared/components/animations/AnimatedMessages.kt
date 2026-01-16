@@ -1,21 +1,17 @@
 package com.dishut_lampung.sitanihut.presentation.shared.components.animations
 
-import androidx.compose.runtime.getValue
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.dishut_lampung.sitanihut.presentation.components.message.ErrorMessage
-import com.dishut_lampung.sitanihut.presentation.components.message.SuccessMessage
+import com.dishut_lampung.sitanihut.presentation.shared.components.message.ErrorMessage
+import com.dishut_lampung.sitanihut.presentation.shared.components.message.SuccessMessage
 import kotlinx.coroutines.delay
 
 @Composable

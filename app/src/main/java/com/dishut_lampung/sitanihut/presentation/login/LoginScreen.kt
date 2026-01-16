@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
@@ -30,12 +29,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.dishut_lampung.sitanihut.R
-import com.dishut_lampung.sitanihut.presentation.components.CenteredAuthImage
-import com.dishut_lampung.sitanihut.presentation.components.CenteredLogo
-import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
-import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomOutlinedTextField
-import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
+import com.dishut_lampung.sitanihut.presentation.shared.components.CenteredAuthImage
+import com.dishut_lampung.sitanihut.presentation.shared.components.CenteredLogo
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.AnimatedMessage
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.textfield.CustomOutlinedTextField
 import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 
 
@@ -72,7 +70,6 @@ fun LoginRoute(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val state = viewModel.loginState
-    val context = LocalContext.current
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->

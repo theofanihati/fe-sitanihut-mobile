@@ -40,10 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dishut_lampung.sitanihut.R
-import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
-import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
-import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomSearchTextField
 import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import kotlinx.coroutines.launch
@@ -56,9 +52,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.dishut_lampung.sitanihut.domain.model.Kth
-import com.dishut_lampung.sitanihut.presentation.components.bottomsheet.GenericActionBottomSheet
-import com.dishut_lampung.sitanihut.presentation.components.card.KthCard
-import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirmationDialog
+import com.dishut_lampung.sitanihut.presentation.shared.components.CustomCircularProgressIndicator
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.AnimatedMessage
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.bottomsheet.GenericActionBottomSheet
+import com.dishut_lampung.sitanihut.presentation.shared.components.card.KthCard
+import com.dishut_lampung.sitanihut.presentation.shared.components.dialog.CustomConfirmationDialog
+import com.dishut_lampung.sitanihut.presentation.shared.components.textfield.CustomSearchTextField
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -222,6 +222,7 @@ fun KthListScreen(
             }
         }
         if (state.isBottomSheetVisible) {
+
             GenericActionBottomSheet(
                 onDismiss = { onEvent(KthEvent.OnBottomSheetDismiss) },
                 onDetailClick = {

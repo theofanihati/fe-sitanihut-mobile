@@ -1,8 +1,7 @@
 package com.dishut_lampung.sitanihut.presentation.petani.list
 
-import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.model.Petani
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 
 data class PetaniListUiState(
     val isLoading: Boolean = false,

@@ -12,7 +12,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.report.CreateReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.UpdateReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.ValidateReportInputUseCase
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.Resource
 import com.dishut_lampung.sitanihut.util.changeDateFormat
 import com.dishut_lampung.sitanihut.util.convertUiDateToApiDate

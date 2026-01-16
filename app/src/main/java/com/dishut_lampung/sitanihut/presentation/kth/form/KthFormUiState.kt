@@ -1,7 +1,7 @@
 package com.dishut_lampung.sitanihut.presentation.kth.form
 
 import com.dishut_lampung.sitanihut.domain.model.Kph
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 
 data class KthFormUiState (
     val isLoading: Boolean = false,

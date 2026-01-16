@@ -1,7 +1,7 @@
 package com.dishut_lampung.sitanihut.presentation.kth.list
 
 import com.dishut_lampung.sitanihut.domain.model.Kth
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 
 data class KthUiState(
     val isLoading: Boolean = false,

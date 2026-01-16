@@ -23,18 +23,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.dishut_lampung.sitanihut.R
-import com.dishut_lampung.sitanihut.presentation.components.carousel.CarouselItemData
+import com.dishut_lampung.sitanihut.presentation.shared.components.carousel.CarouselItemData
 import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
 
 @Preview(showBackground = true)
 @Composable
 fun AboutScreen() {
-    val kphData = listOf(
-        CarouselItemData(R.drawable.auth_image_1, "KPHK TAHURA Wan Abdul Rachman"),
-        CarouselItemData(R.drawable.auth_image_1, "KPH Tangkit Teba"),
-        CarouselItemData(R.drawable.auth_image_1, "KPH Way Waya")
-    )
-
     val scrollState = rememberScrollState()
     Box(
         modifier = Modifier
