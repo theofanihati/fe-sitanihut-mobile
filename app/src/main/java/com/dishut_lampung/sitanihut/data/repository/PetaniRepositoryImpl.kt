@@ -28,7 +28,7 @@ class PetaniRepositoryImpl @Inject constructor(
 
     override suspend fun syncPetaniData(): Resource<Unit> {
         return try {
-            val response = apiService.getPetaniList(limit = 50)
+            val response = apiService.getPetaniList(limit = 1000)
             val items = response.data?.data ?: emptyList()
 
             if (items.isNotEmpty()) {

@@ -10,6 +10,7 @@ import com.dishut_lampung.sitanihut.data.worker.DataSyncWorker
 import com.dishut_lampung.sitanihut.domain.model.Petani
 import com.dishut_lampung.sitanihut.domain.usecase.petani.DeletePetaniUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.GetPetaniListUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.petani.SyncPetaniDataUseCase
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.Resource
@@ -28,10 +29,10 @@ import javax.inject.Inject
 @HiltViewModel
 class PetaniListViewModel @Inject constructor(
     private val getPetaniListUseCase: GetPetaniListUseCase,
+    private val syncPetaniDataUseCase: SyncPetaniDataUseCase,
     private val deletePetaniUseCase: DeletePetaniUseCase,
     private val userPreferences: UserPreferences,
     private val connectivityObserver: ConnectivityObserver,
-    private val workManager: WorkManager
 ) : ViewModel() {
 
     private val _baseState = MutableStateFlow(PetaniListUiState(isLoading = true))
@@ -81,9 +82,7 @@ class PetaniListViewModel @Inject constructor(
                 _searchQuery.value = event.query
             }
             PetaniEvent.OnRefresh -> {
-                _baseState.update { it.copy(isRefreshing = true) }
-                triggerManualSync()
-                fetchPetaniData(isRefresh = true)
+                refreshData()
             }
             is PetaniEvent.OnMoreOptionClick -> {
                 _baseState.update {
@@ -233,16 +232,31 @@ class PetaniListViewModel @Inject constructor(
             }
         }
     }
-    private fun triggerManualSync() {
+    private fun refreshData() {
         if (!_isOnline.value) {
-            _baseState.update { it.copy(isRefreshing = false) }
+            _baseState.update {
+                it.copy(isRefreshing = false, errorMessage = "Tidak ada koneksi internet")
+            }
             return
         }
 
-        val syncRequest = OneTimeWorkRequestBuilder<DataSyncWorker>()
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .build()
+        viewModelScope.launch {
+            _baseState.update { it.copy(isRefreshing = true) }
+            val result = syncPetaniDataUseCase()
 
-        workManager.enqueue(syncRequest)
+            when(result) {
+                is Resource.Success -> {
+                    _baseState.update {
+                        it.copy(isRefreshing = false, successMessage = "Data berhasil diperbarui")
+                    }
+                }
+                is Resource.Error -> {
+                    _baseState.update {
+                        it.copy(isRefreshing = false, errorMessage = result.message)
+                    }
+                }
+                is Resource.Loading -> {}
+            }
+        }
     }
 }
