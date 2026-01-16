@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidateLoginInputUseCase
-import com.dishut_lampung.sitanihut.presentation.navigation.Screen
+import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

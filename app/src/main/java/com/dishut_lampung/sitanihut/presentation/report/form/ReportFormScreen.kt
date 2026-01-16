@@ -53,8 +53,8 @@ import com.dishut_lampung.sitanihut.presentation.components.dropdown.CustomSearc
 import com.dishut_lampung.sitanihut.presentation.components.file_uploader.FileUploader
 import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomOutlinedTextArea
 import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomOutlinedTextField
-import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
-import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
+import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import com.dishut_lampung.sitanihut.util.copyUriToInternalStorage
 import com.dishut_lampung.sitanihut.util.openFileOrUrl
 import kotlinx.coroutines.Dispatchers

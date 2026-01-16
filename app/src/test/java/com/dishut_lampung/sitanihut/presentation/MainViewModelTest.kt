@@ -10,7 +10,7 @@ import androidx.work.WorkInfo
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.UserProfile
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
-import com.dishut_lampung.sitanihut.presentation.navigation.Screen
+import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import io.mockk.coVerify
 import io.mockk.every

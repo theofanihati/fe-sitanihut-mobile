@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.dishut_lampung.sitanihut.R
-import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

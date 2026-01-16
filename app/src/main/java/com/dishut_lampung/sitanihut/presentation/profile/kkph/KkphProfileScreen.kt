@@ -43,7 +43,7 @@ import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
 import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
 import com.dishut_lampung.sitanihut.presentation.components.card.KphKthCard
-import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens
+import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens
 
 @Preview(showBackground = true, name = "penanggung jawab Profile")
 @Composable

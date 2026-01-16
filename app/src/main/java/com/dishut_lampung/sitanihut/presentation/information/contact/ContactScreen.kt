@@ -47,7 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dishut_lampung.sitanihut.R
-import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
+import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
 
 @Preview(showBackground = true)
 @Composable

@@ -52,11 +52,11 @@ import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirm
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiEvent
 import com.dishut_lampung.sitanihut.presentation.home_page.HomeUiState
-import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens
-import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
-import com.dishut_lampung.sitanihut.presentation.ui.theme.lightGreen
-import com.dishut_lampung.sitanihut.presentation.ui.theme.lightOrange
-import com.dishut_lampung.sitanihut.presentation.ui.theme.lightPink
+import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens
+import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.shared.theme.lightGreen
+import com.dishut_lampung.sitanihut.presentation.shared.theme.lightOrange
+import com.dishut_lampung.sitanihut.presentation.shared.theme.lightPink
 
 @Preview(showBackground = true)
 @Composable

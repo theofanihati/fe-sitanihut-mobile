@@ -13,7 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

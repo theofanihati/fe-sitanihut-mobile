@@ -37,8 +37,8 @@ import com.dishut_lampung.sitanihut.presentation.components.carousel.CarouselIte
 import com.dishut_lampung.sitanihut.presentation.components.carousel.CustomCarousel
 import com.dishut_lampung.sitanihut.presentation.information.InformationEvent
 import com.dishut_lampung.sitanihut.presentation.information.InformationState
-import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
-import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
+import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 
 @Preview(showBackground = true)
 @Composable

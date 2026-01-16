@@ -36,7 +36,7 @@ import com.dishut_lampung.sitanihut.presentation.components.CenteredLogo
 import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedMessage
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
 import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomOutlinedTextField
-import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 
 @Preview(showBackground = true)
 @Composable

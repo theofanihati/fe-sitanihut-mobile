@@ -48,8 +48,8 @@ import com.dishut_lampung.sitanihut.presentation.components.animations.AnimatedM
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
 import com.dishut_lampung.sitanihut.presentation.components.card.CommodityCard
 import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomSearchTextField
-import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
-import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
+import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.items

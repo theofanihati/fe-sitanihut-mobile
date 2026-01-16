@@ -49,7 +49,7 @@ import com.dishut_lampung.sitanihut.domain.model.UserDetail
 import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
 import com.dishut_lampung.sitanihut.presentation.components.card.KphKthCard
 import com.dishut_lampung.sitanihut.presentation.profile.penyuluh.PenyuluhProfileViewModel
-import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens
+import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens
 @Preview(showBackground = true, name = "Petani Profile")
 @Composable
 fun PenyuluhProfileScreenPreview() {

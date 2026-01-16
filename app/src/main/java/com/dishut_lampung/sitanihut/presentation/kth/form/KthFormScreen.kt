@@ -38,8 +38,8 @@ import com.dishut_lampung.sitanihut.presentation.components.animations.MessageTy
 import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirmationDialog
 import com.dishut_lampung.sitanihut.presentation.components.dropdown.CustomSearchableOutlinedDropdown
 import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomOutlinedTextField
-import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
-import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
+import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import kotlinx.coroutines.delay
 
 @Preview(showBackground = true, showSystemUi = true)

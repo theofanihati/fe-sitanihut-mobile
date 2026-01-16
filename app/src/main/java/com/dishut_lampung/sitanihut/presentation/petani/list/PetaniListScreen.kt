@@ -57,8 +57,8 @@ import com.dishut_lampung.sitanihut.presentation.components.bottomsheet.GenericA
 import com.dishut_lampung.sitanihut.presentation.components.card.PetaniCard
 import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirmationDialog
 import com.dishut_lampung.sitanihut.presentation.components.textfield.CustomSearchTextField
-import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
-import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
+import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import kotlinx.coroutines.launch
 
 @Preview(showBackground = true, showSystemUi = true)

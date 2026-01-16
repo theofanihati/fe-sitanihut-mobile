@@ -48,8 +48,8 @@ import com.dishut_lampung.sitanihut.presentation.components.file_uploader.ReadOn
 import com.dishut_lampung.sitanihut.presentation.components.message.ErrorMessage
 import com.dishut_lampung.sitanihut.presentation.report.form.ReportFormEvent
 import com.dishut_lampung.sitanihut.presentation.report.list.ReportListEvent
-import com.dishut_lampung.sitanihut.presentation.ui.theme.Dimens.ScreenPadding
-import com.dishut_lampung.sitanihut.presentation.ui.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
+import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import com.dishut_lampung.sitanihut.util.formatRupiah
 import com.dishut_lampung.sitanihut.util.openFileOrUrl
 import kotlinx.coroutines.delay

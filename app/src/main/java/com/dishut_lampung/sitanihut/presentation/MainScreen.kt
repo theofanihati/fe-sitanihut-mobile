@@ -20,10 +20,10 @@ import androidx.navigation.compose.rememberNavController
 import com.dishut_lampung.sitanihut.presentation.components.dialog.CustomConfirmationDialog
 import com.dishut_lampung.sitanihut.presentation.components.topbar.DetailTopBar
 import com.dishut_lampung.sitanihut.presentation.components.topbar.HomeTopBar
-import com.dishut_lampung.sitanihut.presentation.navigation.NavGraph
-import com.dishut_lampung.sitanihut.presentation.navigation.Screen
-import com.dishut_lampung.sitanihut.presentation.scaffold.TopBarTheme
-import com.dishut_lampung.sitanihut.presentation.scaffold.scaffoldConfig
+import com.dishut_lampung.sitanihut.presentation.shared.navigation.NavGraph
+import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
+import com.dishut_lampung.sitanihut.presentation.shared.scaffold.TopBarTheme
+import com.dishut_lampung.sitanihut.presentation.shared.scaffold.scaffoldConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -15,7 +15,7 @@ import com.dishut_lampung.sitanihut.data.worker.DataSyncWorker
 import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
-import com.dishut_lampung.sitanihut.presentation.navigation.Screen
+import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
