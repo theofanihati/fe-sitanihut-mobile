@@ -36,6 +36,7 @@ import com.dishut_lampung.sitanihut.data.repository.PenyuluhRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.PetaniRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ProfileRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ReportRepositoryImpl
+import com.dishut_lampung.sitanihut.data.repository.UserRepositoryImpl
 import com.dishut_lampung.sitanihut.data.util.NetworkConnectivityObserver
 import com.dishut_lampung.sitanihut.domain.model.User
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
@@ -48,6 +49,7 @@ import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
 import com.dishut_lampung.sitanihut.domain.repository.PetaniRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
+import com.dishut_lampung.sitanihut.domain.repository.UserRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ForgotPasswordUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginStatusUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginUseCase
@@ -281,6 +283,17 @@ object AppModule{
         dao: PetaniDao
     ): PetaniRepository {
         return PetaniRepositoryImpl(apiService, dao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserRepository(
+        apiService: UserApiService,
+        dao: UserDao,
+        roleDao: RoleDao,
+        userPreferences: UserPreferences
+    ): UserRepository {
+        return UserRepositoryImpl(apiService, dao, roleDao, userPreferences)
     }
 
     // DATABASE
