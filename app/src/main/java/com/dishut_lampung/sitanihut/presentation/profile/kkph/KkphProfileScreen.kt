@@ -186,7 +186,7 @@ private fun ProfileContent(user: UserDetail) {
             color = Color.White
         )
         Text(
-            text = user.role,
+            text = user.role?: "Penanggung Jawab",
             style = MaterialTheme.typography.bodyMedium,
             color = Color.White.copy(alpha = 0.9f)
         )
@@ -214,9 +214,9 @@ private fun ProfileContent(user: UserDetail) {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 ProfileDetailRow("Nama lengkap", user.name)
-                ProfileDetailRow("Role", user.role)
-                ProfileDetailRow("Email", user.email)
-                ProfileDetailRow("NIK", user.identityNumber)
+                ProfileDetailRow("Role", user.role?: "Penanggung Jawab")
+                ProfileDetailRow("Email", user.email?: "tidak disebutkan")
+                ProfileDetailRow("NIK", user.identityNumber?: "tidak disebutkan")
                 ProfileDetailRow("Nomor telepon", user.whatsAppNumber ?: "-")
 
                 HorizontalDivider(

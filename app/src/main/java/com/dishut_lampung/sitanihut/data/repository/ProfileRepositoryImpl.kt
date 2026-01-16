@@ -4,7 +4,6 @@ import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.RoleDao
 import com.dishut_lampung.sitanihut.data.local.dao.UserDao
 import com.dishut_lampung.sitanihut.data.mapper.toDomain
-import com.dishut_lampung.sitanihut.data.mapper.toUserDetail
 import com.dishut_lampung.sitanihut.data.mapper.toEntity
 import com.dishut_lampung.sitanihut.data.remote.api.UserApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
@@ -31,7 +30,7 @@ class ProfileRepositoryImpl @Inject constructor(
             .distinctUntilChanged()
             .map { userEntity ->
             if (userEntity != null) {
-                Resource.Success(userEntity.toUserDetail())
+                Resource.Success(userEntity.toDomain())
             } else {
                 Resource.Loading()
             }

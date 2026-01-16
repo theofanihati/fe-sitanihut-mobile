@@ -4,9 +4,8 @@ import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.RoleDao
 import com.dishut_lampung.sitanihut.data.local.dao.UserDao
-import com.dishut_lampung.sitanihut.data.local.entity.RoleEntity
 import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
-import com.dishut_lampung.sitanihut.data.mapper.toUserDetail
+import com.dishut_lampung.sitanihut.data.mapper.toDomain
 import com.dishut_lampung.sitanihut.data.remote.api.UserApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.RoleDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
@@ -54,7 +53,7 @@ class ProfileRepositoryImplTest {
         address = "Desa A"
     )
 
-    private val dummyUserDetail = dummyUserEntity.toUserDetail()
+    private val dummyUserDetail = dummyUserEntity.toDomain()
 
     @Before
     fun setUp() {
