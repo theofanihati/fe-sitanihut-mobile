@@ -9,6 +9,6 @@ class CreateUserUseCase  @Inject constructor(
     private val repository: UserRepository
 ) {
     suspend operator fun invoke(input: CreateUserInput): Resource<Unit> {
-        return TODO()
+        return repository.createUser(input)
     }
 }
