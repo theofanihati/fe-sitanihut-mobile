@@ -3,7 +3,7 @@ package com.dishut_lampung.sitanihut.presentation.profile
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
-import com.dishut_lampung.sitanihut.domain.usecase.profile.GetUserDetailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.profile.GetMyProfileUseCase
 import com.dishut_lampung.sitanihut.presentation.profile.petani.PetaniProfileViewModel
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -26,7 +25,7 @@ class ProfileViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainCoroutineRule()
 
-    private lateinit var getUserDetailUseCase: GetUserDetailUseCase
+    private lateinit var getUserDetailUseCase: GetMyProfileUseCase
     private lateinit var userPreferences: UserPreferences
     private lateinit var viewModel: PetaniProfileViewModel
 

@@ -12,11 +12,9 @@ import com.dishut_lampung.sitanihut.domain.usecase.petani.CreatePetaniUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.GetPetaniDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.UpdatePetaniUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.ValidatePetaniInputUseCase
-import com.dishut_lampung.sitanihut.domain.usecase.profile.GetUserDetailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.profile.GetMyProfileUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ListValidationResult
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
-import com.dishut_lampung.sitanihut.presentation.kth.form.KthFormUiEvent
-import com.dishut_lampung.sitanihut.presentation.kth.form.KthFormViewModel
 import com.dishut_lampung.sitanihut.presentation.petani.form.PetaniFormEvent
 import com.dishut_lampung.sitanihut.presentation.petani.form.PetaniFormViewModel
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
@@ -50,7 +48,7 @@ class PetaniFormViewModelTest {
     private val getKphListUseCase: GetKphListUseCase = mockk()
     private val getKthListUseCase: GetKthListUseCase = mockk()
     private val userPreferences: UserPreferences = mockk()
-    private val getUserDetailUseCase: GetUserDetailUseCase = mockk()
+    private val getUserDetailUseCase: GetMyProfileUseCase = mockk()
     private val connectivityObserver: ConnectivityObserver = mockk()
     private val savedStateHandle: SavedStateHandle = mockk(relaxed = true)
 

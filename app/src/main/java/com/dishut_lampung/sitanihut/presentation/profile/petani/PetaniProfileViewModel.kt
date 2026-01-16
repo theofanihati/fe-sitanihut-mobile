@@ -3,7 +3,7 @@ package com.dishut_lampung.sitanihut.presentation.profile.petani
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
-import com.dishut_lampung.sitanihut.domain.usecase.profile.GetUserDetailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.profile.GetMyProfileUseCase
 import com.dishut_lampung.sitanihut.presentation.profile.ProfileState
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PetaniProfileViewModel @Inject constructor(
-    private val getUserDetailUseCase: GetUserDetailUseCase,
+    private val getUserDetailUseCase: GetMyProfileUseCase,
     private val userPreferences: UserPreferences
 ) : ViewModel() {
 

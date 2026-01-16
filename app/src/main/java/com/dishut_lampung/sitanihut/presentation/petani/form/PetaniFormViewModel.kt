@@ -13,7 +13,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.petani.CreatePetaniUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.GetPetaniDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.UpdatePetaniUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.ValidatePetaniInputUseCase
-import com.dishut_lampung.sitanihut.domain.usecase.profile.GetUserDetailUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.profile.GetMyProfileUseCase
 import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.Resource
@@ -36,7 +36,7 @@ class PetaniFormViewModel @Inject constructor(
     private val getKphListUseCase: GetKphListUseCase,
     private val getKthListUseCase: GetKthListUseCase,
     private val userPreferences: UserPreferences,
-    private val getUserDetailUseCase: GetUserDetailUseCase,
+    private val getUserDetailUseCase: GetMyProfileUseCase,
     private val connectivityObserver: ConnectivityObserver,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {

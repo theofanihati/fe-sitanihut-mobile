@@ -13,15 +13,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
-class GetUserDetailUseCaseTest {
+class GetMyProfileUseCaseTest {
 
     private lateinit var mockProfileRepository: ProfileRepository
-    private lateinit var getUserDetailUseCase: GetUserDetailUseCase
+    private lateinit var getUserDetailUseCase: GetMyProfileUseCase
 
     @Before
     fun setUp() {
         mockProfileRepository = mockk()
-        getUserDetailUseCase = GetUserDetailUseCase(mockProfileRepository)
+        getUserDetailUseCase = GetMyProfileUseCase(mockProfileRepository)
     }
 
     @Test

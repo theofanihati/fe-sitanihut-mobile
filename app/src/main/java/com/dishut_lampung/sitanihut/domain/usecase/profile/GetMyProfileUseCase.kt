@@ -6,7 +6,7 @@ import com.dishut_lampung.sitanihut.util.Resource
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class GetUserDetailUseCase @Inject constructor(
+class GetMyProfileUseCase @Inject constructor(
     private val profileRepository: ProfileRepository
 ) {
     operator fun invoke(userId: String): Flow<Resource<UserDetail>> {
