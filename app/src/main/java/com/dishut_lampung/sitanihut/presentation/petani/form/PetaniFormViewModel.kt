@@ -14,7 +14,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.petani.GetPetaniDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.UpdatePetaniUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.ValidatePetaniInputUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.profile.GetMyProfileUseCase
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel

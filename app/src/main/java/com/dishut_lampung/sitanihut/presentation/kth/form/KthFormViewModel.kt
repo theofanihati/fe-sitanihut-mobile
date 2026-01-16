@@ -10,7 +10,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.kth.CreateKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.UpdateKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.ValidateKthInputUseCase
-import com.dishut_lampung.sitanihut.presentation.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.Resource
 import com.dishut_lampung.sitanihut.util.WilayahLampungData

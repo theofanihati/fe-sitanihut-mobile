@@ -34,7 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.domain.model.Kth
-import com.dishut_lampung.sitanihut.presentation.components.CustomCircularProgressIndicator
+import com.dishut_lampung.sitanihut.presentation.shared.components.CustomCircularProgressIndicator
 
 @Preview(showBackground = true, name = "Kth Detail")
 @Composable
