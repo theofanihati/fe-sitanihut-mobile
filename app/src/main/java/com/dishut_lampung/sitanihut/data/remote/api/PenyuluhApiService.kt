@@ -12,7 +12,8 @@ interface PenyuluhApiService {
     @GET("v1/penyuluh")
     suspend fun getPenyuluhList(
         @Query("page") page: Int = 1,
-        @Query("limit") limit: Int = 50
+        @Query("limit") limit: Int = 50,
+        @Query("search") search: String? = null
     ): ApiResponse<PaginatedData<PenyuluhListItemDto>>
 
     @GET("v1/penyuluh/{id}")

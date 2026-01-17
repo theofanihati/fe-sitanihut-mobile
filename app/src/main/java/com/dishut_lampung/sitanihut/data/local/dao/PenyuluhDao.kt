@@ -4,6 +4,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
+import com.dishut_lampung.sitanihut.data.local.entity.CommodityEntity
 import com.dishut_lampung.sitanihut.data.local.entity.PenyuluhEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -27,4 +29,13 @@ interface PenyuluhDao {
 
     @Query("SELECT * FROM penyuluh WHERE id = :id")
     fun getPenyuluhByIdFlow(id: String): Flow<PenyuluhEntity?>
+
+    @Query("DELETE FROM penyuluh")
+    suspend fun deleteAll()
+
+    @Transaction
+    suspend fun updateData(penyuluh: List<PenyuluhEntity>) {
+        deleteAll()
+        upsertAll(penyuluh)
+    }
 }
