@@ -10,5 +10,6 @@ interface CommodityApiService {
     @GET("v1/komoditas")
     suspend fun getCommodities(
         @Query("search") search: String? = null,
+        @Query("page") page: Int? = null,
     ): ApiResponse<PaginatedData<CommodityDto>>
 }

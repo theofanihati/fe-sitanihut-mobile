@@ -36,27 +36,42 @@ class CommodityRepositoryImpl(
 
     override suspend fun syncCommodities(): Resource<Unit> {
         return try {
-            val response = apiService.getCommodities(search = "")
-            val dtoList = response.data.data
+            val pageOneResponse = apiService.getCommodities(search = "", page = 1)
 
-            if (!dtoList.isNullOrEmpty()) {
-                saveCommoditiesToLocal(dtoList)
+            if (pageOneResponse.statusCode == 200 && pageOneResponse.data != null) {
+                val paginationData = pageOneResponse.data
+                val allCommodities = paginationData.data.toMutableList()
+                val totalPages = paginationData.totalPages
+
+                if (totalPages > 1) {
+                    for (page in 2..totalPages) {
+                        try{
+                            val nextResponse = apiService.getCommodities(search = "", page = page)
+                            if (nextResponse.statusCode == 200 && nextResponse.data != null) {
+                                allCommodities.addAll(nextResponse.data.data)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+                if (allCommodities.isNotEmpty()) {
+                    val entities = allCommodities.map { dto ->
+                        CommodityEntity(
+                            id = dto.id,
+                            code = dto.code,
+                            name = dto.name,
+                            category = dto.category
+                        )
+                    }
+                    dao.updateData(entities)
+                }
+                Resource.Success(Unit)
+            } else {
+                Resource.Error(pageOneResponse.message ?: "Gagal")
             }
-            Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error("Gagal sinkronisasi: ${e.message}")
         }
-    }
-
-    private suspend fun saveCommoditiesToLocal(dtos: List<CommodityDto>) {
-        val entities = dtos.map { dto ->
-            CommodityEntity(
-                id = dto.id,
-                code = dto.code,
-                name = dto.name,
-                category = dto.category
-            )
-        }
-        dao.insertCommodities(entities)
     }
 }

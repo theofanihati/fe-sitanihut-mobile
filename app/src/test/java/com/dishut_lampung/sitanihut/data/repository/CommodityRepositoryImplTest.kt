@@ -5,6 +5,7 @@ import com.dishut_lampung.sitanihut.data.local.dao.CommodityDao
 import com.dishut_lampung.sitanihut.data.local.entity.CommodityEntity
 import com.dishut_lampung.sitanihut.data.remote.api.CommodityApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.CommodityDto
+import com.dishut_lampung.sitanihut.data.remote.dto.KphDto
 import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
 import com.dishut_lampung.sitanihut.util.Resource
@@ -120,16 +121,16 @@ class CommodityRepositoryImplTest {
         )
         val apiResponse = ApiResponse(200, "success", paginatedData)
 
-        coEvery { mockApiService.getCommodities(search = "") } returns apiResponse
-        coJustRun { mockDao.insertCommodities(any()) }
+        coEvery { mockApiService.getCommodities(search = "", page = 1) } returns apiResponse
+        coJustRun { mockDao.updateData(any()) }
 
         val result = repository.syncCommodities()
 
         assertTrue(result is Resource.Success)
 
-        coVerify { mockApiService.getCommodities(search = "") }
+        coVerify { mockApiService.getCommodities(search = "", page = 1) }
         coVerify {
-            mockDao.insertCommodities(match { list ->
+            mockDao.updateData(match { list ->
                 list.size == 1 && list[0].id == "1"
             })
         }
@@ -143,12 +144,12 @@ class CommodityRepositoryImplTest {
             count = 0
         )
         val apiResponse = ApiResponse(200, "success", paginatedData)
-        coEvery { mockApiService.getCommodities(search = "") } returns apiResponse
+        coEvery { mockApiService.getCommodities(search = "", page = 1) } returns apiResponse
 
         val result = repository.syncCommodities()
         assertTrue(result is Resource.Success)
 
-        coVerify(exactly = 0) { mockDao.insertCommodities(any()) }
+        coVerify(exactly = 0) { mockDao.updateData(any()) }
     }
 
     @Test
@@ -160,12 +161,12 @@ class CommodityRepositoryImplTest {
             count = 1
         )
         val apiResponse = ApiResponse(200, "ok", paginatedData)
-        coEvery { mockApiService.getCommodities(search = "") } returns apiResponse
+        coEvery { mockApiService.getCommodities(search = "", page = 1) } returns apiResponse
 
         val result = repository.syncCommodities()
         assertTrue(result is Resource.Success)
 
-        coVerify(exactly = 1) { mockDao.insertCommodities(
+        coVerify(exactly = 1) { mockDao.updateData(
             match { list ->
                 val entity = list.first()
                 entity.id == "1" &&
@@ -177,13 +178,94 @@ class CommodityRepositoryImplTest {
     }
 
     @Test
-    fun `syncCommodities fail network should return Error`() = runTest {
-        coEvery { mockApiService.getCommodities(search = "") } throws IOException("No Internet")
+    fun `syncCommodities returns Success and inserts ALL pages when API has multiple pages`() = runTest {
+        val itemPage1 = CommodityDto("1", "JG-1", "Jagung Manis", "Buah buahan","09-09-2025")
+        val itemPage2 = CommodityDto("2", "JG-1", "Jagung Ketan", "Buah buahan","09-09-2025")
+
+        val page1Data = PaginatedData(
+            data = listOf(itemPage1),
+            totalPages = 2,
+            count = 2
+        )
+        val responsePage1 = ApiResponse(200, "Success", page1Data)
+
+        val page2Data = PaginatedData(
+            data = listOf(itemPage2),
+            totalPages = 2,
+            count = 2
+        )
+        val responsePage2 = ApiResponse(200, "Success", page2Data)
+
+        coEvery { mockApiService.getCommodities(search = "", page = 1) } returns responsePage1
+        coEvery { mockApiService.getCommodities(search = "", page = 2) } returns responsePage2
+
+        val result = repository.syncCommodities()
+        assertTrue(result is Resource.Success)
+
+        coVerify {
+            mockDao.updateData(match { list ->
+                list.size == 2 &&
+                        list.any { it.id == "1" } &&
+                        list.any { it.id == "2" }
+            })
+        }
+
+        coVerify(exactly = 1) { mockApiService.getCommodities(search = "", page = 1) }
+        coVerify(exactly = 1) { mockApiService.getCommodities(search = "", page = 2) }
+    }
+
+    @Test
+    fun `syncCommodities handles single page correctly`() = runTest {
+        val itemPage1 = CommodityDto("1", "JG-1", "Jagung Manis", "Buah buahan","09-09-2025")
+        val page1Data = PaginatedData(listOf(itemPage1), totalPages = 1, count = 1)
+        val response = ApiResponse(200, "Success", page1Data)
+
+        coEvery { mockApiService.getCommodities(search = "", page = 1) } returns response
+
+        val result = repository.syncCommodities()
+
+        assertTrue(result is Resource.Success)
+        coVerify { mockDao.updateData(match { it.size == 1 }) }
+        coVerify(exactly = 0) { mockApiService.getCommodities(search = "", page = 2) }
+    }
+
+    @Test
+    fun `syncCommodities returns Error when Page 1 returns non-200`() = runTest {
+        val errorResponse = ApiResponse<PaginatedData<CommodityDto>>(
+            statusCode = 400,
+            message = "Bad Request",
+            data = PaginatedData(emptyList(), 0, 0)
+        )
+
+        coEvery { mockApiService.getCommodities(search = "", page = 1) } returns errorResponse
+        val result = repository.syncCommodities()
+        assertTrue(result is Resource.Error)
+        assertEquals("Bad Request", result.message)
+
+        coVerify(exactly = 0) { mockDao.deleteAll() }
+    }
+
+    @Test
+    fun `syncCommodities returns Error when API throws exception on Page 1`() = runTest {
+        val errorMessage = "Network Error"
+        coEvery { mockApiService.getCommodities(search = "", page = 1) } throws RuntimeException(errorMessage)
 
         val result = repository.syncCommodities()
         assertTrue(result is Resource.Error)
-        assertEquals("Gagal sinkronisasi: No Internet", result.message)
+        assertEquals("Gagal sinkronisasi: $errorMessage", result.message)
+    }
 
-        coVerify(exactly = 0) { mockDao.insertCommodities(any()) }
+    @Test
+    fun `syncCommodities continues and saves Page 1 data even if Page 2 fails`() = runTest {
+        val itemPage1 = CommodityDto("1", "JG-1", "Jagung Manis", "Buah buahan","09-09-2025")
+        val page1Data = PaginatedData(listOf(itemPage1), totalPages = 2, count = 2)
+
+        coEvery { mockApiService.getCommodities(search = "", page = 1) } returns ApiResponse(200, "OK", page1Data)
+        coEvery { mockApiService.getCommodities(search = "", page = 2) } throws RuntimeException("Timeout")
+
+        val result = repository.syncCommodities()
+        assertTrue(result is Resource.Success)
+
+        coVerify { mockDao.updateData(match { it.size == 1 && it[0].id == "1" }) }
     }
 }

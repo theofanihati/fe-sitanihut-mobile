@@ -1,10 +1,10 @@
 package com.dishut_lampung.sitanihut.data.local.dao
 
-import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.dishut_lampung.sitanihut.data.local.entity.CommodityEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -23,5 +23,11 @@ interface CommodityDao {
     fun getCommodities(query: String): Flow<List<CommodityEntity>>
 
     @Query("DELETE FROM commodities")
-    suspend fun clearAll()
+    suspend fun deleteAll()
+
+    @Transaction
+    suspend fun updateData(commodities: List<CommodityEntity>) {
+        deleteAll()
+        insertCommodities(commodities)
+    }
 }
