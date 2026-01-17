@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -142,12 +143,12 @@ fun PetaniDetailScreen(
                         ) {
                             DetailRow("Nama Petani", petani.name)
                             DetailRow("NIK", petani.identityNumber)
-                            DetailRow("Jenis Kelamin", petani.gender ?: "-")
-                            DetailRow("Alamat", petani.address ?: "-")
-                            DetailRow("Nomor Telepon", petani.whatsAppNumber ?: "-")
-                            DetailRow("Pendidikan", petani.lastEducation ?: "-")
-                            DetailRow("Pekerjaan Sampingan", petani.sideJob ?: "-")
-                            DetailRow("Luas Lahan", "${petani.landArea ?: 0} Ha")
+                            DetailRow("Jenis Kelamin", petani.gender.orWaiting())
+                            DetailRow("Alamat", petani.address.orWaiting())
+                            DetailRow("Nomor Telepon", petani.whatsAppNumber.orWaiting())
+                            DetailRow("Pendidikan", petani.lastEducation.orWaiting())
+                            DetailRow("Pekerjaan Sampingan", petani.sideJob.orWaiting())
+                            DetailRow("Luas Lahan", "${petani.landArea.toLandAreaString()} Ha")
                             DetailRow("Asal KPH", petani.kphName)
                             DetailRow("Asal KTH", petani.kthName)
 
@@ -169,11 +170,29 @@ fun PetaniDetailScreen(
     }
 }
 
+private fun String?.orWaiting(): String {
+    return if (this.isNullOrBlank()) "Belum dimuat (Menunggu Online)" else this
+}
+
+private fun Double?.toLandAreaString(): String {
+    return this?.let { "$it Ha" } ?: "Belum dimuat (Menunggu Online)"
+}
+
 @Composable
 private fun DetailRow(
     label: String,
     value: String
 ) {
+    val isPlaceholder = value.contains("Menunggu Online")
+
+    val valueColor = if (isPlaceholder) {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+
+    val fontStyle = if (isPlaceholder) FontStyle.Italic else FontStyle.Normal
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top
@@ -194,8 +213,10 @@ private fun DetailRow(
 
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            fontStyle = fontStyle,
+            color = valueColor,
             modifier = Modifier.weight(0.6f)
         )
     }

@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -140,15 +141,14 @@ fun PenyuluhDetailScreen(
                             DetailRow("Nama Lengkap", penyuluh.name)
                             DetailRow("NIP", penyuluh.identityNumber)
                             DetailRow("Jenis Kelamin", penyuluh.gender)
-                            DetailRow("Nomor WA", penyuluh.whatsAppNumber ?: "-")
-                            DetailRow("Jabatan", penyuluh.position ?: "-")
+                            DetailRow("Nomor WA", penyuluh.whatsAppNumber.orWaiting())
+                            DetailRow("Jabatan", penyuluh.position.orWaiting())
                             DetailRow("Asal KPH", penyuluh.kphName)
 
                             Spacer(modifier = Modifier.height(40.dp))
                         }
                     }
                 }
-
             } else {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
@@ -162,11 +162,25 @@ fun PenyuluhDetailScreen(
     }
 }
 
+private fun String?.orWaiting(): String {
+    return if (this.isNullOrBlank()) "Belum dimuat (Menunggu Online)" else this
+}
+
 @Composable
 private fun DetailRow(
     label: String,
     value: String
 ) {
+    val isPlaceholder = value.contains("Menunggu Online")
+
+    val valueColor = if (isPlaceholder) {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+
+    val fontStyle = if (isPlaceholder) FontStyle.Italic else FontStyle.Normal
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top
@@ -187,8 +201,10 @@ private fun DetailRow(
 
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            fontStyle = fontStyle,
+            color = valueColor,
             modifier = Modifier.weight(0.6f)
         )
     }
