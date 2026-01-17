@@ -17,7 +17,8 @@ interface KthApiService {
     @GET("v1/kth")
     suspend fun getKthList(
         @Query("page") page: Int = 1,
-        @Query("limit") limit: Int = 50
+        @Query("limit") limit: Int = 50,
+        @Query("search") search: String? = null
     ): ApiResponse<PaginatedData<KthListItemDto>>
 
     @GET("v1/kth/{id}")

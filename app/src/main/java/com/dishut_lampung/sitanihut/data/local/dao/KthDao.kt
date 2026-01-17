@@ -4,7 +4,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.dishut_lampung.sitanihut.data.local.entity.KthEntity
+import com.dishut_lampung.sitanihut.data.local.entity.PenyuluhEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -27,4 +29,13 @@ interface KthDao {
 
     @Query("DELETE FROM kth WHERE id = :id")
     suspend fun deleteKth(id: String)
+
+    @Query("DELETE FROM kth")
+    suspend fun deleteAll()
+
+    @Transaction
+    suspend fun updateData(kthList: List<KthEntity>) {
+        deleteAll()
+        upsertAll(kthList)
+    }
 }

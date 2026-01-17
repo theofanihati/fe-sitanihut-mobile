@@ -6,6 +6,7 @@ import com.dishut_lampung.sitanihut.data.local.entity.KthEntity
 import com.dishut_lampung.sitanihut.data.remote.api.KthApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.KthDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.KthListItemDto
+import com.dishut_lampung.sitanihut.data.remote.dto.PenyuluhListItemDto
 import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
 import com.dishut_lampung.sitanihut.domain.model.CreateKthInput
@@ -30,11 +31,13 @@ class KthRepositoryImplTest {
     private lateinit var apiService: KthApiService
     private lateinit var dao: KthDao
     private lateinit var repository: KthRepositoryImpl
+    val itemPage1 = KthListItemDto("1", "KTH Mekar", "Desa ABC", "Kab XYZ","123","KPH C")
+    val itemPage2 = KthListItemDto("2", "KTH Kuncup", "Desa ABC", "Kab XYZ","123","KPH C")
 
     @Before
     fun setUp() {
         apiService = mockk()
-        dao = mockk()
+        dao = mockk(relaxed = true)
         repository = KthRepositoryImpl(apiService, dao)
     }
 
@@ -56,24 +59,152 @@ class KthRepositoryImplTest {
 
     @Test
     fun `syncKthData should fetch from API and upsert to DAO`() = runTest {
-        val dummyDto = KthListItemDto("1", "KTH Mekar", "Desa ABC", "Kab XYZ","123","KPH C")
         val apiResponse = ApiResponse(
             statusCode = 200,
             message = "Success",
             data = PaginatedData(
-                data = listOf(dummyDto),
+                data = listOf(itemPage1),
                 count = 1,
                 totalPages = 1,
             )
         )
 
-        coEvery { apiService.getKthList(limit = 50) } returns apiResponse
-        coEvery { dao.upsertAll(any()) } returns Unit
+        coEvery { apiService.getKthList(search = "", page = 1, limit = 50) } returns apiResponse
+        coEvery { dao.updateData(any()) } returns Unit
 
         val result = repository.syncKthData()
         assertTrue(result is Resource.Success)
-        coVerify { apiService.getKthList(limit = 50) }
-        coVerify { dao.upsertAll(any()) }
+        coVerify { apiService.getKthList(search = "", page = 1, limit = 50) }
+        coVerify { dao.updateData(any()) }
+    }
+
+    @Test
+    fun `syncKthData when api returns empty should not insert`() = runTest {
+        val paginatedData = PaginatedData(
+            data = emptyList<KthListItemDto>(),
+            totalPages = 0,
+            count = 0
+        )
+        val apiResponse = ApiResponse(200, "success", paginatedData)
+        coEvery { apiService.getKthList(search = "", page = 1, limit = 50) } returns apiResponse
+
+        val result = repository.syncKthData()
+        assertTrue(result is Resource.Success)
+
+        coVerify(exactly = 0) { dao.updateData(any()) }
+    }
+
+    @Test
+    fun `syncKthData success should verify ALL fields mapping correctly`() = runTest {
+        val paginatedData = PaginatedData(
+            data = listOf(itemPage1),
+            totalPages = 1,
+            count = 1
+        )
+        val apiResponse = ApiResponse(200, "ok", paginatedData)
+        coEvery { apiService.getKthList(search = "", page = 1, limit = 50) } returns apiResponse
+
+        val result = repository.syncKthData()
+        assertTrue(result is Resource.Success)
+
+        coVerify(exactly = 1) { dao.updateData(
+            match { list ->
+                val entity = list.first()
+                entity.id == "1" &&
+                        entity.name == "KTH Mekar" &&
+                        entity.desa == "Desa ABC" &&
+                        entity.kabupaten == "Kab XYZ" &&
+                        entity.kphId == "123" &&
+                        entity.kphName == "KPH C"
+            })
+        }
+    }
+
+    @Test
+    fun `syncKthData returns Success and inserts ALL pages when API has multiple pages`() = runTest {
+        val page1Data = PaginatedData(
+            data = listOf(itemPage1),
+            totalPages = 2,
+            count = 2
+        )
+        val responsePage1 = ApiResponse(200, "Success", page1Data)
+
+        val page2Data = PaginatedData(
+            data = listOf(itemPage2),
+            totalPages = 2,
+            count = 2
+        )
+        val responsePage2 = ApiResponse(200, "Success", page2Data)
+
+        coEvery { apiService.getKthList(search = "", page = 1, limit = 50) } returns responsePage1
+        coEvery { apiService.getKthList(search = "", page = 2, limit = 50) } returns responsePage2
+
+        val result = repository.syncKthData()
+        assertTrue(result is Resource.Success)
+
+        coVerify {
+            dao.updateData(match { list ->
+                list.size == 2 &&
+                        list.any { it.id == "1" } &&
+                        list.any { it.id == "2" }
+            })
+        }
+
+        coVerify(exactly = 1) { apiService.getKthList(search = "", page = 1, limit = 50) }
+        coVerify(exactly = 1) { apiService.getKthList(search = "", page = 2, limit = 50) }
+    }
+
+    @Test
+    fun `syncKthData handles single page correctly`() = runTest {
+        val page1Data = PaginatedData(listOf(itemPage1), totalPages = 1, count = 1)
+        val response = ApiResponse(200, "Success", page1Data)
+
+        coEvery { apiService.getKthList(search = "", page = 1, limit = 50) } returns response
+
+        val result = repository.syncKthData()
+
+        assertTrue(result is Resource.Success)
+        coVerify { dao.updateData(match { it.size == 1 }) }
+        coVerify(exactly = 0) { apiService.getKthList(search = "", page = 2, limit = 50) }
+    }
+
+    @Test
+    fun `syncKthData returns Error when Page 1 returns non-200`() = runTest {
+        val errorResponse = ApiResponse<PaginatedData<KthListItemDto>>(
+            statusCode = 400,
+            message = "Bad Request",
+            data = PaginatedData(emptyList(), 0, 0)
+        )
+
+        coEvery { apiService.getKthList(search = "", page = 1, limit = 50) } returns errorResponse
+        val result = repository.syncKthData()
+        assertTrue(result is Resource.Error)
+        assertEquals("Bad Request", result.message)
+
+        coVerify(exactly = 0) { dao.deleteAll() }
+    }
+
+    @Test
+    fun `syncKthData returns Error when API throws exception on Page 1`() = runTest {
+        val errorMessage = "Network Error"
+        coEvery { apiService.getKthList(search = "", page = 1, limit = 50) } throws RuntimeException(errorMessage)
+
+        val result = repository.syncKthData()
+        assertTrue(result is Resource.Error)
+        assertEquals(errorMessage, result.message)
+    }
+
+    @Test
+    fun `syncKthData continues and saves Page 1 data even if Page 2 fails`() = runTest {
+        val page1Data = PaginatedData(listOf(itemPage1), totalPages = 2, count = 2)
+
+        coEvery { apiService.getKthList(search = "", page = 1, limit = 50) } returns ApiResponse(200, "OK", page1Data)
+        coEvery { apiService.getKthList(search = "", page = 2, limit = 50) } throws RuntimeException("Timeout")
+
+        val result = repository.syncKthData()
+        assertTrue(result is Resource.Success)
+
+        coVerify { dao.updateData(match { it.size == 1 && it[0].id == "1" }) }
     }
 
     @Test
