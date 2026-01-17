@@ -3,7 +3,9 @@ package com.dishut_lampung.sitanihut.presentation.penyuluh
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.Penyuluh
 import com.dishut_lampung.sitanihut.domain.usecase.penyuluh.GetPenyuluhUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.penyuluh.SyncPenyuluhDataUseCase
 import com.dishut_lampung.sitanihut.presentation.penyuluh.list.PenyuluhViewModel
+import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.every
@@ -25,6 +27,8 @@ class PenyuluhViewModelTest {
 
     private lateinit var getPenyuluhUseCase: GetPenyuluhUseCase
     private lateinit var userPreferences: UserPreferences
+    private val syncUseCase: SyncPenyuluhDataUseCase = mockk()
+    private var connectivityObserver: ConnectivityObserver = mockk()
     private lateinit var viewModel: PenyuluhViewModel
 
     @Before
@@ -43,7 +47,7 @@ class PenyuluhViewModelTest {
         )
         every { getPenyuluhUseCase("penanggung jawab") } returns flowOf(Resource.Success(dummyList))
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, userPreferences)
+        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences,  connectivityObserver)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -57,7 +61,7 @@ class PenyuluhViewModelTest {
         val errorMessage = "Gagal memuat data"
         every { getPenyuluhUseCase("penanggung jawab") } returns flowOf(Resource.Error(errorMessage))
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, userPreferences)
+        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences,  connectivityObserver)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -74,7 +78,7 @@ class PenyuluhViewModelTest {
         )
         every { getPenyuluhUseCase("penanggung jawab") } returns flowOf(Resource.Success(dummyList))
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, userPreferences)
+        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences,  connectivityObserver)
         advanceUntilIdle()
 
         viewModel.onEvent(PenyuluhEvent.OnRefresh)
@@ -93,7 +97,7 @@ class PenyuluhViewModelTest {
         val errorMessage = "Error terjadi"
         every { getPenyuluhUseCase("penanggung jawab") } returns flowOf(Resource.Error(errorMessage))
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, userPreferences)
+        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences,  connectivityObserver)
         advanceUntilIdle()
         assertEquals(errorMessage, viewModel.uiState.value.error)
 
@@ -112,7 +116,7 @@ class PenyuluhViewModelTest {
             emit(Resource.Success(dummyList))
         }
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, userPreferences)
+        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences,  connectivityObserver)
         advanceUntilIdle()
     }
 }

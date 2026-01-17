@@ -5,6 +5,7 @@ import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.usecase.kth.DeleteKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthListUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.kth.SyncKthDataUseCase
 import com.dishut_lampung.sitanihut.presentation.kth.list.KthEvent
 import com.dishut_lampung.sitanihut.presentation.kth.list.KthListViewModel
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
@@ -33,6 +34,7 @@ class KthListViewModelTest {
 
     private var getKthListUseCase: GetKthListUseCase = mockk()
     private var deleteKthUseCase: DeleteKthUseCase = mockk()
+    private var syncKthDataUseCase: SyncKthDataUseCase = mockk()
     private var userPreferences: UserPreferences = mockk()
     private var connectivityObserver: ConnectivityObserver = mockk()
     private lateinit var viewModel: KthListViewModel
@@ -43,13 +45,13 @@ class KthListViewModelTest {
 
     @Test
     fun `init should load KTH list and observe connectivity`() = runTest {
-        val dummyKth = listOf(Kth("1", "KTH Mawar", "Desa A", "Kec A","Kab A", "Koor A", "089785983784", "KPH A"),)
+        val dummyKth = listOf(Kth("1", "KTH Mawar", "Desa A", "Kec A","Kab A", "Koor A", "089785983784", "KPH A"))
 
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getKthListUseCase("penyuluh", "") } returns flowOf(Resource.Success(dummyKth))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = KthListViewModel(getKthListUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
 
         viewModel.uiState.test {
             val state = awaitItem()
@@ -66,7 +68,7 @@ class KthListViewModelTest {
         every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
 
-        viewModel = KthListViewModel(getKthListUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
 
         viewModel.uiState.test {
             val state = awaitItem()
@@ -87,7 +89,7 @@ class KthListViewModelTest {
         every { getKthListUseCase("penyuluh", "") } returns flowOf(Resource.Success(listData))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = KthListViewModel(getKthListUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
 
         viewModel.uiState.test {
             awaitItem()
@@ -108,7 +110,7 @@ class KthListViewModelTest {
         every { getKthListUseCase("penyuluh", "") } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = KthListViewModel(getKthListUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
         viewModel.onEvent(KthEvent.OnRefresh)
 
         coVerify(atLeast = 2) { getKthListUseCase("penyuluh", "") }
@@ -120,7 +122,7 @@ class KthListViewModelTest {
         every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = KthListViewModel(getKthListUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
 
         viewModel.uiState.test {
             awaitItem()
@@ -148,7 +150,7 @@ class KthListViewModelTest {
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
         coEvery { deleteKthUseCase("1") } returns Resource.Success(Unit)
 
-        viewModel = KthListViewModel(getKthListUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
         viewModel.uiState.test {
             awaitItem()
             viewModel.onEvent(KthEvent.OnMoreOptionClick("1"))
@@ -190,7 +192,7 @@ class KthListViewModelTest {
         val errorMsg = "Gagal hapus bro"
         coEvery { deleteKthUseCase("1") } returns Resource.Error(errorMsg)
 
-        viewModel = KthListViewModel(getKthListUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
 
         viewModel.uiState.test {
             awaitItem()
@@ -221,7 +223,7 @@ class KthListViewModelTest {
 
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
 
-        viewModel = KthListViewModel(getKthListUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
 
         viewModel.uiState.test {
             awaitItem()
@@ -255,7 +257,7 @@ class KthListViewModelTest {
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
         coEvery { deleteKthUseCase("1") } returns Resource.Error("Error Hapus")
 
-        viewModel = KthListViewModel(getKthListUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
 
         viewModel.uiState.test {
             awaitItem()

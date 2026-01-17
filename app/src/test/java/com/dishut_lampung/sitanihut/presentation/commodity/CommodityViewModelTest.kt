@@ -3,6 +3,8 @@ package com.dishut_lampung.sitanihut.presentation.commodity
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.domain.model.Commodity
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.GetCommoditiesUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.commodity.SyncCommodityDataUseCase
+import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
@@ -26,6 +28,8 @@ class CommodityViewModelTest {
     val mainDispatcherRule = MainCoroutineRule()
 
     private val useCase: GetCommoditiesUseCase = mockk()
+    private val syncUseCase: SyncCommodityDataUseCase = mockk()
+    private var connectivityObserver: ConnectivityObserver = mockk()
     private lateinit var viewModel: CommodityViewModel
 
     private val dummyCommodities = listOf(
@@ -36,7 +40,7 @@ class CommodityViewModelTest {
     @Test
     fun `init should load commodities with empty query and update state to Success`() = runTest {
         coEvery { useCase("") } returns flowOf(Resource.Success(dummyCommodities))
-        viewModel = CommodityViewModel(useCase)
+        viewModel = CommodityViewModel(useCase, syncUseCase, connectivityObserver)
 
         viewModel.uiState.test {
             val item = awaitItem()
@@ -60,7 +64,7 @@ class CommodityViewModelTest {
             delay(10)
             emit(Resource.Success(searchResult))
         }
-        viewModel = CommodityViewModel(useCase)
+        viewModel = CommodityViewModel(useCase, syncUseCase, connectivityObserver)
         viewModel.uiState.test {
             awaitItem()
             viewModel.onEvent(CommodityEvent.OnSearchQueryChange(query))
@@ -86,7 +90,7 @@ class CommodityViewModelTest {
     fun `when useCase returns Error, state should show error message`() = runTest {
         val errorMessage = "No Internet Connection"
         coEvery { useCase("") } returns flowOf(Resource.Error(errorMessage))
-        viewModel = CommodityViewModel(useCase)
+        viewModel = CommodityViewModel(useCase, syncUseCase, connectivityObserver)
 
         viewModel.uiState.test {
             val item = awaitItem()
