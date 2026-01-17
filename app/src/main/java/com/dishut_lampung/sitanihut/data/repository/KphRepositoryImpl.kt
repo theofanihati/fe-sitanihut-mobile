@@ -46,8 +46,7 @@ class KphRepositoryImpl @Inject constructor(
                 if (allKphData.isNotEmpty()) {
                     val kphEntities = allKphData.map { it.toEntity() }
 
-                    dao.deleteAll()
-                    dao.insertAll(kphEntities)
+                    dao.updateData(kphEntities)
 //                    android.util.Log.d("REPO_KPH", "Total data tersimpan: ${kphEntities.size}")
                     Resource.Success(Unit)
                 } else {

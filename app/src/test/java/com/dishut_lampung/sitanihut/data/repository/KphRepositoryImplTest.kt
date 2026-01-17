@@ -71,8 +71,7 @@ class KphRepositoryImplTest {
         assertTrue(result is Resource.Success)
 
         coVerify {
-            dao.deleteAll()
-            dao.insertAll(match { list ->
+            dao.updateData(match { list ->
                 list.size == 2 &&
                         list.any { it.id == "1" } &&
                         list.any { it.id == "2" }
@@ -94,7 +93,7 @@ class KphRepositoryImplTest {
         val result = repository.syncKphData()
 
         assertTrue(result is Resource.Success)
-        coVerify { dao.insertAll(match { it.size == 1 }) }
+        coVerify { dao.updateData(match { it.size == 1 }) }
         coVerify(exactly = 0) { apiService.getKphList(page = 2) }
     }
 
@@ -135,6 +134,6 @@ class KphRepositoryImplTest {
         val result = repository.syncKphData()
         assertTrue(result is Resource.Success)
 
-        coVerify { dao.insertAll(match { it.size == 1 && it[0].id == "1" }) }
+        coVerify { dao.updateData(match { it.size == 1 && it[0].id == "1" }) }
     }
 }
