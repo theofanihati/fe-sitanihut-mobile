@@ -4,6 +4,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
+import com.dishut_lampung.sitanihut.data.local.entity.PenyuluhEntity
 import com.dishut_lampung.sitanihut.data.local.entity.PetaniEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -27,4 +29,13 @@ interface PetaniDao {
 
     @Query("DELETE FROM petani WHERE id = :id")
     suspend fun deletePetani(id: String)
+
+    @Query("DELETE FROM petani")
+    suspend fun deleteAll()
+
+    @Transaction
+    suspend fun updateData(petaniList: List<PetaniEntity>) {
+        deleteAll()
+        upsertAll(petaniList)
+    }
 }
