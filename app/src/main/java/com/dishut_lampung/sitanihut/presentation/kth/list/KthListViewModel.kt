@@ -6,6 +6,7 @@ import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.usecase.kth.DeleteKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthListUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.kth.SyncKthDataUseCase
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.Resource
@@ -24,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class KthListViewModel @Inject constructor(
     private val getKthListUseCase: GetKthListUseCase,
+    private val syncKthDataUseCase: SyncKthDataUseCase,
     private val deleteKthUseCase: DeleteKthUseCase,
     private val userPreferences: UserPreferences,
     private val connectivityObserver: ConnectivityObserver
@@ -72,7 +74,7 @@ class KthListViewModel @Inject constructor(
                 _searchQuery.value = event.query
             }
             KthEvent.OnRefresh -> {
-                fetchKthData(isRefresh = true)
+                refreshData()
             }
             is KthEvent.OnMoreOptionClick -> {
                 _baseState.update {
@@ -213,6 +215,33 @@ class KthListViewModel @Inject constructor(
                         }
                     }
                 }
+            }
+        }
+    }
+    private fun refreshData() {
+        if (!_isOnline.value) {
+            _baseState.update {
+                it.copy(isRefreshing = false, errorMessage = "Tidak ada koneksi internet")
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _baseState.update { it.copy(isRefreshing = true) }
+            val result = syncKthDataUseCase()
+
+            when(result) {
+                is Resource.Success -> {
+                    _baseState.update {
+                        it.copy(isRefreshing = false, successMessage = "Data berhasil diperbarui")
+                    }
+                }
+                is Resource.Error -> {
+                    _baseState.update {
+                        it.copy(isRefreshing = false, errorMessage = result.message)
+                    }
+                }
+                is Resource.Loading -> {}
             }
         }
     }

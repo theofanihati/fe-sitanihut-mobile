@@ -45,6 +45,9 @@ import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPaddi
 import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniEvent
 import com.dishut_lampung.sitanihut.presentation.shared.components.CustomCircularProgressIndicator
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.AnimatedMessage
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
@@ -79,6 +82,7 @@ private fun CommodityScreenPreview() {
         CommodityScreen(
             state = state,
             onEvent = {},
+            onRefresh = {}
         )
     }
 }
@@ -105,14 +109,17 @@ fun CommodityRoute(
         state = state,
         modifier = modifier,
         onEvent = viewModel::onEvent,
+        onRefresh = { viewModel.onEvent(CommodityEvent.OnRefresh) },
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommodityScreen(
     state: CommodityUiState,
     modifier: Modifier = Modifier,
     onEvent: (CommodityEvent) -> Unit,
+    onRefresh: () -> Unit,
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -128,61 +135,69 @@ fun CommodityScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Column(
+        PullToRefreshBox(
+            isRefreshing = state.isRefreshing,
+            onRefresh = onRefresh,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = ScreenPadding)
+                .padding(top = 100.dp)
         ) {
-
-            Spacer(modifier = Modifier.height(100.dp))
-
-            Text(
-                text = "Data Komoditas",
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                ),
-                color = MaterialTheme.colorScheme.tertiary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = ScreenPadding)
             ) {
-                CustomSearchTextField(
-                    modifier = Modifier.weight(1f),
-                    query = state.query,
-                    onQueryChange = { onEvent(CommodityEvent.OnSearchQueryChange(it)) },
-                    placeholder = "Cari komoditas..."
+
+                Spacer(modifier = Modifier.height(100.dp))
+
+                Text(
+                    text = "Data Komoditas",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                    ),
+                    color = MaterialTheme.colorScheme.tertiary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
-            }
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(bottom = 80.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                if (!state.isLoading && state.items.isEmpty()) {
-                    item {
-                        EmptyStateView()
-                    }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    CustomSearchTextField(
+                        modifier = Modifier.weight(1f),
+                        query = state.query,
+                        onQueryChange = { onEvent(CommodityEvent.OnSearchQueryChange(it)) },
+                        placeholder = "Cari komoditas..."
+                    )
                 }
 
-                items(
-                    items = state.items,
-                    key = { it.id }
-                ) { commodity ->
-                    CommodityCard(
-                        item = commodity,
-                        onClick = {}
+                Spacer(modifier = Modifier.height(16.dp))
 
-                    )
+                LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(bottom = 80.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    if (!state.isLoading && state.items.isEmpty()) {
+                        item {
+                            EmptyStateView()
+                        }
+                    }
+
+                    items(
+                        items = state.items,
+                        key = { it.id }
+                    ) { commodity ->
+                        CommodityCard(
+                            item = commodity,
+                            onClick = {}
+
+                        )
+                    }
                 }
             }
         }

@@ -3,6 +3,8 @@ package com.dishut_lampung.sitanihut.presentation.commodity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.GetCommoditiesUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.commodity.SyncCommodityDataUseCase
+import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -18,15 +20,19 @@ import kotlinx.coroutines.flow.update
 
 @HiltViewModel
 class CommodityViewModel @Inject constructor(
-    private val getCommoditiesUseCase: GetCommoditiesUseCase
+    private val getCommoditiesUseCase: GetCommoditiesUseCase,
+    private val syncCommodityDataUseCase: SyncCommodityDataUseCase,
+    private val connectivityObserver: ConnectivityObserver,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CommodityUiState())
     val uiState: StateFlow<CommodityUiState> = _uiState.asStateFlow()
+    private val _isOnline = MutableStateFlow(true)
 
     private var searchJob: Job? = null
 
     init {
+        observeConnectivity()
         getCommodities()
     }
 
@@ -41,7 +47,7 @@ class CommodityViewModel @Inject constructor(
                 }
             }
             is CommodityEvent.OnRefresh -> {
-                getCommodities(_uiState.value.query)
+                refreshData()
             }
 
             CommodityEvent.OnDismissError -> {
@@ -78,5 +84,39 @@ class CommodityViewModel @Inject constructor(
                 }
             }
         }.launchIn(viewModelScope)
+    }
+    private fun observeConnectivity() {
+        connectivityObserver.observe()
+            .onEach { status ->
+                _isOnline.value = status == ConnectivityObserver.Status.Available
+            }
+            .launchIn(viewModelScope)
+    }
+    private fun refreshData() {
+        if (!_isOnline.value) {
+            _uiState.update {
+                it.copy(isRefreshing = false, errorMessage = "Tidak ada koneksi internet")
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isRefreshing = true) }
+            val result = syncCommodityDataUseCase()
+
+            when(result) {
+                is Resource.Success -> {
+                    _uiState.update {
+                        it.copy(isRefreshing = false, successMessage = "Data berhasil diperbarui")
+                    }
+                }
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(isRefreshing = false, errorMessage = result.message)
+                    }
+                }
+                is Resource.Loading -> {}
+            }
+        }
     }
 }

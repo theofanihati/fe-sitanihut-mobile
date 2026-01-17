@@ -7,6 +7,7 @@ data class CommodityUiState (
     val isLoading: Boolean = false,
     val error: String? = null,
     val query: String = "",
+    val isRefreshing: Boolean = false,
 
     val successMessage: String? = null,
     val errorMessage: String? = null
