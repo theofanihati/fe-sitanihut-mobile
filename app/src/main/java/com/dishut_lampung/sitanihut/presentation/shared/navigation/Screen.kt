@@ -52,6 +52,15 @@ sealed class Screen(val route: String) {
 
     object UserManagement : Screen("user-management")
     data class UserDetail(val id : String) : Screen("user_detail/{id}")
+    object UserForm : Screen("user_form?userId={id}"){
+        fun createRoute(id: String? =null): String{
+            return if (id != null){
+                "user_form?userId=$id"
+            }else{
+                "user_form"
+            }
+        }
+    }
 
     sealed class Auth(route : String) : Screen(route) {
         data object Login : Screen("login_screen")

@@ -20,6 +20,7 @@ import com.dishut_lampung.sitanihut.presentation.petani.detail.PetaniDetailRoute
 import com.dishut_lampung.sitanihut.presentation.petani.form.PetaniFormRoute
 import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniListRoute
 import com.dishut_lampung.sitanihut.presentation.profile.penyuluh.PenyuluhProfileRoute
+import com.dishut_lampung.sitanihut.presentation.user_management.list.UserListRoute
 
 fun NavGraphBuilder.penyuluhNavGraph(
     modifier : Modifier,
@@ -65,6 +66,7 @@ fun NavGraphBuilder.penyuluhNavGraph(
         composable(route = Screen.DataCommodity.route){
             CommodityRoute()
         }
+        // KTH
         composable(route = Screen.DataKth.route){
             KthListRoute(
                 onNavigateToAddKth = {
@@ -104,6 +106,8 @@ fun NavGraphBuilder.penyuluhNavGraph(
         ){
             KthDetailRoute()
         }
+
+        // MASTER PETANI
         composable(route = Screen.DataPetani.route){
             PetaniListRoute(
                 onNavigateToAddPetani = {
@@ -143,6 +147,27 @@ fun NavGraphBuilder.penyuluhNavGraph(
         ){
             PetaniDetailRoute()
         }
+
+        // USER MANAGEMENT
+        composable(route = Screen.UserManagement.route){
+            UserListRoute(
+                onNavigateToAddUser = {
+                    navController.navigateSingleTop(
+                        Screen.KthForm.createRoute(id = null)
+                    )
+                },
+                onNavigateToDetail = { id : String ->
+                    navController.navigateSingleTop("user_detail/$id")
+                },
+                onNavigateToEdit = { id : String ->
+                    navController.navigateSingleTop(
+                        Screen.UserForm.createRoute(id = id)
+                    )
+                }
+            )
+        }
+
+        // INFORMATION
         composable(route = Screen.Information.route){
             InformationRoute(
                 navController = navController,

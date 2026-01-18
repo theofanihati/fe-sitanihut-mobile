@@ -12,7 +12,7 @@ data class UserListUiState(
 
     val isOnline: Boolean = true,
     val isBottomSheetVisible: Boolean = false,
-    val selectedPetaniId: String? = null,
+    val selectedUserId: String? = null,
     val isDeleteDialogVisible: Boolean = false,
 
     val errorMessage: String? = null,

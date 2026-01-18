@@ -34,7 +34,8 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         Screen.PenanggungJawab.ProfilePenanggungJawab.route,
         "data_penyuluh/{id}",
         "kth_detail/{kthId}",
-        "petani_detail/{id}"-> ScaffoldConfig(
+        "petani_detail/{id}",
+        "user_form/{id}" -> ScaffoldConfig(
             showMainNav = false,
             showBackNav = true,
             topBarTheme = TopBarTheme.DARK_BACKGROUND
@@ -51,6 +52,8 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         Screen.KthForm.route,
         Screen.DataPetani.route,
         Screen.PetaniForm.route,
+        Screen.UserManagement.route,
+        Screen.UserForm.route,
         Screen.ReportList.route,
         Screen.ReportForm.route,
         Screen.KthForm.route,

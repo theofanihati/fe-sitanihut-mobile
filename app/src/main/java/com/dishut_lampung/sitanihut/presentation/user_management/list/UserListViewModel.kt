@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
-import com.dishut_lampung.sitanihut.domain.usecase.petani.DeletePetaniUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.user_management.DeleteUserUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.user_management.GetUserListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.user_management.SyncUserDataUseCase
@@ -84,7 +83,7 @@ class UserListViewModel @Inject constructor(
                 _baseState.update {
                     it.copy(
                         isBottomSheetVisible = true,
-                        selectedPetaniId = event.id
+                        selectedUserId = event.id
                     )
                 }
             }
@@ -105,7 +104,7 @@ class UserListViewModel @Inject constructor(
                 }
             }
             UserEvent.OnDeleteConfirm -> {
-                val idToDelete = _baseState.value.selectedPetaniId
+                val idToDelete = _baseState.value.selectedUserId
                 if (idToDelete != null) {
                     deletePetani(idToDelete)
                 }
@@ -115,7 +114,7 @@ class UserListViewModel @Inject constructor(
                 _baseState.update {
                     it.copy(
                         isDeleteDialogVisible = false,
-                        selectedPetaniId = null
+                        selectedUserId = null
                     )
                 }
             }
@@ -166,7 +165,7 @@ class UserListViewModel @Inject constructor(
                         it.copy(
                             isLoading = false,
                             successMessage = "Data berhasil dihapus",
-                            selectedPetaniId = null,
+                            selectedUserId = null,
                             isDeleteDialogVisible = false
                         )
                     }
