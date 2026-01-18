@@ -199,7 +199,7 @@ class PetaniListViewModel @Inject constructor(
     private fun fetchPetaniData(isRefresh: Boolean = false) {
         viewModelScope.launch {
             val role = userPreferences.userRole.first() ?: ""
-
+            _userRole.value = role
             _baseState.update {
                 it.copy(
                     isLoading = !isRefresh,

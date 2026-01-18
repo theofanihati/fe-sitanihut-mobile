@@ -1,6 +1,5 @@
 package com.dishut_lampung.sitanihut.presentation.petani
 
-import androidx.work.WorkManager
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.Petani
@@ -18,12 +17,13 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -135,7 +135,73 @@ class PetaniListViewModelTest{
         viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
         viewModel.onEvent(PetaniEvent.OnRefresh)
 
-        coVerify(atLeast = 2) { getPetaniListUseCase("penyuluh", "") }
+        coVerify(exactly = 1) { getPetaniListUseCase("penyuluh", "") }
+        coVerify(exactly = 1) { syncPetaniDataUseCase() }
+    }
+
+    @Test
+    fun `onEvent OnRefresh success should update data`() = runTest {
+        val successMessage = "Data berhasil diperbarui"
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+        coEvery { syncPetaniDataUseCase() } returns Resource.Success(Unit)
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
+
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+        val job = launch { viewModel.uiState.collect{} }
+
+        advanceUntilIdle()
+
+        viewModel.onEvent(PetaniEvent.OnRefresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isRefreshing)
+        assertEquals(successMessage, state.successMessage)
+        job.cancel()
+    }
+
+    @Test
+    fun `onEvent OnRefresh should show error when offline`() = runTest {
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
+
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+        val job = launch { viewModel.uiState.collect{} }
+        advanceUntilIdle()
+
+        viewModel.onEvent(PetaniEvent.OnRefresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isRefreshing)
+        assertEquals("Tidak ada koneksi internet", state.errorMessage)
+
+        coVerify(exactly = 0) { syncPetaniDataUseCase() }
+        job.cancel()
+    }
+
+    @Test
+    fun `onEvent OnRefresh should handle sync error`() = runTest {
+        val errorMsg = "Gagal sinkronisasi"
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+        coEvery { syncPetaniDataUseCase() } returns Resource.Error(errorMsg)
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
+
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+        val job = launch { viewModel.uiState.collect{} }
+
+        advanceUntilIdle()
+
+        viewModel.onEvent(PetaniEvent.OnRefresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isRefreshing)
+        assertEquals(errorMsg, state.errorMessage)
+        job.cancel()
     }
 
     @Test
@@ -201,6 +267,33 @@ class PetaniListViewModelTest{
         }
 
         coVerify { deletePetaniUseCase("1") }
+    }
+
+    @Test
+    fun `Couldn't Delete if user role is Penanggung Jawab`() = runTest {
+        every { userPreferences.userRole } returns flowOf("penanggung jawab")
+        every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+
+        val job = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        viewModel.onEvent(PetaniEvent.OnDeleteClick)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse("Dialog delete tidak boleh muncul untuk Penanggung Jawab", state.isDeleteDialogVisible)
+
+        viewModel.onEvent(PetaniEvent.OnMoreOptionClick("1"))
+        viewModel.onEvent(PetaniEvent.OnDeleteConfirm)
+        advanceUntilIdle()
+
+        val errorState = viewModel.uiState.value
+        assertEquals("Anda tidak memiliki akses hapus", errorState.errorMessage)
+
+        job.cancel()
     }
 
     @Test

@@ -35,13 +35,15 @@ class KthListViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     private val _allKthData = MutableStateFlow<List<Kth>>(emptyList())
     private val _isOnline = MutableStateFlow(true)
+    private val _userRole = MutableStateFlow("")
 
     val uiState = combine(
         _baseState,
         _allKthData,
         _searchQuery,
-        _isOnline
-    ) { base, allData, query, isOnline ->
+        _isOnline,
+        _userRole
+    ) { base, allData, query, isOnline, role ->
 
         val filteredList = if (query.isBlank()) {
             allData
@@ -92,6 +94,7 @@ class KthListViewModel @Inject constructor(
                 }
             }
             KthEvent.OnDeleteClick -> {
+                if (_userRole.value == "penanggung jawab") return
                 _baseState.update {
                     it.copy(
                         isBottomSheetVisible = false,
@@ -135,6 +138,11 @@ class KthListViewModel @Inject constructor(
     }
 
     private fun deleteKth(id: String) {
+        if (_userRole.value == "penanggung jawab") {
+            _baseState.update { it.copy(errorMessage = "Anda tidak memiliki akses hapus") }
+            return
+        }
+
         if (!_isOnline.value) {
             _baseState.update {
                 it.copy(
@@ -185,7 +193,7 @@ class KthListViewModel @Inject constructor(
     private fun fetchKthData(isRefresh: Boolean = false) {
         viewModelScope.launch {
             val role = userPreferences.userRole.first() ?: ""
-
+            _userRole.value = role
             _baseState.update {
                 it.copy(
                     isLoading = !isRefresh,

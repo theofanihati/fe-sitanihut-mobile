@@ -2,18 +2,23 @@ package com.dishut_lampung.sitanihut.presentation.commodity
 
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.domain.model.Commodity
+import com.dishut_lampung.sitanihut.domain.model.Penyuluh
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.GetCommoditiesUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.SyncCommodityDataUseCase
+import com.dishut_lampung.sitanihut.presentation.penyuluh.PenyuluhEvent
+import com.dishut_lampung.sitanihut.presentation.penyuluh.list.PenyuluhViewModel
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -27,9 +32,9 @@ class CommodityViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainCoroutineRule()
 
-    private val useCase: GetCommoditiesUseCase = mockk()
-    private val syncUseCase: SyncCommodityDataUseCase = mockk()
-    private var connectivityObserver: ConnectivityObserver = mockk()
+    private val useCase: GetCommoditiesUseCase = mockk(relaxed = true)
+    private val syncUseCase: SyncCommodityDataUseCase = mockk(relaxed = true)
+    private var connectivityObserver: ConnectivityObserver = mockk(relaxed = true)
     private lateinit var viewModel: CommodityViewModel
 
     private val dummyCommodities = listOf(
@@ -99,5 +104,28 @@ class CommodityViewModelTest {
 
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    @Test
+    fun `onEvent OnRefresh should refresh data correctly`() = runTest {
+        val dummyList = listOf(
+            Commodity("1", "123","Jagung",  "Buah"),
+            Commodity("2", "124","Nangka",  "Buah"),
+        )
+        every { useCase("") } returns flowOf(Resource.Success(dummyList))
+
+        viewModel = CommodityViewModel(useCase, syncUseCase, connectivityObserver)
+        advanceUntilIdle()
+
+        viewModel.onEvent(CommodityEvent.OnRefresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isRefreshing)
+        assertFalse(state.isLoading)
+        assertEquals(2, state.items.size)
+
+        coVerify(exactly = 1) { useCase("") }
+        coVerify(exactly = 1) { syncUseCase() }
     }
 }

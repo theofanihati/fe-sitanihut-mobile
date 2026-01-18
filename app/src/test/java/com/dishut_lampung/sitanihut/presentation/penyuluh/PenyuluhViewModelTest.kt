@@ -8,6 +8,8 @@ import com.dishut_lampung.sitanihut.presentation.penyuluh.list.PenyuluhViewModel
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
@@ -27,13 +29,13 @@ class PenyuluhViewModelTest {
 
     private lateinit var getPenyuluhUseCase: GetPenyuluhUseCase
     private lateinit var userPreferences: UserPreferences
-    private val syncUseCase: SyncPenyuluhDataUseCase = mockk()
-    private var connectivityObserver: ConnectivityObserver = mockk()
+    private val syncUseCase: SyncPenyuluhDataUseCase = mockk(relaxed = true)
+    private var connectivityObserver: ConnectivityObserver = mockk(relaxed = true)
     private lateinit var viewModel: PenyuluhViewModel
 
     @Before
     fun setUp() {
-        getPenyuluhUseCase = mockk()
+        getPenyuluhUseCase = mockk(relaxed = true)
         userPreferences = mockk()
 
         every { userPreferences.userRole } returns flowOf("penanggung jawab")
@@ -89,7 +91,42 @@ class PenyuluhViewModelTest {
         assertFalse(state.isLoading)
         assertEquals(2, state.penyuluhList.size)
 
-        io.mockk.verify(atLeast = 2) { getPenyuluhUseCase("penanggung jawab") }
+        coVerify(exactly = 1) { getPenyuluhUseCase("penanggung jawab") }
+        coVerify(exactly = 1) { syncUseCase() }
+    }
+
+    @Test
+    fun `onEvent OnRefresh should show error when offline`() = runTest {
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
+
+        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences, connectivityObserver)
+        advanceUntilIdle()
+
+        viewModel.onEvent(PenyuluhEvent.OnRefresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isRefreshing)
+        assertEquals("Tidak ada koneksi internet", state.error)
+
+        coVerify(exactly = 0) { syncUseCase() }
+    }
+
+    @Test
+    fun `onEvent OnRefresh should handle sync error`() = runTest {
+        val errorMsg = "Gagal sinkronisasi"
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+        coEvery { syncUseCase() } returns Resource.Error(errorMsg)
+
+        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences, connectivityObserver)
+        advanceUntilIdle()
+
+        viewModel.onEvent(PenyuluhEvent.OnRefresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isRefreshing)
+        assertEquals(errorMsg, state.error)
     }
 
     @Test
@@ -118,5 +155,21 @@ class PenyuluhViewModelTest {
 
         viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences,  connectivityObserver)
         advanceUntilIdle()
+    }
+
+    @Test
+    fun `onEvent OnSearchQueryChange should update query and fetch data after delay`() = runTest {
+        val query = "Ahmad"
+        every { getPenyuluhUseCase("penanggung jawab", "") } returns flowOf(Resource.Success(emptyList()))
+        every { getPenyuluhUseCase("penanggung jawab", query) } returns flowOf(Resource.Success(emptyList()))
+
+        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences, connectivityObserver)
+        advanceUntilIdle()
+
+        viewModel.onEvent(PenyuluhEvent.OnSearchQueryChange(query))
+        assertEquals(query, viewModel.uiState.value.searchQuery)
+        advanceUntilIdle()
+
+        coVerify { getPenyuluhUseCase("penanggung jawab", query) }
     }
 }

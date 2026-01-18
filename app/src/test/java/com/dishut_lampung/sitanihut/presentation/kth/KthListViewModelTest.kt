@@ -8,6 +8,8 @@ import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.SyncKthDataUseCase
 import com.dishut_lampung.sitanihut.presentation.kth.list.KthEvent
 import com.dishut_lampung.sitanihut.presentation.kth.list.KthListViewModel
+import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniEvent
+import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniListViewModel
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.Resource
@@ -17,6 +19,8 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -32,9 +36,9 @@ class KthListViewModelTest {
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule()
 
-    private var getKthListUseCase: GetKthListUseCase = mockk()
+    private var getKthListUseCase: GetKthListUseCase = mockk(relaxed = true)
     private var deleteKthUseCase: DeleteKthUseCase = mockk()
-    private var syncKthDataUseCase: SyncKthDataUseCase = mockk()
+    private var syncKthDataUseCase: SyncKthDataUseCase = mockk(relaxed = true)
     private var userPreferences: UserPreferences = mockk()
     private var connectivityObserver: ConnectivityObserver = mockk()
     private lateinit var viewModel: KthListViewModel
@@ -113,7 +117,73 @@ class KthListViewModelTest {
         viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
         viewModel.onEvent(KthEvent.OnRefresh)
 
-        coVerify(atLeast = 2) { getKthListUseCase("penyuluh", "") }
+        coVerify(exactly = 1) { syncKthDataUseCase() }
+        coVerify(exactly = 1) { getKthListUseCase("penyuluh", "") }
+    }
+
+    @Test
+    fun `onEvent OnRefresh success should update data`() = runTest {
+        val successMessage = "Data berhasil diperbarui"
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+        coEvery { syncKthDataUseCase() } returns Resource.Success(Unit)
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
+
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        val job = launch { viewModel.uiState.collect{} }
+
+        advanceUntilIdle()
+
+        viewModel.onEvent(KthEvent.OnRefresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isRefreshing)
+        assertEquals(successMessage, state.successMessage)
+        job.cancel()
+    }
+
+    @Test
+    fun `onEvent OnRefresh should show error when offline`() = runTest {
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
+
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        val job = launch { viewModel.uiState.collect{} }
+        advanceUntilIdle()
+
+        viewModel.onEvent(KthEvent.OnRefresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isRefreshing)
+        assertEquals("Tidak ada koneksi internet", state.errorMessage)
+
+        coVerify(exactly = 0) { syncKthDataUseCase() }
+        job.cancel()
+    }
+
+    @Test
+    fun `onEvent OnRefresh should handle sync error`() = runTest {
+        val errorMsg = "Gagal sinkronisasi"
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+        coEvery { syncKthDataUseCase() } returns Resource.Error(errorMsg)
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
+
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        val job = launch { viewModel.uiState.collect{} }
+
+        advanceUntilIdle()
+
+        viewModel.onEvent(KthEvent.OnRefresh)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isRefreshing)
+        assertEquals(errorMsg, state.errorMessage)
+        job.cancel()
     }
 
     @Test
@@ -180,6 +250,32 @@ class KthListViewModelTest {
         }
 
         coVerify { deleteKthUseCase("1") }
+    }
+
+    @Test
+    fun `Couldn't Delete if user role is Penanggung Jawab`() = runTest {
+        every { userPreferences.userRole } returns flowOf("penanggung jawab")
+        every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        val job = launch { viewModel.uiState.collect {} }
+        advanceUntilIdle()
+
+        viewModel.onEvent(KthEvent.OnDeleteClick)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse("Dialog delete tidak boleh muncul untuk Penanggung Jawab", state.isDeleteDialogVisible)
+
+        viewModel.onEvent(KthEvent.OnMoreOptionClick("1"))
+        viewModel.onEvent(KthEvent.OnDeleteConfirm)
+        advanceUntilIdle()
+
+        val errorState = viewModel.uiState.value
+        assertEquals("Anda tidak memiliki akses hapus", errorState.errorMessage)
+
+        job.cancel()
     }
 
     @Test
