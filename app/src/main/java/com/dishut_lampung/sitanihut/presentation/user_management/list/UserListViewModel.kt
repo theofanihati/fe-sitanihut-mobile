@@ -67,7 +67,194 @@ class UserListViewModel @Inject constructor(
         initialValue = UserListUiState(isLoading = true)
     )
 
+    init {
+        observeConnectivity()
+        fetchPetaniData()
+    }
+
     fun onEvent(event: UserEvent) {
-        TODO()
+        when (event) {
+            is UserEvent.OnSearchQueryChange -> {
+                _searchQuery.value = event.query
+            }
+            UserEvent.OnRefresh -> {
+                refreshData()
+            }
+            is UserEvent.OnMoreOptionClick -> {
+                _baseState.update {
+                    it.copy(
+                        isBottomSheetVisible = true,
+                        selectedPetaniId = event.id
+                    )
+                }
+            }
+            UserEvent.OnBottomSheetDismiss -> {
+                _baseState.update {
+                    it.copy(
+                        isBottomSheetVisible = false
+                    )
+                }
+            }
+            UserEvent.OnDeleteClick -> {
+                if (_userRole.value == "penanggung jawab") return
+                _baseState.update {
+                    it.copy(
+                        isBottomSheetVisible = false,
+                        isDeleteDialogVisible = true
+                    )
+                }
+            }
+            UserEvent.OnDeleteConfirm -> {
+                val idToDelete = _baseState.value.selectedPetaniId
+                if (idToDelete != null) {
+                    deletePetani(idToDelete)
+                }
+                _baseState.update { it.copy(isDeleteDialogVisible = false) }
+            }
+            UserEvent.OnDismissDeleteDialog -> {
+                _baseState.update {
+                    it.copy(
+                        isDeleteDialogVisible = false,
+                        selectedPetaniId = null
+                    )
+                }
+            }
+            UserEvent.OnDismissError -> {
+                _baseState.update { it.copy(errorMessage = null) }
+            }
+            UserEvent.OnDismissSuccessMessage -> {
+                _baseState.update { it.copy(successMessage = null) }
+            }
+            is UserEvent.OnShowUserMessage -> {
+                viewModelScope.launch {
+                    _baseState.update { it.copy(successMessage = null, errorMessage = null) }
+
+                    if (event.type == MessageType.Success) {
+                        _baseState.update { it.copy(successMessage = event.message) }
+                    } else {
+                        _baseState.update { it.copy(errorMessage = event.message) }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun deletePetani(id: String) {
+        if (_userRole.value == "penanggung jawab") {
+            _baseState.update { it.copy(errorMessage = "Anda tidak memiliki akses hapus") }
+            return
+        }
+
+        if (!_isOnline.value) {
+            _baseState.update {
+                it.copy(
+                    errorMessage = "Tidak ada koneksi internet",
+                    isDeleteDialogVisible = false
+                )
+            }
+            return
+        }
+        viewModelScope.launch {
+            _baseState.update { it.copy(isLoading = true) }
+
+            when (val result = deleteUserUseCase(id)) {
+                is Resource.Success -> {
+                    _allPetaniData.update { currentList ->
+                        currentList.filter { it.id != id }
+                    }
+                    _baseState.update {
+                        it.copy(
+                            isLoading = false,
+                            successMessage = "Data berhasil dihapus",
+                            selectedPetaniId = null,
+                            isDeleteDialogVisible = false
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _baseState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = result.message ?: "Gagal menghapus data",
+                            isDeleteDialogVisible = false
+                        )
+                    }
+                }
+                is Resource.Loading -> {}
+            }
+        }
+    }
+
+    private fun observeConnectivity() {
+        connectivityObserver.observe()
+            .onEach { status ->
+                _isOnline.value = status == ConnectivityObserver.Status.Available
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun fetchPetaniData(isRefresh: Boolean = false) {
+        viewModelScope.launch {
+            val role = userPreferences.userRole.first() ?: ""
+            _userRole.value = role
+            _baseState.update {
+                it.copy(
+                    isLoading = !isRefresh,
+                    isRefreshing = isRefresh,
+                    errorMessage = null
+                )
+            }
+
+            getUserListUseCase(role, "").collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        _baseState.update { it.copy(isLoading = true) }
+                    }
+                    is Resource.Success -> {
+                        _allPetaniData.value = result.data ?: emptyList()
+                        _baseState.update {
+                            it.copy(isLoading = false, isRefreshing = false)
+                        }
+                    }
+                    is Resource.Error -> {
+                        _baseState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = false,
+                                errorMessage = result.message
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun refreshData() {
+        if (!_isOnline.value) {
+            _baseState.update {
+                it.copy(isRefreshing = false, errorMessage = "Tidak ada koneksi internet")
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _baseState.update { it.copy(isRefreshing = true) }
+            val result = syncUserDataUseCase()
+
+            when(result) {
+                is Resource.Success -> {
+                    _baseState.update {
+                        it.copy(isRefreshing = false, successMessage = "Data berhasil diperbarui")
+                    }
+                }
+                is Resource.Error -> {
+                    _baseState.update {
+                        it.copy(isRefreshing = false, errorMessage = result.message)
+                    }
+                }
+                is Resource.Loading -> {}
+            }
+        }
     }
 }
