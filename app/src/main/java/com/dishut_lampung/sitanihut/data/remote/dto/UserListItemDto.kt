@@ -7,4 +7,8 @@ data class UserListItemDto (
     @SerializedName("nama_user") val name: String,
     @SerializedName("jenis_kelamin") val gender: String,
     @SerializedName("role") val role: String,
+    @SerializedName("id_kph") val kphId: String,
+    @SerializedName("nama_kph") val kphName: String,
+    @SerializedName("id_kth") val kthId: String,
+    @SerializedName("nama_kth") val kthName: String,
 )

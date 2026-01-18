@@ -5,10 +5,7 @@ import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.local.dao.RoleDao
 import com.dishut_lampung.sitanihut.data.local.dao.UserDao
 import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
-import com.dishut_lampung.sitanihut.data.mapper.toDomain
 import com.dishut_lampung.sitanihut.data.remote.api.UserApiService
-import com.dishut_lampung.sitanihut.data.remote.dto.PetaniDetailDto
-import com.dishut_lampung.sitanihut.data.remote.dto.PetaniListItemDto
 import com.dishut_lampung.sitanihut.data.remote.dto.RoleDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserListItemDto
@@ -16,27 +13,21 @@ import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
 import com.dishut_lampung.sitanihut.domain.model.CreateUserInput
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
-import com.dishut_lampung.sitanihut.domain.repository.UserRepository
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import javax.inject.Inject
 
 class UserRepositoryImplTest {
-
     private var apiService: UserApiService = mockk()
     private var userDao: UserDao = mockk(relaxed = true)
     private var roleDao: RoleDao = mockk(relaxed = true)
@@ -81,6 +72,10 @@ class UserRepositoryImplTest {
             name = "Paneeyy",
             role = "petani",
             gender = "Cewe lah",
+            kphId = "123",
+            kphName = "KPH C",
+            kthId = "123",
+            kthName = "KTH C",
         )
         val apiResponse = ApiResponse(
             statusCode = 200,
@@ -124,6 +119,10 @@ class UserRepositoryImplTest {
             name = "Paneeyy",
             role = "petani",
             gender = "Cewe lah",
+            kphId = "123",
+            kphName = "KPH C",
+            kthId = "123",
+            kthName = "KTH C",
         )
         val paginatedData = PaginatedData(
             data = listOf(dto),
@@ -142,7 +141,11 @@ class UserRepositoryImplTest {
                 entity.id == "1" &&
                         entity.name == "Paneeyy" &&
                         entity.role == "petani" &&
-                        entity.gender == "Cewe lah"
+                        entity.gender == "Cewe lah" &&
+                        entity.kphId == "123" &&
+                        entity.kphName == "KPH C" &&
+                        entity.kthId == "123" &&
+                        entity.kthName == "KTH C"
             })
         }
     }
@@ -154,12 +157,20 @@ class UserRepositoryImplTest {
             name = "Paneeyy",
             role = "petani",
             gender = "Cewe lah",
+            kphId = "123",
+            kphName = "KPH C",
+            kthId = "123",
+            kthName = "KTH C",
         )
         val itemPage2 = UserListItemDto(
             id = "2",
             name = "Tepaaannn",
             role = "petani",
             gender = "Cowo lah",
+            kphId = "123",
+            kphName = "KPH C",
+            kthId = "123",
+            kthName = "KTH C",
         )
 
         val page1Data = PaginatedData(
@@ -201,6 +212,10 @@ class UserRepositoryImplTest {
             name = "Paneeyy",
             role = "petani",
             gender = "Cewe lah",
+            kphId = "123",
+            kphName = "KPH C",
+            kthId = "123",
+            kthName = "KTH C",
         )
         val page1Data = PaginatedData(listOf(itemPage1), totalPages = 1, count = 1)
         val response = ApiResponse(200, "Success", page1Data)
@@ -247,6 +262,10 @@ class UserRepositoryImplTest {
             name = "Paneeyy",
             role = "petani",
             gender = "Cewe lah",
+            kphId = "123",
+            kphName = "KPH C",
+            kthId = "123",
+            kthName = "KTH C",
         )
         val page1Data = PaginatedData(listOf(itemPage1), totalPages = 2, count = 2)
 
@@ -294,6 +313,7 @@ class UserRepositoryImplTest {
         val dummyEntity = UserEntity(
             id = "1",
             name = "Paneeyy",
+            role = "petani",
             identityNumber = "1234567890123456",
             gender = "Cewe lah",
             address = "Jl. Raya",

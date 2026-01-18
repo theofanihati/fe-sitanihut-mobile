@@ -141,13 +141,18 @@ fun UserListItemDto.toEntity(): UserEntity{
         name = name,
         gender = gender,
         role = role,
+        kphId = kphId,
+        kphName = kphName,
+        kthId = kthId,
+        kthName = kthName
     )
 }
 
-fun UserDetailDto.toDomain(): UserDetail{
+fun UserDetailDto.toDomain(roleNameResolved: String): UserDetail{
     return UserDetail(
         id = id,
         email = email,
+        role = roleNameResolved,
         roleId = roleId,
         name = name,
         identityNumber = identityNumber,
