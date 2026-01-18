@@ -213,7 +213,7 @@ class UserListViewModelTest {
             viewModel.onEvent(UserEvent.OnMoreOptionClick(selectedId))
             val openSheetState = awaitItem()
             assertTrue(openSheetState.isBottomSheetVisible)
-            assertEquals(selectedId, openSheetState.selectedPetaniId)
+            assertEquals(selectedId, openSheetState.selectedUserId)
 
             viewModel.onEvent(UserEvent.OnBottomSheetDismiss)
             val closeSheetState = awaitItem()
@@ -246,7 +246,7 @@ class UserListViewModelTest {
             viewModel.onEvent(UserEvent.OnMoreOptionClick("1"))
             val sheetState = awaitItem()
             assertTrue(sheetState.isBottomSheetVisible)
-            assertEquals("1", sheetState.selectedPetaniId)
+            assertEquals("1", sheetState.selectedUserId)
 
             viewModel.onEvent(UserEvent.OnDeleteClick)
             val dialogState = awaitItem()
@@ -264,7 +264,7 @@ class UserListViewModelTest {
             assertFalse("Dialog harus sudah tutup", currentState.isDeleteDialogVisible)
             assertTrue("List harus kosong setelah delete", currentState.userList.isEmpty())
             assertEquals("Pesan sukses harus muncul", "Data berhasil dihapus", currentState.successMessage)
-            assertNull("Selected ID harus di-reset", currentState.selectedPetaniId)
+            assertNull("Selected ID harus di-reset", currentState.selectedUserId)
 
             cancelAndIgnoreRemainingEvents()
         }
@@ -393,12 +393,12 @@ class UserListViewModelTest {
             viewModel.onEvent(UserEvent.OnDeleteClick)
             val dialogState = awaitItem()
             assertTrue(dialogState.isDeleteDialogVisible)
-            assertEquals("1", dialogState.selectedPetaniId)
+            assertEquals("1", dialogState.selectedUserId)
 
             viewModel.onEvent(UserEvent.OnDismissDeleteDialog)
             val dialogDismissState = awaitItem()
             assertFalse(dialogDismissState.isDeleteDialogVisible)
-            assertNull("Selected ID harus null setelah dialog dismiss", dialogDismissState.selectedPetaniId)
+            assertNull("Selected ID harus null setelah dialog dismiss", dialogDismissState.selectedUserId)
 
             viewModel.onEvent(UserEvent.OnMoreOptionClick("1"))
             awaitItem()
