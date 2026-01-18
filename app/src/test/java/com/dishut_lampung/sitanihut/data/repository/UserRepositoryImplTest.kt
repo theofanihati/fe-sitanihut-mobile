@@ -8,6 +8,7 @@ import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
 import com.dishut_lampung.sitanihut.data.mapper.toDomain
 import com.dishut_lampung.sitanihut.data.remote.api.UserApiService
 import com.dishut_lampung.sitanihut.data.remote.dto.PetaniDetailDto
+import com.dishut_lampung.sitanihut.data.remote.dto.PetaniListItemDto
 import com.dishut_lampung.sitanihut.data.remote.dto.RoleDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.UserListItemDto
@@ -37,7 +38,7 @@ import javax.inject.Inject
 class UserRepositoryImplTest {
 
     private var apiService: UserApiService = mockk()
-    private var userDao: UserDao = mockk()
+    private var userDao: UserDao = mockk(relaxed = true)
     private var roleDao: RoleDao = mockk(relaxed = true)
     private val preferences: UserPreferences = mockk(relaxed = true)
     private lateinit var repository: UserRepositoryImpl
@@ -91,25 +92,171 @@ class UserRepositoryImplTest {
             )
         )
 
-        coEvery { apiService.getUserList(limit = 50) } returns apiResponse
-        coEvery { userDao.upsertAll(any()) } returns Unit
+        coEvery { apiService.getUserList(search = "", page = 1, limit = 50) } returns apiResponse
+        coEvery { userDao.updateData(any()) } returns Unit
 
         val result = repository.syncUserData()
         assertTrue(result is Resource.Success)
-        coVerify { apiService.getUserList(limit = 50) }
-        coVerify { userDao.upsertAll(any()) }
+        coVerify { apiService.getUserList(search = "", page = 1, limit = 50) }
+        coVerify { userDao.updateData(any()) }
     }
 
     @Test
-    fun `syncUserData should return Error when API throws exception`() = runTest {
-        coEvery { apiService.getUserList(any()) } throws RuntimeException("Network Error")
+    fun `syncUserData when api returns empty should not insert`() = runTest {
+        val paginatedData = PaginatedData(
+            data = emptyList<UserListItemDto>(),
+            totalPages = 0,
+            count = 0
+        )
+        val apiResponse = ApiResponse(200, "success", paginatedData)
+        coEvery { apiService.getUserList(search = "", page = 1, limit = 50) } returns apiResponse
+
+        val result = repository.syncUserData()
+        assertTrue(result is Resource.Success)
+
+        coVerify(exactly = 0) { userDao.updateData(any()) }
+    }
+
+    @Test
+    fun `syncUserData success should verify ALL fields mapping correctly`() = runTest {
+        val dto = UserListItemDto(
+            id = "1",
+            name = "Paneeyy",
+            role = "petani",
+            gender = "Cewe lah",
+        )
+        val paginatedData = PaginatedData(
+            data = listOf(dto),
+            totalPages = 1,
+            count = 1
+        )
+        val apiResponse = ApiResponse(200, "ok", paginatedData)
+        coEvery { apiService.getUserList(search = "", page = 1, limit = 50) } returns apiResponse
+
+        val result = repository.syncUserData()
+        assertTrue(result is Resource.Success)
+
+        coVerify(exactly = 1) { userDao.updateData(
+            match { list ->
+                val entity = list.first()
+                entity.id == "1" &&
+                        entity.name == "Paneeyy" &&
+                        entity.role == "petani" &&
+                        entity.gender == "Cewe lah"
+            })
+        }
+    }
+
+    @Test
+    fun `syncUserData returns Success and inserts ALL pages when API has multiple pages`() = runTest {
+        val itemPage1 = UserListItemDto(
+            id = "1",
+            name = "Paneeyy",
+            role = "petani",
+            gender = "Cewe lah",
+        )
+        val itemPage2 = UserListItemDto(
+            id = "2",
+            name = "Tepaaannn",
+            role = "petani",
+            gender = "Cowo lah",
+        )
+
+        val page1Data = PaginatedData(
+            data = listOf(itemPage1),
+            totalPages = 2,
+            count = 2
+        )
+        val responsePage1 = ApiResponse(200, "Success", page1Data)
+
+        val page2Data = PaginatedData(
+            data = listOf(itemPage2),
+            totalPages = 2,
+            count = 2
+        )
+        val responsePage2 = ApiResponse(200, "Success", page2Data)
+
+        coEvery { apiService.getUserList(search = "", page = 1, limit = 50) } returns responsePage1
+        coEvery { apiService.getUserList(search = "", page = 2, limit = 50) } returns responsePage2
+
+        val result = repository.syncUserData()
+        assertTrue(result is Resource.Success)
+
+        coVerify {
+            userDao.updateData(match { list ->
+                list.size == 2 &&
+                        list.any { it.id == "1" } &&
+                        list.any { it.id == "2" }
+            })
+        }
+
+        coVerify(exactly = 1) { apiService.getUserList(search = "", page = 1, limit = 50) }
+        coVerify(exactly = 1) { apiService.getUserList(search = "", page = 2, limit = 50) }
+    }
+
+    @Test
+    fun `syncUserData handles single page correctly`() = runTest {
+        val itemPage1 = UserListItemDto(
+            id = "1",
+            name = "Paneeyy",
+            role = "petani",
+            gender = "Cewe lah",
+        )
+        val page1Data = PaginatedData(listOf(itemPage1), totalPages = 1, count = 1)
+        val response = ApiResponse(200, "Success", page1Data)
+
+        coEvery { apiService.getUserList(search = "", page = 1, limit = 50) } returns response
 
         val result = repository.syncUserData()
 
-        assertTrue(result is Resource.Error)
-        assertEquals("Network Error", (result as Resource.Error).errorMessage)
+        assertTrue(result is Resource.Success)
+        coVerify { userDao.updateData(match { it.size == 1 }) }
+        coVerify(exactly = 0) { apiService.getUserList(search = "", page = 2, limit = 50) }
+    }
 
-        coVerify(exactly = 0) { userDao.upsertAll(any()) }
+    @Test
+    fun `syncUserData returns Error when Page 1 returns non-200`() = runTest {
+        val errorResponse = ApiResponse<PaginatedData<UserListItemDto>>(
+            statusCode = 400,
+            message = "Bad Request",
+            data = PaginatedData(emptyList(), 0, 0)
+        )
+
+        coEvery { apiService.getUserList(search = "", page = 1, limit = 50) } returns errorResponse
+        val result = repository.syncUserData()
+        assertTrue(result is Resource.Error)
+        assertEquals("Bad Request", result.message)
+
+        coVerify(exactly = 0) { userDao.deleteAll() }
+    }
+
+    @Test
+    fun `syncUserData returns Error when API throws exception on Page 1`() = runTest {
+        val errorMessage = "Network Error"
+        coEvery { apiService.getUserList(search = "", page = 1, limit = 50) } throws RuntimeException(errorMessage)
+
+        val result = repository.syncUserData()
+        assertTrue(result is Resource.Error)
+        assertEquals(errorMessage, result.message)
+    }
+
+    @Test
+    fun `syncUserData continues and saves Page 1 data even if Page 2 fails`() = runTest {
+        val itemPage1 = UserListItemDto(
+            id = "1",
+            name = "Paneeyy",
+            role = "petani",
+            gender = "Cewe lah",
+        )
+        val page1Data = PaginatedData(listOf(itemPage1), totalPages = 2, count = 2)
+
+        coEvery { apiService.getUserList(search = "", page = 1, limit = 50) } returns ApiResponse(200, "OK", page1Data)
+        coEvery { apiService.getUserList(search = "", page = 2, limit = 50) } throws RuntimeException("Timeout")
+
+        val result = repository.syncUserData()
+        assertTrue(result is Resource.Success)
+
+        coVerify { userDao.updateData(match { it.size == 1 && it[0].id == "1" }) }
     }
 
     @Test

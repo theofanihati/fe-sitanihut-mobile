@@ -4,7 +4,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
+import com.dishut_lampung.sitanihut.data.local.entity.PetaniEntity
 import com.dishut_lampung.sitanihut.data.local.entity.UserEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -14,7 +16,7 @@ interface UserDao{
     suspend fun upsertUser(user: UserEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertAll(petaniList: List<UserEntity>)
+    suspend fun upsertAll(userList: List<UserEntity>)
 
     @Query("SELECT * FROM user WHERE id = :userId")
     fun getUserById(userId: String): Flow<UserEntity?>
@@ -31,4 +33,13 @@ interface UserDao{
 
     @Query("DELETE FROM user WHERE id = :id")
     suspend fun deleteUser(id: String)
+
+    @Query("DELETE FROM user")
+    suspend fun deleteAll()
+
+    @Transaction
+    suspend fun updateData(userList: List<UserEntity>) {
+        deleteAll()
+        upsertAll(userList)
+    }
 }

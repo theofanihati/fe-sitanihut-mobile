@@ -32,14 +32,43 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun syncUserData(): Resource<Unit> {
         return try {
-            val response = apiService.getUserList(limit = 50)
-            val items = response.data?.data ?: emptyList()
+            val limitPerRequest = 50
 
-            if (items.isNotEmpty()) {
-                val entities = items.map { it.toEntity() }
-                dao.upsertAll(entities)
+            val pageOneResponse = apiService.getUserList(
+                page = 1,
+                limit = limitPerRequest,
+                search = ""
+            )
+            if (pageOneResponse.statusCode == 200 && pageOneResponse.data != null) {
+                val paginationData = pageOneResponse.data
+                val allData = paginationData.data.toMutableList()
+                val totalPages = paginationData.totalPages
+
+                if (totalPages > 1) {
+                    for (page in 2..totalPages) {
+                        try {
+                            val nextResponse = apiService.getUserList(
+                                page = page,
+                                limit = limitPerRequest,
+                                search = ""
+                            )
+                            if (nextResponse.statusCode == 200 && nextResponse.data != null) {
+                                allData.addAll(nextResponse.data.data)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+
+                if (allData.isNotEmpty()) {
+                    val entities = allData.map { it.toEntity() }
+                    dao.updateData(entities)
+                }
+                Resource.Success(Unit)
+            } else {
+                Resource.Error(pageOneResponse.message ?: "Gagal sinkronisasi data Petani")
             }
-            Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Gagal sinkronisasi data User")
         }

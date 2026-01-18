@@ -22,7 +22,8 @@ interface UserApiService {
     @GET("v1/users")
     suspend fun getUserList(
         @Query("page") page: Int = 1,
-        @Query("limit") limit: Int = 50
+        @Query("limit") limit: Int = 50,
+        @Query("search") search: String? = null
     ): ApiResponse<PaginatedData<UserListItemDto>>
 
     @GET("v1/users/{id}")
