@@ -12,4 +12,7 @@ interface PetaniRepository {
     fun getPetaniDetail(id: String): Flow<Resource<Petani>>
     suspend fun createPetani(input: CreatePetaniInput): Resource<Unit>
     suspend fun updatePetani(id: String, changes: Map<String, Any?>): Resource<Unit>
+// ============ KLO EXPORT BACK END ===================
+//    suspend fun exportPetaniToPdf(query: String): Resource<String>
+//    suspend fun exportPetaniDetailToPdf(id: String): Resource<String>
 }

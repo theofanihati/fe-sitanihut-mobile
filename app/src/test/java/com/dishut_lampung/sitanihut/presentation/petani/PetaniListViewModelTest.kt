@@ -3,6 +3,7 @@ package com.dishut_lampung.sitanihut.presentation.petani
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.Petani
+import com.dishut_lampung.sitanihut.domain.repository.PetaniRepository
 import com.dishut_lampung.sitanihut.domain.usecase.petani.DeletePetaniUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.GetPetaniListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.SyncPetaniDataUseCase
@@ -10,6 +11,7 @@ import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniEvent
 import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniListViewModel
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
+import com.dishut_lampung.sitanihut.util.PdfService
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -38,6 +40,8 @@ class PetaniListViewModelTest{
     private val syncPetaniDataUseCase: SyncPetaniDataUseCase = mockk(relaxed = true)
     private var userPreferences: UserPreferences = mockk()
     private var connectivityObserver: ConnectivityObserver = mockk()
+    private var repository: PetaniRepository = mockk(relaxed = true)
+    private val pdfService: PdfService = mockk()
     private lateinit var viewModel: PetaniListViewModel
 
     @Test
@@ -63,7 +67,7 @@ class PetaniListViewModelTest{
         every { getPetaniListUseCase("penyuluh", "") } returns flowOf(Resource.Success(dummyPetani))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
 
         viewModel.uiState.test {
             val state = awaitItem()
@@ -80,7 +84,7 @@ class PetaniListViewModelTest{
         every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
         viewModel.uiState.test {
             val state = awaitItem()
             assertFalse(state.isOnline)
@@ -112,7 +116,7 @@ class PetaniListViewModelTest{
         every { getPetaniListUseCase("penyuluh", "") } returns flowOf(Resource.Success(listData))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
         viewModel.uiState.test {
             awaitItem()
 
@@ -132,7 +136,7 @@ class PetaniListViewModelTest{
         every { getPetaniListUseCase("penyuluh", "") } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
         viewModel.onEvent(PetaniEvent.OnRefresh)
 
         coVerify(exactly = 1) { getPetaniListUseCase("penyuluh", "") }
@@ -147,7 +151,7 @@ class PetaniListViewModelTest{
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
         val job = launch { viewModel.uiState.collect{} }
 
         advanceUntilIdle()
@@ -167,7 +171,7 @@ class PetaniListViewModelTest{
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
         val job = launch { viewModel.uiState.collect{} }
         advanceUntilIdle()
 
@@ -190,7 +194,7 @@ class PetaniListViewModelTest{
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
         val job = launch { viewModel.uiState.collect{} }
 
         advanceUntilIdle()
@@ -210,7 +214,7 @@ class PetaniListViewModelTest{
         every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
         viewModel.uiState.test {
             awaitItem()
             val selectedId = "123"
@@ -237,7 +241,7 @@ class PetaniListViewModelTest{
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
         coEvery { deletePetaniUseCase("1") } returns Resource.Success(Unit)
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
         viewModel.uiState.test {
             awaitItem()
             viewModel.onEvent(PetaniEvent.OnMoreOptionClick("1"))
@@ -275,8 +279,7 @@ class PetaniListViewModelTest{
         every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
-
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
         val job = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
 
@@ -306,8 +309,7 @@ class PetaniListViewModelTest{
         val errorMsg = "Gagal hapus bro"
         coEvery { deletePetaniUseCase("1") } returns Resource.Error(errorMsg)
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
-
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
         viewModel.uiState.test {
             awaitItem()
             viewModel.onEvent(PetaniEvent.OnMoreOptionClick("1"))
@@ -337,8 +339,7 @@ class PetaniListViewModelTest{
 
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
-
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
         viewModel.uiState.test {
             awaitItem()
 
@@ -371,8 +372,7 @@ class PetaniListViewModelTest{
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
         coEvery { deletePetaniUseCase("1") } returns Resource.Error("Error Hapus")
 
-        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver)
-
+        viewModel = PetaniListViewModel(getPetaniListUseCase, syncPetaniDataUseCase, deletePetaniUseCase, userPreferences, connectivityObserver, pdfService)
         viewModel.uiState.test {
             awaitItem()
             viewModel.onEvent(PetaniEvent.OnMoreOptionClick("1"))

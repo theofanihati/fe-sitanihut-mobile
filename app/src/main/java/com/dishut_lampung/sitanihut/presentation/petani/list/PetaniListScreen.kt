@@ -23,20 +23,24 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -58,6 +62,7 @@ import com.dishut_lampung.sitanihut.presentation.shared.components.dialog.Custom
 import com.dishut_lampung.sitanihut.presentation.shared.components.textfield.CustomSearchTextField
 import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.util.openFileByPath
 import kotlinx.coroutines.launch
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -99,6 +104,7 @@ fun PetaniListRoute(
     onNavigateToEdit: (String) -> Unit,
     onNavigateToAddPetani: () -> Unit,
 ) {
+    val context = LocalContext.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -112,6 +118,16 @@ fun PetaniListRoute(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+// =============== klo export dari BACK END ====================
+    LaunchedEffect(state.successMessage) {
+        state.successMessage?.let { msg ->
+            if (msg.contains("File tersimpan:")) {
+                val path = msg.substringAfter("File tersimpan: ").trim()
+                openFileByPath(context, path) { message, type ->
+                    }
+            }
         }
     }
 
@@ -163,14 +179,29 @@ fun PetaniListScreen(
                     .fillMaxSize()
                     .padding(horizontal = ScreenPadding)
             ) {
-                Text(
-                    text = "Data Petani",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Data Petani",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    IconButton(
+                        onClick = { onEvent(PetaniEvent.OnExportList) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = "Export Data Petani",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
 
                 AnimatedVisibility(visible = !state.isOnline) {
                     Text(
@@ -214,7 +245,6 @@ fun PetaniListScreen(
                         items = state.petaniList,
                         key = { it.id }
                     ) { petani ->
-                        // Asumsi kamu punya PetaniCard yang strukturnya mirip KthCard
                         PetaniCard(
                             item = petani,
                             isOnline = state.isOnline,
@@ -226,7 +256,6 @@ fun PetaniListScreen(
             }
         }
 
-        // BOTTOM SHEET LOGIC
         if (state.isBottomSheetVisible) {
             GenericActionBottomSheet(
                 onDismiss = { onEvent(PetaniEvent.OnBottomSheetDismiss) },
@@ -238,13 +267,14 @@ fun PetaniListScreen(
                     onEvent(PetaniEvent.OnBottomSheetDismiss)
                     state.selectedPetaniId?.let { onNavigateToEdit(it) }
                 },
+                onExportClick = {
+                    onEvent(PetaniEvent.OnExportDetail)
+                },
                 onDeleteClick = {
-                    // Security check tambahan di UI layer
                     if (state.isOnline && state.userRole != "penanggung jawab") {
                         onEvent(PetaniEvent.OnDeleteClick)
                     }
                 },
-                // LOGIKA UTAMA: Editable hanya jika Online DAN BUKAN Penanggung Jawab
                 isEditable = state.isOnline && state.userRole != "penanggung jawab",
             )
         }
@@ -261,7 +291,6 @@ fun PetaniListScreen(
             )
         }
 
-        // FAB LOGIC: HIDE JIKA PENANGGUNG JAWAB
         if (state.userRole != "penanggung jawab") {
             FloatingActionButton(
                 onClick = {

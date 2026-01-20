@@ -8,6 +8,7 @@ import com.dishut_lampung.sitanihut.data.remote.api.PetaniApiService
 import com.dishut_lampung.sitanihut.domain.model.CreatePetaniInput
 import com.dishut_lampung.sitanihut.domain.model.Petani
 import com.dishut_lampung.sitanihut.domain.repository.PetaniRepository
+import com.dishut_lampung.sitanihut.util.FileDownloader
 import com.dishut_lampung.sitanihut.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -17,7 +18,8 @@ import javax.inject.Inject
 
 class PetaniRepositoryImpl @Inject constructor(
     private val apiService: PetaniApiService,
-    private val dao: PetaniDao
+    private val dao: PetaniDao,
+//    private val fileDownloader: FileDownloader,
 ): PetaniRepository {
 
     override fun getPetaniList(query: String): Flow<Resource<List<Petani>>> {
@@ -135,4 +137,35 @@ class PetaniRepositoryImpl @Inject constructor(
             Resource.Error(e.message ?: "Gagal update")
         }
     }
+
+    // ================ KLO EXPORT BACK END ======================
+//    override suspend fun exportPetaniToPdf(query: String): Resource<String> {
+//        return try {
+//            val response = apiService.downloadLaporanPetani(search = query)
+//
+//            if (response.isSuccessful && response.body() != null) {
+//                val fileName = "Laporan_Petani_${System.currentTimeMillis()}"
+//                fileDownloader.saveFile(response.body()!!, fileName)
+//            } else {
+//                Resource.Error("Gagal mendownload: ${response.message()}")
+//            }
+//        } catch (e: Exception) {
+//            Resource.Error("Koneksi error: ${e.localizedMessage}")
+//        }
+//    }
+//
+//    override suspend fun exportPetaniDetailToPdf(id: String): Resource<String> {
+//        return try {
+//            val response = apiService.downloadDetailPetani(id = id)
+//
+//            if (response.isSuccessful && response.body() != null) {
+//                val fileName = "Laporan_Petani_${System.currentTimeMillis()}"
+//                fileDownloader.saveFile(response.body()!!, fileName)
+//            } else {
+//                Resource.Error("Gagal mendownload: ${response.message()}")
+//            }
+//        } catch (e: Exception) {
+//            Resource.Error("Koneksi error: ${e.localizedMessage}")
+//        }
+//    }
 }

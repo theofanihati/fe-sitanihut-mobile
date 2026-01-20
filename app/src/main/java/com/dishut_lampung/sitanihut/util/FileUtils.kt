@@ -141,3 +141,22 @@ fun getMimeType(file: File): String {
     }
     return type
 }
+
+fun openFileByPath(context: Context, path: String, onMessage: (String, MessageType) -> Unit) {
+    val file = File(path)
+    if (file.exists()) {
+        val intent = Intent(Intent.ACTION_VIEW)
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+        val mimeType = getMimeType(file)
+
+        intent.setDataAndType(uri, mimeType)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            onMessage("Tidak ada aplikasi pembaca PDF", MessageType.Error)
+        }
+    }
+}

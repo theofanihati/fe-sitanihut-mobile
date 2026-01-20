@@ -5,6 +5,8 @@ import com.dishut_lampung.sitanihut.data.remote.dto.PetaniDetailDto
 import com.dishut_lampung.sitanihut.data.remote.dto.PetaniListItemDto
 import com.dishut_lampung.sitanihut.data.remote.response.ApiResponse
 import com.dishut_lampung.sitanihut.data.remote.response.PaginatedData
+import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -12,6 +14,7 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Streaming
 
 interface PetaniApiService {
     @GET("v1/petani")
@@ -41,4 +44,18 @@ interface PetaniApiService {
     suspend fun deletePetani(
         @Path("id") id: String
     ): ApiResponse<Unit>
+
+    // ============ KLO EXPORT BACK END ===================
+//    @Streaming
+//    @GET("petani/export-pdf")
+//    suspend fun downloadLaporanPetani(
+//        @Query("search") search: String = "",
+//        @Query("kthId") kthId: String? = null
+//    ): Response<ResponseBody>
+//
+//    @Streaming
+//    @GET("petani/export-detail-pdf")
+//    suspend fun downloadDetailPetani(
+//        @Query("id") id: String
+//    ): Response<ResponseBody>
 }

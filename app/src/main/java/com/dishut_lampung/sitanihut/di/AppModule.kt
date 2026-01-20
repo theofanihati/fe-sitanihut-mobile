@@ -62,6 +62,9 @@ import com.dishut_lampung.sitanihut.domain.usecase.auth.ValidatePasswordUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.GetCommoditiesUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.home.GetPetaniHomeDataUseCase
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
+import com.dishut_lampung.sitanihut.util.FileDownloader
+import com.dishut_lampung.sitanihut.util.PdfService
+import com.dishut_lampung.sitanihut.util.PdfServiceImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -198,6 +201,12 @@ object AppModule{
 
     @Provides
     @Singleton
+    fun providePdfService(@ApplicationContext context: Context): PdfService {
+        return PdfServiceImpl(context)
+    }
+
+    @Provides
+    @Singleton
     fun provideAuthRepository(
         authApiService: AuthApiService,
         userApiService: UserApiService,
@@ -289,9 +298,10 @@ object AppModule{
     @Singleton
     fun providePetaniRepository(
         apiService: PetaniApiService,
-        dao: PetaniDao
+        dao: PetaniDao,
+//        fileDownloader: FileDownloader,
     ): PetaniRepository {
-        return PetaniRepositoryImpl(apiService, dao)
+        return PetaniRepositoryImpl(apiService, dao, /*fileDownloader*/)
     }
 
     @Provides

@@ -8,11 +8,13 @@ import androidx.work.WorkManager
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.worker.DataSyncWorker
 import com.dishut_lampung.sitanihut.domain.model.Petani
+import com.dishut_lampung.sitanihut.domain.repository.PetaniRepository
 import com.dishut_lampung.sitanihut.domain.usecase.petani.DeletePetaniUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.GetPetaniListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.SyncPetaniDataUseCase
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
+import com.dishut_lampung.sitanihut.util.PdfService
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +35,8 @@ class PetaniListViewModel @Inject constructor(
     private val deletePetaniUseCase: DeletePetaniUseCase,
     private val userPreferences: UserPreferences,
     private val connectivityObserver: ConnectivityObserver,
+//    private val repository: PetaniRepository,
+    private val pdfService: PdfService,
 ) : ViewModel() {
 
     private val _baseState = MutableStateFlow(PetaniListUiState(isLoading = true))
@@ -99,6 +103,97 @@ class PetaniListViewModel @Inject constructor(
                     )
                 }
             }
+            // ==================== klo generate client =====================
+            PetaniEvent.OnExportList -> {
+                val dataToExport = uiState.value.petaniList // Ambil data hasil filter search
+
+                if (dataToExport.isEmpty()) {
+                    _baseState.update { it.copy(errorMessage = "Tidak ada data untuk diexport") }
+                    return
+                }
+
+                viewModelScope.launch {
+                    _baseState.update { it.copy(isLoading = true) }
+
+                    val timestamp = System.currentTimeMillis()
+                    val result = pdfService.generatePdf(
+                        fileName = "Laporan_Petani_$timestamp",
+                        reportTitle = "DAFTAR DATA PETANI HUTAN",
+                        headers = listOf("Nama", "NIK", "KPH", "KTH"),
+                        data = dataToExport
+                    ) { petani ->
+                        // [3] MAPPER: Ubah Object Petani ke List String untuk baris tabel
+                        listOf(
+                            petani.name,
+                            petani.identityNumber,
+                            petani.kphName,
+                            petani.kthName
+                        )
+                    }
+
+                    handleExportResult(result)
+                }
+            }
+            PetaniEvent.OnExportDetail -> {
+                val selectedId = _baseState.value.selectedPetaniId
+                _baseState.update { it.copy(isBottomSheetVisible = false) } // Tutup sheet
+
+                val selectedPetani = _allPetaniData.value.find { it.id == selectedId }
+
+                if (selectedPetani != null) {
+                    viewModelScope.launch {
+                        _baseState.update { it.copy(isLoading = true) }
+
+                        val result = pdfService.generatePdf(
+                            fileName = "Detail_Petani_${selectedPetani.name}",
+                            reportTitle = "BIODATA PETANI",
+                            headers = listOf("Nama", "NIK", "KPH", "KTH"),
+                            data = listOf(selectedPetani) // List cuma isi 1 item
+                        ) { petani ->
+                            listOf(
+                                petani.name,
+                                petani.identityNumber,
+                                petani.kphName,
+                                petani.kthName
+                            )
+                        }
+
+                        handleExportResult(result)
+                    }
+                }
+            }
+
+            // ==================== klo generate BACK END =====================
+//            PetaniEvent.OnExportList -> {
+//                if (!_isOnline.value) {
+//                    _baseState.update { it.copy(errorMessage = "Mode Offline: Tidak dapat mendownload laporan dari server.") }
+//                    return
+//                }
+//
+//                viewModelScope.launch {
+//                    _baseState.update { it.copy(isLoading = true) }
+//
+//                    val currentQuery = _searchQuery.value
+//                    val result = repository.exportPetaniToPdf(currentQuery)
+//
+//                    when (result) {
+//                        is Resource.Success -> {
+//                            _baseState.update {
+//                                it.copy(isLoading = false, successMessage = result.data)
+//                            }
+//                        }
+//                        is Resource.Error -> {
+//                            _baseState.update {
+//                                it.copy(isLoading = false, errorMessage = result.message)
+//                            }
+//                        }
+//                        else -> {}
+//                    }
+//                }
+//            }
+//            PetaniEvent.OnExportDetail -> {
+//                TODO()
+//            }
             PetaniEvent.OnDeleteClick -> {
                 if (_userRole.value == "penanggung jawab") return
                 _baseState.update {
@@ -257,6 +352,28 @@ class PetaniListViewModel @Inject constructor(
                 }
                 is Resource.Loading -> {}
             }
+        }
+    }
+
+    private fun handleExportResult(result: Resource<String>) {
+        when (result) {
+            is Resource.Success -> {
+                _baseState.update {
+                    it.copy(
+                        isLoading = false,
+                        successMessage = "Berhasil: ${result.data}" // Tampilkan path file
+                    )
+                }
+            }
+            is Resource.Error -> {
+                _baseState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = result.message
+                    )
+                }
+            }
+            else -> {}
         }
     }
 }

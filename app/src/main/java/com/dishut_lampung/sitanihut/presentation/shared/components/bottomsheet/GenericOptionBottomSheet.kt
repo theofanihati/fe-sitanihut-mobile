@@ -24,6 +24,7 @@ fun GenericActionBottomSheet(
     onDetailClick: () -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    onExportClick: (() -> Unit)? = null,
     isEditable: Boolean = true,
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -31,6 +32,7 @@ fun GenericActionBottomSheet(
     val disabledColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
     val editColor = if (isEditable) MaterialTheme.colorScheme.onSurface else disabledColor
     val deleteColor = if (isEditable) MaterialTheme.colorScheme.error else disabledColor
+    val exportColor = if (isEditable) Color.Blue else disabledColor
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -56,6 +58,24 @@ fun GenericActionBottomSheet(
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
             )
+
+            if (onExportClick != null) {
+                ListItem(
+                    headlineContent = { Text("Export Data (PDF)", color = exportColor) },
+                    modifier = Modifier
+//                        .clickable(enabled = isEditable) { onEditClick() }
+                        .clickable { onExportClick() }
+                        .padding(horizontal = 24.dp),
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                )
+
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                )
+            }
 
             ListItem(
                 headlineContent = { Text("Edit data", color = editColor) },
