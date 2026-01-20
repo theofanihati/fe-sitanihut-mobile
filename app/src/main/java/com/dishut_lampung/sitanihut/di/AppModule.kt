@@ -24,6 +24,7 @@ import com.dishut_lampung.sitanihut.data.remote.api.KthApiService
 import com.dishut_lampung.sitanihut.data.remote.api.PenyuluhApiService
 import com.dishut_lampung.sitanihut.data.remote.api.PetaniApiService
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
+import com.dishut_lampung.sitanihut.data.remote.api.RoleApiService
 import com.dishut_lampung.sitanihut.data.remote.api.UserApiService
 import com.dishut_lampung.sitanihut.data.remote.interceptor.AuthInterceptor
 import com.dishut_lampung.sitanihut.data.repository.AuthRepositoryImpl
@@ -36,6 +37,7 @@ import com.dishut_lampung.sitanihut.data.repository.PenyuluhRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.PetaniRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ProfileRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.ReportRepositoryImpl
+import com.dishut_lampung.sitanihut.data.repository.RoleRepositoryImpl
 import com.dishut_lampung.sitanihut.data.repository.UserRepositoryImpl
 import com.dishut_lampung.sitanihut.data.util.NetworkConnectivityObserver
 import com.dishut_lampung.sitanihut.domain.model.User
@@ -49,6 +51,7 @@ import com.dishut_lampung.sitanihut.domain.repository.PenyuluhRepository
 import com.dishut_lampung.sitanihut.domain.repository.PetaniRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.ReportRepository
+import com.dishut_lampung.sitanihut.domain.repository.RoleRepository
 import com.dishut_lampung.sitanihut.domain.repository.UserRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.ForgotPasswordUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LoginStatusUseCase
@@ -189,6 +192,12 @@ object AppModule{
 
     @Provides
     @Singleton
+    fun provideRoleApiService(retrofit: Retrofit): RoleApiService {
+        return retrofit.create(RoleApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
     fun provideAuthRepository(
         authApiService: AuthApiService,
         userApiService: UserApiService,
@@ -294,6 +303,15 @@ object AppModule{
         userPreferences: UserPreferences
     ): UserRepository {
         return UserRepositoryImpl(apiService, dao, roleDao, userPreferences)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRoleRepository(
+        apiService: RoleApiService,
+        dao: RoleDao,
+    ): RoleRepository {
+        return RoleRepositoryImpl(apiService, dao)
     }
 
     // DATABASE

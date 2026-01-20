@@ -44,6 +44,7 @@ import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportAttachment
 import com.dishut_lampung.sitanihut.domain.model.ReportDetail
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
+import com.dishut_lampung.sitanihut.domain.model.Role
 import com.dishut_lampung.sitanihut.domain.model.User
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
 import com.dishut_lampung.sitanihut.domain.model.UserProfile
@@ -379,6 +380,13 @@ fun HarvestResponseDto.toDomain(): MasaPanen {
 
 fun RoleDto.toEntity(): RoleEntity {
     return RoleEntity(
+        id = this.id,
+        name = this.name
+    )
+}
+
+fun RoleEntity.toDomain(): Role{
+    return Role(
         id = this.id,
         name = this.name
     )
