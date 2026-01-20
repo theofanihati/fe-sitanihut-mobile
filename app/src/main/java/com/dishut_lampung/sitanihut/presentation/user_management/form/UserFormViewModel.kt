@@ -51,7 +51,396 @@ class UserFormViewModel  @Inject constructor(
     private var availableRoles: List<Role> = emptyList()
     private var allKphOptions: List<Kph> = emptyList()
 
+    init {
+        observeConnectivity()
+        loadInitialData()
+    }
+
+    private fun loadInitialData() {
+        viewModelScope.launch {
+            val role = userPreferences.userRole.first() ?: ""
+            getRolesUseCase().collect { result ->
+                if (result is Resource.Success) {
+                    availableRoles = result.data ?: emptyList()
+                    val petaniRole = availableRoles.find { it.name.equals("petani", ignoreCase = true) }
+                    _uiState.update {
+                        it.copy(
+                            roleId = petaniRole?.id ?: "",
+                            roleName = "petani"
+                        )
+                    }
+                }
+            }
+
+            getKphListUseCase().onEach { kphList ->
+                allKphOptions = kphList
+                _uiState.update { it.copy(kphOptions = kphList)
+                }
+            }.launchIn(this)
+
+            if (currentUserId != null) {
+                loadExistingUserData(currentUserId, role)
+            }
+        }
+    }
+
     fun onEvent(event: UserFormEvent) {
-        TODO()
+        when (event) {
+            is UserFormEvent.OnEmailChange -> _uiState.update { it.copy(email = event.value, emailError = null) }
+            is UserFormEvent.OnPasswordChange -> _uiState.update { it.copy(password = event.value, passwordError = null) }
+            is UserFormEvent.OnConfirmPasswordChange -> _uiState.update { it.copy(confirmPassword = event.value, confirmPasswordError = null) }
+            is UserFormEvent.OnNameChange -> { _uiState.update { it.copy(name = event.value, nameError = null) } }
+
+            is UserFormEvent.OnIdentityNumberChange -> {
+                if (event.value.all { it.isDigit() } && event.value.length <= 16) {
+                    _uiState.update {
+                        it.copy(
+                            identityNumber = event.value,
+                            identityNumberError = null
+                        )
+                    }
+                }
+            }
+
+            is UserFormEvent.OnGenderChange -> {_uiState.update { it.copy(gender = event.value, genderError = null) } }
+            is UserFormEvent.OnAddressChange -> { _uiState.update { it.copy(address = event.value, addressError = null) } }
+
+            is UserFormEvent.OnWhatsAppChange -> {
+                _uiState.update { it.copy(whatsAppNumber = event.value) }
+
+                val phoneRegex = Regex("^(08|\\+628)[0-9]*$")
+                var errorMsg: String? = null
+
+                if (event.value.isNotEmpty()) {
+                    if (!event.value.matches(phoneRegex)) {
+                        errorMsg = "Masukkan nomor valid (08.. atau +628..) tanpa spasi"
+                    } else if (event.value.length > 14) {
+                        errorMsg = "Nomor telepon maksimal 14 digit"
+                    } else if (event.value.length < 10) {
+                        errorMsg = "Nomor telepon minimal 10 digit"
+                    }
+                }
+                _uiState.update { it.copy(whatsAppNumberError = errorMsg) }
+            }
+
+            is UserFormEvent.OnLastEducationChange -> { _uiState.update { it.copy(lastEducation = event.value, lastEducationError = null) } }
+            is UserFormEvent.OnSideJobChange -> { _uiState.update { it.copy(sideJob = event.value, sideJobError = null) } }
+            is UserFormEvent.OnPositionChange -> { _uiState.update { it.copy(position = event.value, positionError = null) } }
+
+            is UserFormEvent.OnLandAreaChange -> {
+                val isNumberOrDot = event.value.all { it.isDigit() || it == '.' }
+                val dotCount = event.value.count { it == '.' }
+
+                if (isNumberOrDot && dotCount <= 1) {
+                    _uiState.update { it.copy(landArea = event.value, landAreaError = null) }
+                }
+            }
+
+            is UserFormEvent.OnKphSearchTextChange -> {
+                _uiState.update { state ->
+                    val newText = event.text
+                    val matchingOption = state.kphOptions.find {
+                        it.name.equals(newText, ignoreCase = true)
+                    }
+
+                    val filteredOptions = if (newText.isBlank()) {
+                        allKphOptions
+                    } else {
+                        allKphOptions.filter { it.name.contains(newText, ignoreCase = true) }
+                    }
+
+                    state.copy(
+                        selectedKphName = newText,
+                        selectedKphId = matchingOption?.id ?: "",
+                        kphOptions = filteredOptions
+                    )
+                }
+            }
+
+            is UserFormEvent.OnKphSelected -> {
+                _uiState.update {
+                    it.copy(
+                        selectedKphId = event.kph.id,
+                        selectedKphName = event.kph.name,
+                        kphError = null,
+                        selectedKthId = "",
+                        selectedKthName = ""
+                    )
+                }
+                viewModelScope.launch {
+                    val role = userPreferences.userRole.first() ?: ""
+                    loadKthOptions(role, event.kph.id)
+                }
+            }
+
+            is UserFormEvent.OnKthSearchTextChange -> {
+                _uiState.update { state ->
+                    val newText = event.text
+
+                    val matchingOption = allKthInKph.find {
+                        it.name.equals(newText, ignoreCase = true)
+                    }
+
+                    val filteredOptions = if (newText.isBlank()) {
+                        allKthInKph
+                    } else {
+                        allKthInKph.filter { it.name.contains(newText, ignoreCase = true) }
+                    }
+
+                    state.copy(
+                        selectedKthName = newText,
+                        selectedKthId = matchingOption?.id ?: "",
+                        kthOptions = filteredOptions
+                    )
+                }
+            }
+
+            is UserFormEvent.OnKthSelected -> {
+                _uiState.update {
+                    it.copy(
+                        selectedKthId = event.kth.id,
+                        selectedKthName = event.kth.name,
+                        kthError = null,
+                        kthOptions = allKthInKph
+                    )
+                }
+            }
+
+            is UserFormEvent.OnTogglePasswordVisibility -> _uiState.update { it.copy(isPasswordVisible = !it.isPasswordVisible) }
+            is UserFormEvent.OnToggleConfirmPasswordVisibility -> _uiState.update { it.copy(isConfirmPasswordVisible = !it.isConfirmPasswordVisible) }
+            is UserFormEvent.OnSubmit -> submit()
+            is UserFormEvent.OnShowConfirmDialog -> { _uiState.update { it.copy(showConfirmDialog = true) } }
+            is UserFormEvent.OnDismissConfirmDialog -> { _uiState.update { it.copy(showConfirmDialog = false) } }
+            is UserFormEvent.OnDismissMessage -> { _uiState.update { it.copy(error = null, successMessage = null) } }
+
+            is UserFormEvent.OnShowUserMessage -> {
+                viewModelScope.launch {
+                    _uiState.update { it.copy(successMessage = null, error = null) }
+                    if (event.type == MessageType.Success) {
+                        _uiState.update { it.copy(successMessage = event.message) }
+                    } else {
+                        _uiState.update { it.copy(error = event.message) }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun observeConnectivity() {
+        connectivityObserver.observe()
+            .onEach { status ->
+                _uiState.update {
+                    it.copy(isOnline = status == ConnectivityObserver.Status.Available)
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun loadKphOptions() {
+        getKphListUseCase().onEach { kphList ->
+//            Log.d("DEBUG_KPH", "Data KPH dari DB: ${kphList.size} item")
+            _uiState.update { it.copy(kphOptions = kphList) }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun loadKthOptions(role: String, kphId: String) {
+        getKthListUseCase(role = role, query = "")
+            .onEach { result ->
+                if (result is Resource.Success) {
+                    val fullList = result.data ?: emptyList()
+                    if (fullList.isNotEmpty()) {
+                        val sample = fullList[0]
+//                        android.util.Log.d("DEBUG_KTH", "--- CEK DATA ---")
+//                        android.util.Log.d("DEBUG_KTH", "1. User KPH ID (Target): '$kphId'")
+//                        android.util.Log.d("DEBUG_KTH", "2. Data API KPH ID: '${sample.kphId}'")
+//                        android.util.Log.d("DEBUG_KTH", "3. Data API Nama: '${sample.name}'")
+                    } else {
+//                        android.util.Log.d("DEBUG_KTH", "List DB Kosong!")
+                    }
+                    val filteredKth = fullList.filter { it.kphId == kphId }
+
+                    allKthInKph = filteredKth
+                    _uiState.update { it.copy(kthOptions = filteredKth) }
+                }
+            }.launchIn(viewModelScope)
+    }
+
+    private fun loadExistingUserData(id: String, role: String) {
+        getUserDetailUseCase(id).onEach { result ->
+            when (result) {
+                is Resource.Loading -> {
+                    _uiState.update { it.copy(isLoading = true) }
+                }
+                is Resource.Success -> {
+                    val data = result.data
+//                    android.util.Log.d("DEBUG_USER", "=== CEK DATA MASUK VIEWMODEL ===")
+//                    android.util.Log.d("DEBUG_USER", "Nama: ${data?.name}")
+//                    android.util.Log.d("DEBUG_USER", "KPH ID: '${data?.kphId}' (Harus ada isinya)")
+//                    android.util.Log.d("DEBUG_USER", "KTH ID: '${data?.kthId}' (Harus ada isinya)")
+                    originalData = data
+                    if (data != null) {
+                        val roleId = availableRoles.find { it.name.equals(data.role, ignoreCase = true) }?.id ?: ""
+                        _uiState.update { state ->
+                            state.copy(
+                                isLoading = false,
+                                isEditMode = true,
+                                password = "",
+                                confirmPassword = "",
+                                email = data.email ?: "",
+                                roleName = data.role ?: "petani",
+                                roleId = roleId,
+                                name = data.name,
+                                identityNumber = data.identityNumber ?: "",
+                                gender = data.gender ?: "",
+                                address = data.address ?: "",
+                                whatsAppNumber = data.whatsAppNumber ?: "",
+                                lastEducation = data.lastEducation ?: "",
+                                sideJob = data.sideJob ?: "",
+                                landArea = data.landArea?.toString()?.removeSuffix(".0") ?: "",
+                                selectedKphId = data.kphId ?: "",
+                                selectedKphName = data.kphName ?: "",
+                                selectedKthId = data.kthId ?: "",
+                                selectedKthName = data.kthName ?: "",
+                            )
+                        }
+                        if (!data.kphId.isNullOrBlank()) {
+                            loadKthOptions(role, data.kphId)
+                        }
+                    }
+                }
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(isLoading = false, error = result.message)
+                    }
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun submit() {
+        if (!_uiState.value.isOnline) {
+            _uiState.update { it.copy(error = "Tidak ada koneksi internet") }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            val state = _uiState.value
+
+            val targetRoleId = state.roleId.ifBlank {
+                availableRoles.find { it.name.equals("petani", ignoreCase = true) }?.id ?: ""
+            }
+
+            if (currentUserId == null) {
+                val input = CreateUserInput(
+                    isEditMode = currentUserId != null,
+                    email = state.email,
+                    password = state.password,
+                    confirmPassword = state.confirmPassword,
+                    role = "petani",
+                    roleId = targetRoleId,
+                    name = _uiState.value.name,
+                    identityNumber = _uiState.value.identityNumber,
+                    gender = _uiState.value.gender,
+                    address = _uiState.value.address,
+                    whatsAppNumber = _uiState.value.whatsAppNumber,
+                    lastEducation = _uiState.value.lastEducation,
+                    sideJob = _uiState.value.sideJob,
+                    landArea = _uiState.value.landArea,
+                    kphId = _uiState.value.selectedKphId,
+                    kthId = _uiState.value.selectedKthId,
+                )
+
+                val validationResult = validateUserManagementInputUseCase.execute(input)
+
+                if (!validationResult.successful) {
+                    val errors = validationResult.fieldErrors
+                    _uiState.update { state ->
+                        state.copy(
+                            isLoading = false,
+                            error = validationResult.errorMessage,
+                            showConfirmDialog = false,
+                            emailError = errors["email"],
+                            passwordError = errors["password"],
+                            confirmPasswordError = errors["confirmPassword"],
+                            nameError = errors["name"],
+                            identityNumberError = errors["identityNumber"],
+                            genderError = errors["gender"],
+                            addressError = errors["address"],
+                            whatsAppNumberError = errors["whatsAppNumber"],
+                            lastEducationError = errors["lastEducation"],
+                            sideJobError = errors["sideJob"],
+                            landAreaError = errors["landArea"],
+                            kphError = errors["kphId"] ?: errors["kph_name"],
+                            kthError = errors["kthId"] ?: errors["kth_name"]
+                        )
+                    }
+                    return@launch
+                }
+                val result = createUserUseCase(input)
+                handleResult(result)
+            } else {
+                val changes = mutableMapOf<String, Any?>()
+                val current = _uiState.value
+                val old = originalData
+
+                if (old != null) {
+                    if (state.email != old.email) changes["email"] = state.email
+                    if (state.password.isNotEmpty()) {
+                        changes["password"] = state.password
+                    }
+
+                    if (current.name != old.name) changes["nama_user"] = current.name
+
+                    if (current.identityNumber != old.identityNumber) changes["nomor_induk"] = current.identityNumber
+
+                    if (current.gender != old.gender) changes["jenis_kelamin"] = current.gender
+                    if (current.address != old.address) changes["alamat"] = current.address
+                    if (current.whatsAppNumber != old.whatsAppNumber) changes["nomor_wa"] = current.whatsAppNumber
+                    if (current.lastEducation != old.lastEducation) changes["pendidikan_terakhir"] = current.lastEducation
+                    if (current.sideJob != old.sideJob) changes["pekerjaan_sampingan"] = current.sideJob
+
+                    val newLandArea = current.landArea.toDoubleOrNull()
+                    if (newLandArea != old.landArea) {
+                        changes["luas_lahan"] = newLandArea
+                    }
+
+                    if (current.selectedKphId != old.kphId) changes["id_kph"] = current.selectedKphId
+                    if (current.selectedKthId != old.kthId) changes["id_kth"] = current.selectedKthId
+                }
+
+                if (changes.isEmpty()) {
+                    _uiState.update { it.copy(isLoading = false, successMessage = "Tidak ada perubahan data") }
+                    return@launch
+                }
+
+                val result = updateUserUseCase(currentUserId, changes)
+                handleResult(result)
+            }
+        }
+    }
+
+    private fun <T> handleResult(result: Resource<T>) {
+        when (result) {
+            is Resource.Success -> {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        successMessage = "Berhasil disimpan!",
+                        showConfirmDialog = false
+                    )
+                }
+            }
+            is Resource.Error -> {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = result.message,
+                        showConfirmDialog = false
+                    )
+                }
+            }
+            else -> {}
+        }
     }
 }
