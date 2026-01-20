@@ -10,6 +10,6 @@ class GetRolesUseCase @Inject constructor(
     private val repository: RoleRepository
 ) {
     operator fun invoke(): Flow<Resource<List<Role>>> {
-        return TODO()
+        return repository.getRoles()
     }
 }
