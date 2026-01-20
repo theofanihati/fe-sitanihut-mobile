@@ -35,7 +35,7 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         "data_penyuluh/{id}",
         "kth_detail/{kthId}",
         "petani_detail/{id}",
-        "user_form/{id}" -> ScaffoldConfig(
+        "user_detail/{id}" -> ScaffoldConfig(
             showMainNav = false,
             showBackNav = true,
             topBarTheme = TopBarTheme.DARK_BACKGROUND
