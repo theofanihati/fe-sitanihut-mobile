@@ -37,7 +37,7 @@ data class CreateUserInput(
     val sideJob: String = "",
     val landArea: String = "",
 
-    val position: String = "",
+//    val position: String = "",
 
     val kphId: String = "",
     val kphName: String = "",

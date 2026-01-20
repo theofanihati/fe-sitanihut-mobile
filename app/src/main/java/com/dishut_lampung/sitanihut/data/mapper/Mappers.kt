@@ -184,7 +184,7 @@ fun CreateUserInput.toDto(): CreateUserRequestDto {
         lastEducation = this.lastEducation,
         sideJob = this.sideJob,
         landArea = this.landArea,
-        position = this.position
+//        position = this.position
     )
 }
 

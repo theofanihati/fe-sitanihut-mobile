@@ -204,7 +204,7 @@ class ValidateUserManagementInputUseCaseTest {
     fun `execute should return error for Penyuluh when fields are blank`() {
         val input = validBaseInput.copy(
             role = "penyuluh",
-            position = "",
+//            position = "",
             kphId = "",
             identityNumber = "",
         )
@@ -240,7 +240,7 @@ class ValidateUserManagementInputUseCaseTest {
     fun `execute should return error for Penanggung Jawab when fields are blank`() {
         val input = validBaseInput.copy(
             role = "penanggung jawab",
-            position = "",
+//            position = "",
             kphId = "",
             identityNumber = "",
         )
@@ -274,7 +274,7 @@ class ValidateUserManagementInputUseCaseTest {
         val inputPenyuluh = validBaseInput.copy(
             role = "penyuluh",
             identityNumber = "123456789012345678",
-            position = "Penyuluh Ahli Utama",
+//            position = "Penyuluh Ahli Utama",
             kphId = "kph-2",
             kthId = ""
         )
@@ -289,7 +289,7 @@ class ValidateUserManagementInputUseCaseTest {
         val inputPj = validBaseInput.copy(
             role = "penanggung jawab",
             identityNumber = "123456789012345678",
-            position = "Penyuluh Ahli Utama",
+//            position = "Penyuluh Ahli Utama",
             kphId = "kph-2",
             kthId = ""
         )

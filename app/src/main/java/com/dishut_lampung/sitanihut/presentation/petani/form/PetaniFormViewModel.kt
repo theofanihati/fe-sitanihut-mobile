@@ -408,7 +408,7 @@ class PetaniFormViewModel @Inject constructor(
         }
     }
 
-    private fun <T> handleResult(result: Resource<T>) { // Tambahkan <T>
+    private fun <T> handleResult(result: Resource<T>) {
         when (result) {
             is Resource.Success -> {
                 _uiState.update {

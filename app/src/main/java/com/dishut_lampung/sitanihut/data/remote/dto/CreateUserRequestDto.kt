@@ -16,5 +16,5 @@ data class CreateUserRequestDto (
     @SerializedName("pendidikan_terakhir") val lastEducation: String,
     @SerializedName("pekerjaan_sampingan") val sideJob: String,
     @SerializedName("luas_lahan") val landArea: String,
-    @SerializedName("jabatan") val position: String,
+//    @SerializedName("jabatan") val position: String,
 )

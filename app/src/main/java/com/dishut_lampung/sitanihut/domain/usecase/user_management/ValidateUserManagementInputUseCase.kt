@@ -110,7 +110,7 @@ class ValidateUserManagementInputUseCase @Inject constructor() {
             errors["identityNumber"] = "NIP harus terdiri dari 18 digit"
         }
 
-        if (input.position.isBlank()) errors["position"] = "Jabatan wajib diisi"
+//        if (input.position.isBlank()) errors["position"] = "Jabatan wajib diisi"
         if (input.kphId.isNullOrBlank()) errors["kphId"] = "Asal KPH tidak boleh kosong"
     }
 
