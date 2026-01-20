@@ -6,4 +6,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface RoleRepository {
     fun getRoles(): Flow<Resource<List<Role>>>
+    suspend fun syncRoleData(): Resource<Unit>
 }
