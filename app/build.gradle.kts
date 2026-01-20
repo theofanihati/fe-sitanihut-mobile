@@ -6,6 +6,7 @@ plugins {
     id("kotlin-parcelize")
     id("jacoco")
     id("io.gitlab.arturbosch.detekt") version "1.23.6"
+    id("com.google.gms.google-services")
 }
 jacoco {
     toolVersion = "0.8.11"
@@ -167,6 +168,9 @@ dependencies {
     kapt("androidx.hilt:hilt-compiler:1.2.0")
     testImplementation("androidx.work:work-testing")
     testImplementation("androidx.arch.core:core-testing:2.2.0")
+
+    // firebase cloud messaging
+    implementation(libs.firebase.messaging)
 }
 
 
