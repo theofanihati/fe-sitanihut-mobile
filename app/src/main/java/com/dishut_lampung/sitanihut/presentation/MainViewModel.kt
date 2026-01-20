@@ -15,7 +15,9 @@ import com.dishut_lampung.sitanihut.data.worker.DataSyncWorker
 import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
+import com.dishut_lampung.sitanihut.domain.repository.UserRepository
 import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -45,7 +47,8 @@ data class MainUiState(
 class MainViewModel @Inject constructor(
     private val userPreferences: UserPreferences,
     private val homeRepository: HomeRepository,
-    private val workManager: WorkManager
+    private val workManager: WorkManager,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -72,6 +75,7 @@ class MainViewModel @Inject constructor(
     init {
         checkAuthStatus()
         observeSessionForSync()
+        checkAndSyncFcmToken()
     }
 
     private fun observeSessionForSync() {
@@ -163,6 +167,22 @@ class MainViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             userPreferences.clearAllSession()
+        }
+    }
+
+    private fun checkAndSyncFcmToken() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                return@addOnCompleteListener
+            }
+
+            val token = task.result
+            Log.d("FCM", "Current Token: $token")
+
+            viewModelScope.launch {
+                userRepository.syncFcmToken(token)
+            }
         }
     }
 }

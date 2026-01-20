@@ -12,4 +12,5 @@ interface UserRepository {
     fun getUserDetail(id: String): Flow<Resource<UserDetail>>
     suspend fun createUser(input: CreateUserInput): Resource<Unit>
     suspend fun updateUser(id: String, changes: Map<String, Any?>): Resource<Unit>
+    suspend fun syncFcmToken(token: String): Resource<Unit>
 }
