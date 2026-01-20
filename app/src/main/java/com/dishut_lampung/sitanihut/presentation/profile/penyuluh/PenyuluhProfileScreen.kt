@@ -163,13 +163,8 @@ private fun ProfileContent(user: UserDetail) {
     ) {
         Spacer(modifier = Modifier.height(80.dp))
 
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(user.profilePictureUrl)
-                .crossfade(true)
-                .placeholder(R.drawable.placeholder_profile_picture)
-                .error(R.drawable.error_profile_picture)
-                .build(),
+        Image(
+            painter = painterResource(id = R.drawable.avatar_2),
             contentDescription = "Foto Profil",
             contentScale = ContentScale.Crop,
             modifier = Modifier

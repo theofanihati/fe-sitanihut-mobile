@@ -163,13 +163,8 @@ private fun ProfileContent(user: UserDetail) {
     ) {
         Spacer(modifier = Modifier.height(80.dp))
 
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(user.profilePictureUrl)
-                .crossfade(true)
-                .placeholder(R.drawable.placeholder_profile_picture)
-                .error(R.drawable.error_profile_picture)
-                .build(),
+        Image(
+            painter = painterResource(id = R.drawable.avatar_3),
             contentDescription = "Foto Profil",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -217,15 +212,15 @@ private fun ProfileContent(user: UserDetail) {
                 ProfileDetailRow("Role", user.role?: "Penanggung Jawab")
                 ProfileDetailRow("Email", user.email?: "tidak disebutkan")
                 ProfileDetailRow("NIK", user.identityNumber?: "tidak disebutkan")
-                ProfileDetailRow("Nomor telepon", user.whatsAppNumber ?: "-")
+                ProfileDetailRow("Nomor telepon", user.whatsAppNumber ?: "tidak disebutkan")
 
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 12.dp),
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                 )
 
-                ProfileDetailRow("Jenis kelamin", user.gender ?: "-")
-                ProfileDetailRow("Jabatan", user.position ?: "-")
+                ProfileDetailRow("Jenis kelamin", user.gender ?: "tidak disebutkan")
+                ProfileDetailRow("Jabatan", user.position ?: "tidak disebutkan")
 
                 if (user.landArea != null && user.landArea > 0) {
                     ProfileDetailRow("Luas lahan", "${user.landArea} Ha")
