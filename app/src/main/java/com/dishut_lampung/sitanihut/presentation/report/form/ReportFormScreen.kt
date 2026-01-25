@@ -95,11 +95,27 @@ fun ReportFormRoute(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) {
-            scope.launch(Dispatchers.IO) {
-                val filePath = copyUriToInternalStorage(context, uri)
+            val cursor = context.contentResolver.query(uri, null, null, null, null)
+            val sizeIndex = cursor?.getColumnIndex(android.provider.OpenableColumns.SIZE)
+            cursor?.moveToFirst()
+            val size = if (sizeIndex != null && sizeIndex != -1) cursor.getLong(sizeIndex) else 0
+            cursor?.close()
 
-                if (filePath != null) {
-                    viewModel.onEvent(ReportFormEvent.OnAddAttachment(filePath))
+            val maxFileSize = 10 * 1024 * 1024
+
+            if (size > maxFileSize) {
+                viewModel.onEvent(
+                    ReportFormEvent.OnShowUserMessage(
+                        "Ukuran file maksimal 10MB!",
+                        MessageType.Error
+                    )
+                )
+            } else {
+                scope.launch(Dispatchers.IO) {
+                    val filePath = copyUriToInternalStorage(context, uri)
+                    if (filePath != null) {
+                        viewModel.onEvent(ReportFormEvent.OnAddAttachment(filePath))
+                    }
                 }
             }
         }
