@@ -78,7 +78,7 @@ class ReportSyncWorkerTest {
         coEvery { reportDao.upsertAll(any()) } just Runs
 
         val successResponse = ApiResponse<Any?>(statusCode = 200, message = "OK", data = Any())
-        coEvery { apiService.createReport(any(), any()) } returns Response.success(successResponse)
+        coEvery { apiService.createReport(any()) } returns Response.success(successResponse)
         val worker = buildWorker()
         val result = worker.doWork()
 
@@ -120,7 +120,7 @@ class ReportSyncWorkerTest {
             error = "Resource conflict, new ID assigned")
         val errorBody = gson.toJson(conflictDto).toResponseBody("application/json".toMediaTypeOrNull())
         val conflictResponse = Response.error<ApiResponse<Any?>>(409, errorBody)
-        coEvery { apiService.createReport(any(), any()) } returns conflictResponse
+        coEvery { apiService.createReport(any()) } returns conflictResponse
 
         val worker = buildWorker()
         val result = worker.doWork()
@@ -208,7 +208,7 @@ class ReportSyncWorkerTest {
         val pendingReport = createReportEntity(reportId, SyncStatus.PENDING_CREATE)
 
         coEvery { reportDao.getAllUnsyncedReports() } returns listOf(pendingReport)
-        coEvery { apiService.createReport(any(), any()) } throws IOException("No internet")
+        coEvery { apiService.createReport(any()) } throws IOException("No internet")
 
         val worker = buildWorker()
         val result = worker.doWork()

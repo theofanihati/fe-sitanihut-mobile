@@ -48,11 +48,13 @@ import com.dishut_lampung.sitanihut.domain.model.Role
 import com.dishut_lampung.sitanihut.domain.model.User
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
 import com.dishut_lampung.sitanihut.domain.model.UserProfile
+import com.dishut_lampung.sitanihut.util.getCurrentDate
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
+val gson = Gson()
 
 // home profil ringkas
 fun UserDto.toEntity(role: String): UserEntity {
@@ -218,7 +220,6 @@ fun ReportEntity.toDomain(): Report {
 }
 
 fun ReportEntity.toReportDetail(): ReportDetail {
-    val gson = Gson()
     val plantingList: List<MasaTanam> = try {
         if (!this.plantingDetailsJson.isNullOrEmpty()) {
             val type = object : TypeToken<List<MasaTanam>>() {}.type
@@ -309,13 +310,11 @@ fun ReportListItemDto.toDomain(): Report {
 fun ReportDetailDto.toEntity(): ReportEntity {
     val gson = Gson()
 
-    val plantingJson = if (!plantingDetails.isEmpty()) {
-        gson.toJson(plantingDetails.map { it.toDomain() })
-    } else null
+    val plantingList = this.plantingDetails?.map { it.toDomain() } ?: emptyList()
+    val plantingJson = gson.toJson(plantingList)
 
-    val harvestJson = if (!harvestDetails.isEmpty()) {
-        gson.toJson(harvestDetails.map { it.toDomain() })
-    } else null
+    val harvestList = this.harvestDetails?.map { it.toDomain() } ?: emptyList()
+    val harvestJson = gson.toJson(harvestList)
 
     val attachmentList = this.attachments?.map { dto ->
         ReportAttachment(
@@ -329,52 +328,58 @@ fun ReportDetailDto.toEntity(): ReportEntity {
     return ReportEntity(
         id = this.id,
         userId = this.userId,
-        userName = this.userName,
-        userNik = this.userNik,
-        userGender = this.userGender,
-        userAddress = this.userAddress,
-        userKphName = this.userKphName,
-        userKthName = this.userKthName,
+        userName = this.userName ?: "",
+        userNik = this.userNik ?: "",
+        userGender = this.userGender ?: "",
+        userAddress = this.userAddress ?: "",
+        userKphName = this.userKphName ?: "",
+        userKthName = this.userKthName ?: "",
         period = this.period,
-        month = this.month,
-        date = this.date,
+        month = this.month ?: "",
+        date = this.date ?: getCurrentDate(),
         nte = this.nte,
-        status = this.status,
+        status = this.status ?: "belum diajukan",
         modal = this.modal,
         farmerNotes = this.farmerNotes,
         penyuluhNotes = this.penyuluhNotes,
+
         createdAt = this.createdAt,
         verifiedAt = this.verifiedAt,
         acceptedAt = this.acceptedAt,
+
         plantingDetailsJson = plantingJson,
         harvestDetailsJson = harvestJson,
         attachmentsJson = attachmentsJsonString,
+
         syncStatus = SyncStatus.SYNCED,
         jsonPayload = null
     )
 }
 
 fun PlantingResponseDto.toDomain(): MasaTanam {
-    val hasDate = !this.date.isNullOrEmpty() && this.date != "-"
+    val dateSafe = this.date ?: ""
+    val hasDate = dateSafe.isNotEmpty() && dateSafe != "-"
     val inferredType = if (hasDate) "Semusim" else "Tahunan"
 
     return MasaTanam(
-        commodityId = this.commodityId,
+        id = this.id ?: java.util.UUID.randomUUID().toString(),
+        commodityId = this.commodityId?: "",
         commodityName = this.commodityName ?: "",
         plantType = inferredType,
-        plantDate = if (hasDate) this.date else "",
-        plantAge = this.plantAge,
-        amount = this.amount.toString()
+        plantDate = if (hasDate) dateSafe else "",
+        plantAge = this.plantAge?: 0.0,
+        amount = (this.amount ?: 0.0).toString()
     )
 }
 
 fun HarvestResponseDto.toDomain(): MasaPanen {
     return MasaPanen(
-        harvestDate = this.date,
-        commodityId = this.commodityId,
+        id = this.id ?: java.util.UUID.randomUUID().toString(),
+        harvestDate = this.date?: "",
+        commodityId = this.commodityId?: "",
         commodityName = this.commodityName ?: "",
-        unitPrice = this.unitPrice.toString(),
-        amount = this.amount.toString()
+        unitPrice = (this.unitPrice ?: 0.0).toString(),
+        amount = (this.amount ?: 0.0).toString()
     )
 }
 

@@ -1,5 +1,7 @@
 package com.dishut_lampung.sitanihut.domain.model
 
+import androidx.annotation.Keep
+
 data class Report(
     val id: String,
     val period: Int,
@@ -45,8 +47,9 @@ data class CreateReportInput(
     val isAjukan: Boolean,
     val nte: Double,
 )
-
+@Keep
 data class MasaTanam(
+    val id: String,
     val commodityId: String,
     val commodityName: String = "",
     val plantType: String,
@@ -54,15 +57,16 @@ data class MasaTanam(
     val plantAge: Double,
     val amount: String,
 )
-
+@Keep
 data class MasaPanen(
+    val id: String,
     val harvestDate: String,
     val commodityId: String,
     val commodityName: String = "",
     val unitPrice: String,
     val amount: String,
 )
-
+@Keep
 data class ReportAttachment(
     val id: String? = null,
     val filePath: String,

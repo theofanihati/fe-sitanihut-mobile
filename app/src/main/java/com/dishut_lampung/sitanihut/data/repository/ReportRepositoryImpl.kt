@@ -86,13 +86,14 @@ class ReportRepositoryImpl @Inject constructor(
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build()
             )
+            .setExpedited(androidx.work.OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .addTag(TAG_REPORT_OP)
             .addTag("REPORT_$operationType")
             .build()
 
         WorkManager.getInstance(context).enqueueUniqueWork(
             WORK_QUEUE_NAME,
-            ExistingWorkPolicy.APPEND,
+            ExistingWorkPolicy.REPLACE,
             request
         )
     }
@@ -184,9 +185,8 @@ class ReportRepositoryImpl @Inject constructor(
                 input = input
             )
             reportDao.upsertAll(listOf(newReport))
-            if (input.isAjukan) {
-                enqueueReportOperation(OP_create, reportId)
-            }
+            enqueueReportOperation(OP_create, reportId)
+
 
             Resource.Success(Unit)
 

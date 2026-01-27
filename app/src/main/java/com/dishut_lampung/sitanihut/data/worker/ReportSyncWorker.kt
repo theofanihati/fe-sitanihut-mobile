@@ -53,78 +53,106 @@ class ReportSyncWorker @AssistedInject constructor(
 
     private suspend fun syncCreate(report: ReportEntity): Boolean {
         if (report.jsonPayload == null) return false
-        val dataPart = report.jsonPayload.toRequestBody("application/json".toMediaTypeOrNull())
+        val parts = mutableListOf<MultipartBody.Part>()
 
-        val attachmentListType = object : TypeToken<List<ReportAttachment>>() {}.type
-        val attachments: List<ReportAttachment> = Gson().fromJson(report.attachmentsJson, attachmentListType) ?: emptyList()
-        val attachmentParts = attachments
-            .filter { it.isLocal } // Ambil file lokal
-            .mapNotNull { item ->
-                val file = File(item.filePath)
-                if (file.exists()) {
-                    val mimeType = getMimeType(file)
-                    val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())
-                    // Key disesuaikan dengan backend Create: biasanya "lampiran[]"
-                    MultipartBody.Part.createFormData("lampiran[]", file.name, requestFile)
-                } else null
+        try {
+            val dto = Gson().fromJson(report.jsonPayload, ReportRequestDto::class.java)
+            fun addText(key: String, value: Any?) {
+                if (value != null) {
+                    val body = value.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+                    parts.add(MultipartBody.Part.createFormData(key, null, body))
+                }
             }
 
-            try {
-                val response = apiService.createReport(
-                    dataPart,
-                    attachmentParts
-                )
+            addText("periode", dto.period)
+            addText("bulan", dto.month?.lowercase())
+            addText("modal", dto.modal?.toLong())
+            addText("nte", dto.nte?.toLong())
+            addText("status", dto.status)
+            addText("catatan_petani", dto.farmerNotes ?: "")
 
-                if (response.isSuccessful) {
-                    val apiBody = response.body()
-                    if (apiBody != null && (apiBody.statusCode == 200 || apiBody.statusCode == 201)) {
-                        val updatedReport = report.copy(
-                            syncStatus = SyncStatus.SYNCED,
-                            jsonPayload = null
+            dto.plantingDetails?.forEachIndexed { i, item ->
+                addText("masa_tanam[$i][tanggal]", item.date)
+                addText("masa_tanam[$i][id_komoditas]", item.commodityId)
+                addText("masa_tanam[$i][jumlah]", item.amount)
+                addText("masa_tanam[$i][usia_tanam]", item.plantAge)
+            }
+
+            dto.harvestDetails?.forEachIndexed { i, item ->
+                addText("masa_panen[$i][tanggal]", item.date)
+                addText("masa_panen[$i][id_komoditas]", item.commodityId)
+                addText("masa_panen[$i][jumlah]", item.amount)
+                addText("masa_panen[$i][harga_satuan]", item.unitPrice)
+            }
+
+            val attachmentListType = object : TypeToken<List<ReportAttachment>>() {}.type
+            val attachments: List<ReportAttachment> = Gson().fromJson(report.attachmentsJson, attachmentListType) ?: emptyList()
+
+            attachments
+                .filter { it.isLocal }
+                .forEach { item ->
+                    val file = File(item.filePath)
+                    if (file.exists()) {
+                        val mimeType = getMimeType(file)
+                        val requestFile = file.asRequestBody(mimeType.toMediaTypeOrNull())
+                        parts.add(MultipartBody.Part.createFormData("lampiran[]", file.name, requestFile))
+                    }
+                }
+
+            val response = apiService.createReport(parts)
+
+            if (response.isSuccessful) {
+                val apiBody = response.body()
+                if (apiBody != null && (apiBody.statusCode == 200 || apiBody.statusCode == 201)) {
+                    val updatedReport = report.copy(
+                        syncStatus = SyncStatus.SYNCED,
+                        jsonPayload = null
+                    )
+                    reportDao.upsertAll(listOf(updatedReport))
+                    return true
+                } else {
+                    return false
+                }
+            } else {
+                val errorCode = response.code()
+                val errorBodyString = response.errorBody()?.string()
+
+                Log.e("SYNC_WORKER", "Create Failed. Code: $errorCode")
+                Log.e("SYNC_WORKER", "Error Body: $errorBodyString")
+
+                if (errorCode == 409 && errorBodyString != null) {
+                    try {
+                        val conflictDto = Gson().fromJson(errorBodyString, ConflictResponseDto::class.java)
+                        val newUuid = conflictDto.newUuid
+
+                        val oldDto = Gson().fromJson(report.jsonPayload, ReportRequestDto::class.java)
+                        val newDto = oldDto.copy(id = newUuid)
+                        val newJsonPayload = Gson().toJson(newDto)
+
+                        val newReportEntity = report.copy(
+                            id = newUuid,
+                            jsonPayload = newJsonPayload,
+                            syncStatus = SyncStatus.PENDING_CREATE
                         )
-                        reportDao.upsertAll(listOf(updatedReport))
-                        return true
-                    } else {
+
+                        reportDao.upsertAll(listOf(newReportEntity))
+                        reportDao.deleteReportById(report.id)
+
+                        return false
+                    } catch (e: Exception) {
+                        Log.e("SYNC_WORKER", "Gagal parse conflict: ${e.message}")
+                        e.printStackTrace()
                         return false
                     }
                 } else {
-                    // Handle Conflict ID. kesepakatan BE: BE generate UUID baru, client auto fetch & post
-                    val errorCode = response.code()
-                    val errorBodyString = response.errorBody()?.string()
-                    Log.e("SYNC_WORKER", "Error Code: $errorCode")
-                    Log.e("SYNC_WORKER", "Error Body: $errorBodyString")
-
-                    if (errorCode == 409 && errorBodyString != null) {
-                        try {
-                            val conflictDto = Gson().fromJson(errorBodyString, ConflictResponseDto::class.java)
-                            val newUuid = conflictDto.newUuid
-
-                            val oldDto = Gson().fromJson(report.jsonPayload, ReportRequestDto::class.java)
-                            val newDto = oldDto.copy(id = newUuid)
-                            val newJsonPayload = Gson().toJson(newDto)
-                            val newReportEntity = report.copy(
-                                id = newUuid,
-                                jsonPayload = newJsonPayload,
-                                syncStatus = SyncStatus.PENDING_CREATE
-                            )
-
-                            // Ganti PK = Hapus & Insert, tiati
-                            reportDao.upsertAll(listOf(newReportEntity))
-                            reportDao.deleteReportById(report.id)
-                            return false
-                        } catch (e: Exception) {
-                            Log.e("SYNC_WORKER", "Gagal parse conflict: ${e.message}")
-                            e.printStackTrace()
-                            return false
-                        }
-                    } else {
-                        return false
-                    }
+                    return false
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return false
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e("SYNC_WORKER", "Exception: ${e.message}")
+            return false
+        }
     }
 
     private suspend fun syncUpdate(report: ReportEntity): Boolean {
