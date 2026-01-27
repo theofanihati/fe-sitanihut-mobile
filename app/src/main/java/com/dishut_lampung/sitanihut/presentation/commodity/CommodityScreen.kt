@@ -140,7 +140,7 @@ fun CommodityScreen(
             onRefresh = onRefresh,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 100.dp)
+//                .padding(top = 100.dp)
         ) {
             Column(
                 modifier = Modifier
