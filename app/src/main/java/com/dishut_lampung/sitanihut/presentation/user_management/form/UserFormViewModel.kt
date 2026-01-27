@@ -20,6 +20,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.user_management.ValidateUserM
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@HiltViewModel
 class UserFormViewModel  @Inject constructor(
     private val createUserUseCase: CreateUserUseCase,
     private val getUserDetailUseCase: GetUserDetailUseCase,
@@ -50,6 +52,22 @@ class UserFormViewModel  @Inject constructor(
     private var originalData: UserDetail? = null
     private var availableRoles: List<Role> = emptyList()
     private var allKphOptions: List<Kph> = emptyList()
+
+    private val phoneRegex = Regex("^(08[0-9]{8,14}|\\+628[0-9]{8,14})$")
+    private val nikRegex = Regex("^[0-9]{16}$")
+    private val nipRegex = Regex("^[0-9]{18}$")
+    private val emailRegex = Regex("[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}" +
+            "\\@" +
+            "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
+            "(" +
+            "\\." +
+            "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
+            ")+")
+
+    private val hasLowerCase = Regex("[a-z]")
+    private val hasUpperCase = Regex("[A-Z]")
+    private val hasDigit = Regex("\\d")
+    private val hasSpecialChar = Regex("[!@#\$%^&*(),.?\":{}|<>]")
 
     init {
         observeConnectivity()
@@ -86,33 +104,110 @@ class UserFormViewModel  @Inject constructor(
 
     fun onEvent(event: UserFormEvent) {
         when (event) {
-            is UserFormEvent.OnEmailChange -> _uiState.update { it.copy(email = event.value, emailError = null) }
-            is UserFormEvent.OnPasswordChange -> _uiState.update { it.copy(password = event.value, passwordError = null) }
-            is UserFormEvent.OnConfirmPasswordChange -> _uiState.update { it.copy(confirmPassword = event.value, confirmPasswordError = null) }
-            is UserFormEvent.OnNameChange -> { _uiState.update { it.copy(name = event.value, nameError = null) } }
+//            is UserFormEvent.OnEmailChange -> _uiState.update { it.copy(email = event.value, emailError = null) }
+//            is UserFormEvent.OnPasswordChange -> _uiState.update { it.copy(password = event.value, passwordError = null) }
+//            is UserFormEvent.OnConfirmPasswordChange -> _uiState.update { it.copy(confirmPassword = event.value, confirmPasswordError = null) }
+            is UserFormEvent.OnEmailChange -> {
+                _uiState.update { it.copy(email = event.value) }
+                val errorMsg = when {
+                    event.value.isEmpty() -> "Email tidak boleh kosong"
+                    !event.value.matches(emailRegex) -> "Format email tidak valid"
+                    else -> null
+                }
+                _uiState.update { it.copy(emailError = errorMsg) }
+            }
+            is UserFormEvent.OnPasswordChange -> {
+                _uiState.update { it.copy(password = event.value) }
+                val password = event.value
+                val isEditMode = _uiState.value.isEditMode
 
-            is UserFormEvent.OnIdentityNumberChange -> {
-                if (event.value.all { it.isDigit() } && event.value.length <= 16) {
-                    _uiState.update {
-                        it.copy(
-                            identityNumber = event.value,
-                            identityNumberError = null
-                        )
-                    }
+                val errorMsg = if (isEditMode && password.isEmpty()) {
+                    null
+                } else if (password.length < 8) {
+                    "Password minimal 8 karakter"
+                } else if (!password.contains(hasLowerCase)) {
+                    "Password harus memiliki setidaknya satu huruf kecil"
+                } else if (!password.contains(hasUpperCase)) {
+                    "Password harus memiliki setidaknya satu huruf besar (kapital)"
+                } else if (!password.contains(hasDigit)) {
+                    "Password harus memiliki setidaknya satu angka"
+                } else if (!password.contains(hasSpecialChar)) {
+                    "Password harus memiliki setidaknya satu karakter spesial (!@#$...)"
+                } else {
+                    null
+                }
+
+                _uiState.update {
+                    it.copy(
+                        passwordError = errorMsg,
+                        confirmPasswordError = if (it.confirmPassword.isNotEmpty() && password != it.confirmPassword) {
+                            "Password dan konfirmasi password tidak cocok"
+                        } else null
+                    )
                 }
             }
 
-            is UserFormEvent.OnGenderChange -> {_uiState.update { it.copy(gender = event.value, genderError = null) } }
-            is UserFormEvent.OnAddressChange -> { _uiState.update { it.copy(address = event.value, addressError = null) } }
+            is UserFormEvent.OnConfirmPasswordChange -> {
+                _uiState.update { it.copy(confirmPassword = event.value) }
+                val errorMsg = if (event.value != _uiState.value.password) {
+                    "Password dan konfirmasi password tidak cocok"
+                } else {
+                    null
+                }
+                _uiState.update { it.copy(confirmPasswordError = errorMsg) }
+            }
+            is UserFormEvent.OnNameChange -> {
+                _uiState.update { it.copy(
+                    name = event.value,
+                    nameError = if (event.value.isBlank()) "Nama lengkap wajib diisi" else null
+                ) }
+            }
+
+            is UserFormEvent.OnIdentityNumberChange -> {
+                if (event.value.all { it.isDigit() } && event.value.length <= 18) {
+                    val isPetani = _uiState.value.roleName.equals("petani", ignoreCase = true)
+                    val label = if (isPetani) "NIK" else "NIP"
+                    val lengthRequirement = if (isPetani) 16 else 18
+
+                    var errorMsg: String? = null
+                    if (event.value.isBlank()) {
+                        errorMsg = "$label wajib diisi"
+                    } else if (event.value.length != lengthRequirement) {
+                        errorMsg = "$label harus terdiri dari $lengthRequirement digit"
+                    }
+
+                    _uiState.update {
+                        it.copy(
+                            identityNumber = event.value,
+                            identityNumberError = errorMsg
+                        )
+                    }
+                }
+                }
+
+
+            is UserFormEvent.OnGenderChange -> {
+                _uiState.update { it.copy(
+                    gender = event.value,
+                    genderError = if (event.value.isBlank()) "Jenis kelamin wajib dipilih" else null
+                ) }
+            }
+
+            is UserFormEvent.OnAddressChange -> {
+                _uiState.update { it.copy(
+                    address = event.value,
+                    addressError = if (event.value.isBlank()) "Alamat wajib diisi" else null
+                ) }
+            }
 
             is UserFormEvent.OnWhatsAppChange -> {
                 _uiState.update { it.copy(whatsAppNumber = event.value) }
-
-                val phoneRegex = Regex("^(08|\\+628)[0-9]*$")
                 var errorMsg: String? = null
 
                 if (event.value.isNotEmpty()) {
-                    if (!event.value.matches(phoneRegex)) {
+                    if(event.value.isEmpty()){
+                        errorMsg = "Nomor telepon tidak boleh kosong"
+                    } else if (!event.value.matches(phoneRegex)) {
                         errorMsg = "Masukkan nomor valid (08.. atau +628..) tanpa spasi"
                     } else if (event.value.length > 14) {
                         errorMsg = "Nomor telepon maksimal 14 digit"
@@ -123,8 +218,20 @@ class UserFormViewModel  @Inject constructor(
                 _uiState.update { it.copy(whatsAppNumberError = errorMsg) }
             }
 
-            is UserFormEvent.OnLastEducationChange -> { _uiState.update { it.copy(lastEducation = event.value, lastEducationError = null) } }
-            is UserFormEvent.OnSideJobChange -> { _uiState.update { it.copy(sideJob = event.value, sideJobError = null) } }
+            is UserFormEvent.OnLastEducationChange -> {
+                _uiState.update { it.copy(
+                    lastEducation = event.value,
+                    lastEducationError = if (event.value.isBlank()) "Pendidikan terakhir wajib dipilih" else null
+                ) }
+            }
+
+            is UserFormEvent.OnSideJobChange -> {
+                _uiState.update { it.copy(
+                    sideJob = event.value,
+                    sideJobError = if (event.value.isBlank()) "Pekerjaan sampingan wajib diisi" else null
+                ) }
+            }
+
             is UserFormEvent.OnPositionChange -> { _uiState.update { it.copy(position = event.value, positionError = null) } }
 
             is UserFormEvent.OnLandAreaChange -> {
@@ -132,7 +239,13 @@ class UserFormViewModel  @Inject constructor(
                 val dotCount = event.value.count { it == '.' }
 
                 if (isNumberOrDot && dotCount <= 1) {
-                    _uiState.update { it.copy(landArea = event.value, landAreaError = null) }
+                    val num = event.value.toDoubleOrNull()
+                    val errorMsg = when {
+                        event.value.isBlank() -> "Luas lahan wajib diisi"
+                        num == null || num <= 0 -> "Luas lahan harus diisi angka lebih dari 0"
+                        else -> null
+                    }
+                    _uiState.update { it.copy(landArea = event.value, landAreaError = errorMsg) }
                 }
             }
 
@@ -164,7 +277,8 @@ class UserFormViewModel  @Inject constructor(
                         selectedKphName = event.kph.name,
                         kphError = null,
                         selectedKthId = "",
-                        selectedKthName = ""
+                        selectedKthName = "",
+                        kthError = "Asal KTH tidak boleh kosong"
                     )
                 }
                 viewModelScope.launch {
