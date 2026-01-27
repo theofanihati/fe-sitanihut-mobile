@@ -39,6 +39,7 @@ class UserFormViewModel  @Inject constructor(
     private val getKphListUseCase: GetKphListUseCase,
     private val getKthListUseCase: GetKthListUseCase,
     private val getRolesUseCase: GetRolesUseCase,
+    private val getMyProfileUseCase: GetMyProfileUseCase,
     private val userPreferences: UserPreferences,
     private val connectivityObserver: ConnectivityObserver,
     private val savedStateHandle: SavedStateHandle
@@ -51,11 +52,10 @@ class UserFormViewModel  @Inject constructor(
     private var allKthInKph: List<Kth> = emptyList()
     private var originalData: UserDetail? = null
     private var availableRoles: List<Role> = emptyList()
+    private var loggedInUserKphId: String? = null
     private var allKphOptions: List<Kph> = emptyList()
 
     private val phoneRegex = Regex("^(08[0-9]{8,14}|\\+628[0-9]{8,14})$")
-    private val nikRegex = Regex("^[0-9]{16}$")
-    private val nipRegex = Regex("^[0-9]{18}$")
     private val emailRegex = Regex("[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}" +
             "\\@" +
             "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
@@ -76,23 +76,65 @@ class UserFormViewModel  @Inject constructor(
 
     private fun loadInitialData() {
         viewModelScope.launch {
+            val loggedInUserId = userPreferences.userId.first() ?: ""
             val role = userPreferences.userRole.first() ?: ""
-            getRolesUseCase().collect { result ->
+
+            if (loggedInUserId.isNotEmpty()) {
+                getMyProfileUseCase(loggedInUserId).onEach { result ->
+                    if (result is Resource.Success) {
+                        val myProfile = result.data
+
+                        if (myProfile != null && !myProfile.kphId.isNullOrBlank()) {
+                            loggedInUserKphId = myProfile.kphId
+                            if (currentUserId == null) {
+                                _uiState.update {
+                                    it.copy(
+                                        selectedKphId = myProfile.kphId,
+                                        selectedKphName = myProfile.kphName ?: "", // Isi nama agar dropdown terisi
+                                    )
+                                }
+                                loadKthOptions(role, myProfile.kphId)
+                            }
+                        }
+                    }
+                }.launchIn(this)
+            }
+
+            getRolesUseCase().onEach { result ->
                 if (result is Resource.Success) {
                     availableRoles = result.data ?: emptyList()
                     val petaniRole = availableRoles.find { it.name.equals("petani", ignoreCase = true) }
-                    _uiState.update {
-                        it.copy(
-                            roleId = petaniRole?.id ?: "",
-                            roleName = "petani"
+
+                    _uiState.update { state ->
+                        val currentRoleName = state.roleName
+                        val matchingRoleId = if(state.isEditMode && currentRoleName.isNotEmpty()) {
+                            availableRoles.find { it.name.equals(currentRoleName, ignoreCase = true) }?.id ?: ""
+                        } else {
+                            petaniRole?.id ?: ""
+                        }
+
+                        state.copy(
+                            roleId = if (state.isEditMode && matchingRoleId.isNotEmpty()) matchingRoleId else (petaniRole?.id ?: ""),
+                            roleName = if (state.isEditMode) state.roleName else "petani"
                         )
                     }
                 }
-            }
+            }.launchIn(this)
 
             getKphListUseCase().onEach { kphList ->
                 allKphOptions = kphList
-                _uiState.update { it.copy(kphOptions = kphList)
+                _uiState.update { state ->
+                    if (loggedInUserKphId != null && currentUserId == null) {
+                        val myKph = kphList.find { it.id == loggedInUserKphId }
+                        val lockedOptions = if (myKph != null) listOf(myKph) else kphList
+
+                        state.copy(
+                            kphOptions = lockedOptions,
+                            selectedKphName = myKph?.name ?: state.selectedKphName
+                        )
+                    } else {
+                        state.copy(kphOptions = kphList)
+                    }
                 }
             }.launchIn(this)
 
@@ -104,9 +146,6 @@ class UserFormViewModel  @Inject constructor(
 
     fun onEvent(event: UserFormEvent) {
         when (event) {
-//            is UserFormEvent.OnEmailChange -> _uiState.update { it.copy(email = event.value, emailError = null) }
-//            is UserFormEvent.OnPasswordChange -> _uiState.update { it.copy(password = event.value, passwordError = null) }
-//            is UserFormEvent.OnConfirmPasswordChange -> _uiState.update { it.copy(confirmPassword = event.value, confirmPasswordError = null) }
             is UserFormEvent.OnEmailChange -> {
                 _uiState.update { it.copy(email = event.value) }
                 val errorMsg = when {
@@ -251,6 +290,10 @@ class UserFormViewModel  @Inject constructor(
 
             is UserFormEvent.OnKphSearchTextChange -> {
                 _uiState.update { state ->
+                    if (state.kphOptions.size == 1 && state.selectedKphId.isNotEmpty()) {
+                        return@update state
+                    }
+
                     val newText = event.text
                     val matchingOption = state.kphOptions.find {
                         it.name.equals(newText, ignoreCase = true)
@@ -352,7 +395,6 @@ class UserFormViewModel  @Inject constructor(
 
     private fun loadKphOptions() {
         getKphListUseCase().onEach { kphList ->
-//            Log.d("DEBUG_KPH", "Data KPH dari DB: ${kphList.size} item")
             _uiState.update { it.copy(kphOptions = kphList) }
         }.launchIn(viewModelScope)
     }

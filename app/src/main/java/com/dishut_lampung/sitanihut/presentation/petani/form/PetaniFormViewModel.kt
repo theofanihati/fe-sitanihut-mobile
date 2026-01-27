@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.CreatePetaniInput
+import com.dishut_lampung.sitanihut.domain.model.Kph
 import com.dishut_lampung.sitanihut.domain.model.Kth
 import com.dishut_lampung.sitanihut.domain.model.Petani
+import com.dishut_lampung.sitanihut.domain.model.Role
 import com.dishut_lampung.sitanihut.domain.usecase.kph.GetKphListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.CreatePetaniUseCase
@@ -36,7 +38,7 @@ class PetaniFormViewModel @Inject constructor(
     private val getKphListUseCase: GetKphListUseCase,
     private val getKthListUseCase: GetKthListUseCase,
     private val userPreferences: UserPreferences,
-    private val getUserDetailUseCase: GetMyProfileUseCase,
+    private val getMyProfileUseCase: GetMyProfileUseCase,
     private val connectivityObserver: ConnectivityObserver,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -47,36 +49,56 @@ class PetaniFormViewModel @Inject constructor(
     private val currentPetaniId: String? = savedStateHandle.get<String>("id")
     private var allKthInKph: List<Kth> = emptyList()
     private var originalData: Petani? = null
+    private var loggedInUserKphId: String? = null
+    private var allKphOptions: List<Kph> = emptyList()
 
     init {
         observeConnectivity()
+        loadInitialData()
+    }
 
+    private fun loadInitialData() {
         viewModelScope.launch {
-            val userId = userPreferences.userId.first() ?: ""
+            val loggedInUserId = userPreferences.userId.first() ?: ""
             val role = userPreferences.userRole.first() ?: ""
-            var userKphId = ""
-            var userKphName = ""
 
-            if (userId.isNotEmpty()) {
-                val userResult = getUserDetailUseCase(userId).first()
-                if (userResult is Resource.Success) {
-                    val user = userResult.data
-                    userKphId = user?.kphId ?: ""
-                    userKphName = user?.kphName ?: ""
+            if (loggedInUserId.isNotEmpty()) {
+                getMyProfileUseCase(loggedInUserId).onEach { result ->
+                    if (result is Resource.Success) {
+                        val myProfile = result.data
+
+                        if (myProfile != null && !myProfile.kphId.isNullOrBlank()) {
+                            loggedInUserKphId = myProfile.kphId
+                            if (currentPetaniId == null) {
+                                _uiState.update {
+                                    it.copy(
+                                        selectedKphId = myProfile.kphId,
+                                        selectedKphName = myProfile.kphName ?: "", // Isi nama agar dropdown terisi
+                                    )
+                                }
+                                loadKthOptions(role, myProfile.kphId)
+                            }
+                        }
+                    }
+                }.launchIn(this)
+            }
+
+            getKphListUseCase().onEach { kphList ->
+                allKphOptions = kphList
+                _uiState.update { state ->
+                    if (loggedInUserKphId != null && currentPetaniId == null) {
+                        val myKph = kphList.find { it.id == loggedInUserKphId }
+                        val lockedOptions = if (myKph != null) listOf(myKph) else kphList
+
+                        state.copy(
+                            kphOptions = lockedOptions,
+                            selectedKphName = myKph?.name ?: state.selectedKphName
+                        )
+                    } else {
+                        state.copy(kphOptions = kphList)
+                    }
                 }
-            }
-            _uiState.update {
-                it.copy(
-                    selectedKphId = userKphId,
-                    selectedKphName = userKphName
-                )
-            }
-            loadKthOptions(role, userKphId)
-            loadKphOptions()
-
-            if (currentPetaniId != null) {
-                loadExistingPetaniData(currentPetaniId, role)
-            }
+            }.launchIn(this)
         }
     }
 
@@ -142,21 +164,24 @@ class PetaniFormViewModel @Inject constructor(
 
             is PetaniFormEvent.OnKphSearchTextChange -> {
                 _uiState.update { state ->
+                    if (state.kphOptions.size == 1 && state.selectedKphId.isNotEmpty()) {
+                        return@update state
+                    }
                     val newText = event.text
                     val matchingOption = state.kphOptions.find {
                         it.name.equals(newText, ignoreCase = true)
                     }
 
                     val filteredOptions = if (newText.isBlank()) {
-                        allKthInKph
+                        allKphOptions
                     } else {
-                        allKthInKph.filter { it.name.contains(newText, ignoreCase = true) }
+                        allKphOptions.filter { it.name.contains(newText, ignoreCase = true) }
                     }
 
                     state.copy(
                         selectedKphName = newText,
                         selectedKphId = matchingOption?.id ?: "",
-                        kthOptions = filteredOptions
+                        kphOptions = allKphOptions.filter { it.name.contains(newText, ignoreCase = true) }
                     )
                 }
             }
@@ -168,7 +193,8 @@ class PetaniFormViewModel @Inject constructor(
                         selectedKphName = event.kph.name,
                         kphError = null,
                         selectedKthId = "",
-                        selectedKthName = ""
+                        selectedKthName = "",
+                        kthError = "Asal KTH tidak boleh kosong"
                     )
                 }
                 viewModelScope.launch {
@@ -247,13 +273,6 @@ class PetaniFormViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
-    }
-
-    private fun loadKphOptions() {
-        getKphListUseCase().onEach { kphList ->
-//            Log.d("DEBUG_KPH", "Data KPH dari DB: ${kphList.size} item")
-            _uiState.update { it.copy(kphOptions = kphList) }
-        }.launchIn(viewModelScope)
     }
 
     private fun loadKthOptions(role: String, kphId: String) {

@@ -40,6 +40,7 @@ import com.dishut_lampung.sitanihut.presentation.shared.components.textfield.Cus
 import com.dishut_lampung.sitanihut.presentation.shared.components.textfield.CustomOutlinedTextField
 import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.user_management.form.UserFormEvent
 import kotlinx.coroutines.delay
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -239,10 +240,14 @@ fun PetaniFormScreen(
                 placeholder = "Ketik dan pilih salah satu",
                 asteriskAtEnd = true,
                 options = uiState.kphOptions,
-                onOptionSelected = { /* Disabled */ },
-                onValueChange = { /* Disabled */ },
+                onOptionSelected = { selectedKph ->
+                    onEvent(PetaniFormEvent.OnKphSelected(selectedKph))
+                },
+                onValueChange = { newText ->
+                    onEvent(PetaniFormEvent.OnKphSearchTextChange(newText))
+                },
                 errorMessage = uiState.kphError,
-                enabled = false
+                enabled = !uiState.isKphLocked
             )
 
             Spacer(modifier = Modifier.height(4.dp))

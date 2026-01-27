@@ -12,6 +12,7 @@ data class PetaniFormUiState (
     val showConfirmDialog: Boolean = false,
     val isEditMode: Boolean = false,
     val isOnline: Boolean = true,
+    val isKphLocked: Boolean = false,
 
     val name: String = "",
     val nameError: String? = null,
