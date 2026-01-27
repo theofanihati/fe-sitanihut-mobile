@@ -24,6 +24,7 @@ import com.dishut_lampung.sitanihut.data.mapper.toDto
 import com.dishut_lampung.sitanihut.data.mapper.toEntity
 import com.dishut_lampung.sitanihut.data.mapper.toReportDetail
 import com.dishut_lampung.sitanihut.data.remote.api.ReportApiService
+import com.dishut_lampung.sitanihut.data.remote.dto.ReportListItemDto
 import com.dishut_lampung.sitanihut.data.remote.dto.ReportRequestDto
 import com.dishut_lampung.sitanihut.data.worker.ReportSyncWorker
 import com.dishut_lampung.sitanihut.domain.model.CreateReportInput
@@ -270,34 +271,37 @@ class ReportRepositoryImpl @Inject constructor(
     override suspend fun syncReportDetail(): Resource<Unit> {
         return try {
             val role = userPreferences.userRole.first() ?: "petani"
+            val accumulatedDetailsToSave = mutableListOf<ReportEntity>()
+
             if (role.equals("petani", ignoreCase = true)) {
                 val response = apiService.getLatestReports()
                 val listData = response.data.data
 
                 if (listData.isNotEmpty()) {
-                    reportDao.upsertAll(listData.map { it.toEntity() })
-                    listData.take(10).forEach { fetchAndSaveDetailFromNetwork(it.id) }
+                    val targetItems = listData.take(10)
+                    val details = fetchDetailsForList(targetItems)
+                    accumulatedDetailsToSave.addAll(details)
                 }
 
             } else {
                 val targetStatuses = when {
                     role.equals("penyuluh", ignoreCase = true) -> listOf(
-                        "menunggu",
-                        "diverifikasi",
-                        "disetujui",
-                        "ditolak"
+                        "menunggu" to 10,
+                        "diverifikasi" to 5,
+                        "disetujui" to 5,
+                        "ditolak" to 2
                     )
                     role.equals("pj", ignoreCase = true) || role.contains("penanggung", ignoreCase = true) -> listOf(
-                        "diverifikasi",
-                        "disetujui",
-                        "ditolak"
+                        "diverifikasi" to 10,
+                        "disetujui" to 5,
+                        "ditolak" to 2
                     )
                     else -> emptyList()
                 }
 
                 Log.d("ReportRepo", "Target status: $targetStatuses")
 
-                targetStatuses.forEach { status ->
+                targetStatuses.forEach { (status, limit) ->
                     try {
                         Log.d("ReportRepo", "Fetching reports status: $status")
                         val response = apiService.getReports(
@@ -308,23 +312,61 @@ class ReportRepositoryImpl @Inject constructor(
                         val listData = response.data.data
 
                         if (listData.isNotEmpty()) {
-                            reportDao.upsertAll(listData.map { it.toEntity() })
-                            val limitDetail = if (status == "menunggu" || status == "diverifikasi") 10 else 5
+                            val targetItems = listData.take(limit)
+                            val details = fetchDetailsForList(targetItems)
+                            accumulatedDetailsToSave.addAll(details)
 
-                            listData.take(limitDetail).forEach { item ->
-                                fetchAndSaveDetailFromNetwork(item.id)
-                            }
+//                            reportDao.upsertAll(listData.map { it.toEntity() })
+//                            val limitDetail = if (status == "menunggu" || status == "diverifikasi") 10 else 5
+//
+//                            listData.take(limitDetail).forEach { item ->
+//                                fetchAndSaveDetailFromNetwork(item.id)
+//                            }
                         }
                     } catch (e: Exception) {
                         Log.e("ReportRepo", "Gagal fetch status $status: ${e.message}")
                     }
                 }
             }
+            if (accumulatedDetailsToSave.isNotEmpty()) {
+                reportDao.upsertAll(accumulatedDetailsToSave)
+                Log.d("ReportRepo", "Berhasil sinkronisasi ${accumulatedDetailsToSave.size} detail laporan")
+            }
+
             Resource.Success(Unit)
         } catch (e: Exception) {
             Log.e("ReportRepo", "Gagal sinkronisasi: ${e.message}", e)
             Resource.Error("Gagal sinkronisasi: ${e.message}")
         }
+    }
+
+    private suspend fun fetchDetailsForList(listData: List<ReportListItemDto>): List<ReportEntity> {
+        val results = mutableListOf<ReportEntity>()
+
+        listData.forEach { item ->
+            try {
+                val detailResponse = apiService.getReportDetail(item.id)
+
+                if (detailResponse.statusCode == 200 && detailResponse.data != null) {
+                    val networkEntity = detailResponse.data.toEntity()
+                    val localData = reportDao.getReportById(item.id)
+
+                    val finalEntity = if (localData != null) {
+                        networkEntity.copy(
+                            syncStatus = if (localData.syncStatus != SyncStatus.SYNCED) localData.syncStatus else SyncStatus.SYNCED,
+                            jsonPayload = localData.jsonPayload
+                        )
+                    } else {
+                        networkEntity
+                    }
+
+                    results.add(finalEntity)
+                }
+            } catch (e: Exception) {
+                Log.e("ReportRepo", "Gagal download detail ID ${item.id}: ${e.message}")
+            }
+        }
+        return results
     }
 
     override suspend fun updateReportStatus(reportId: String, newStatus: ReportStatus): Resource<Unit> {

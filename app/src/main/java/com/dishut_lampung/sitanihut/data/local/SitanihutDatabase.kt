@@ -49,29 +49,29 @@ abstract class SitanihutDatabase : RoomDatabase(){
     abstract fun kphDao(): KphDao
     abstract fun petaniDao(): PetaniDao
 
-    companion object {
-//        val MIGRATION = object : Migration(1, 2) {
-//            override fun migrate(database: SupportSQLiteDatabase) {
-//                // perintah SQL
-//                database.execSQL("ALTER TABLE petani ADD COLUMN jabatan TEXT")
+//    companion object {
+////        val MIGRATION = object : Migration(1, 2) {
+////            override fun migrate(database: SupportSQLiteDatabase) {
+////                // perintah SQL
+////                database.execSQL("ALTER TABLE petani ADD COLUMN jabatan TEXT")
+////            }
+////        }
+//
+//        @Volatile
+//        private var INSTANCE: SitanihutDatabase? = null
+//        fun getInstance(context: Context): SitanihutDatabase{
+//            return INSTANCE ?: synchronized(this) {
+//                val instance = Room.databaseBuilder(
+//                    context.applicationContext,
+//                    SitanihutDatabase::class.java,
+//                    "sitanihut_database.db"
+//                )
+////                    .addMigrations(MIGRATION_1_2)
+//                    .fallbackToDestructiveMigration()
+//                    .build()
+//                INSTANCE = instance
+//                instance
 //            }
 //        }
-
-        @Volatile
-        private var INSTANCE: SitanihutDatabase? = null
-        fun getInstance(context: Context): SitanihutDatabase{
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    SitanihutDatabase::class.java,
-                    "sitanihut_database.db"
-                )
-//                    .addMigrations(MIGRATION_1_2)
-                    .fallbackToDestructiveMigration()
-                    .build()
-                INSTANCE = instance
-                instance
-            }
-        }
-    }
+//    }
 }

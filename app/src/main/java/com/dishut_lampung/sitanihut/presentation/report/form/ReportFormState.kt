@@ -36,7 +36,7 @@ data class ReportFormState(
 )
 
 data class PlantingDetailUiState(
-    val id: Long = System.currentTimeMillis(),
+    val id: String? = null,
     val commodityId: String = "",
     val commodityName: String = "",
     val commodityError: String? = null,
@@ -52,7 +52,7 @@ data class PlantingDetailUiState(
 )
 
 data class HarvestDetailUiState(
-    val id: Long = System.currentTimeMillis(),
+    val id: String? = null,
     val commodityId: String = "",
     val commodityName: String = "",
     val commodityError: String? = null,

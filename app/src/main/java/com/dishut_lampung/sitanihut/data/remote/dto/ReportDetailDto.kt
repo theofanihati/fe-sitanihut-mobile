@@ -7,7 +7,7 @@ data class ReportDetailDto(
     @SerializedName("id_user") val userId: String,
     @SerializedName("periode") val period: Int,
     @SerializedName("bulan") val month: String,
-    @SerializedName("tanggal") val date: String,
+    @SerializedName("tanggal") val date: String?,
     @SerializedName("modal") val modal: Double,
     @SerializedName("nte") val nte: Double,
     @SerializedName("status") val status: String,
@@ -23,29 +23,31 @@ data class ReportDetailDto(
     @SerializedName("alamat") val userAddress: String?,
     @SerializedName("nama_kph") val userKphName: String?,
     @SerializedName("nama_kth") val userKthName: String?,
-    @SerializedName("masa_tanam") val plantingDetails: List<PlantingResponseDto>,
-    @SerializedName("masa_panen") val harvestDetails: List<HarvestResponseDto>,
+    @SerializedName("masa_tanam") val plantingDetails: List<PlantingResponseDto>?,
+    @SerializedName("masa_panen") val harvestDetails: List<HarvestResponseDto>?,
 )
 
 data class PlantingResponseDto(
-    @SerializedName("tanggal") val date: String,
-    @SerializedName("id_komoditas") val commodityId: String,
+    @SerializedName("id") val id: String?,
+    @SerializedName("tanggal") val date: String?,
+    @SerializedName("id_komoditas") val commodityId: String?,
     @SerializedName("nama_komoditas") val commodityName: String?,
     @SerializedName("kode_komoditas") val commodityCode: String?,
     @SerializedName("jenis_komoditas") val plantType: String?,
-    @SerializedName("jumlah") val amount: Double,
-    @SerializedName("usia_tanam") val plantAge: Double,
+    @SerializedName("jumlah") val amount: Double?,
+    @SerializedName("usia_tanam") val plantAge: Double?,
 )
 
 data class HarvestResponseDto(
-    @SerializedName("tanggal") val date: String,
-    @SerializedName("id_komoditas") val commodityId: String,
+    @SerializedName("id") val id: String?,
+    @SerializedName("tanggal") val date: String?,
+    @SerializedName("id_komoditas") val commodityId: String?,
     @SerializedName("nama_komoditas") val commodityName: String?,
     @SerializedName("kode_komoditas") val commodityCode: String?,
     @SerializedName("jenis_komoditas") val plantType: String?,
-    @SerializedName("jumlah") val amount: Double,
-    @SerializedName("harga_satuan") val unitPrice: Double,
-    @SerializedName("harga_total") val totalPrice: Double,
+    @SerializedName("jumlah") val amount: Double?,
+    @SerializedName("harga_satuan") val unitPrice: Double?,
+    @SerializedName("harga_total") val totalPrice: Double?,
 )
 
 data class AttachmentDto(

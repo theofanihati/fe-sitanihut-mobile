@@ -236,6 +236,7 @@ class ReportFormViewModel @Inject constructor(
                                 plantingDetails = data.plantingDetails.map { domain ->
                                     val loadedUnit = if (domain.plantType.equals("semusim", true)) "kg" else "batang"
                                     PlantingDetailUiState(
+                                        id = domain.id,
                                         commodityId = domain.commodityId,
                                         commodityName = domain.commodityName,
                                         plantType = domain.plantType,
@@ -247,6 +248,7 @@ class ReportFormViewModel @Inject constructor(
                                 },
                                 harvestDetails = data.harvestDetails.map { domain ->
                                     HarvestDetailUiState(
+                                        id = domain.id,
                                         harvestDate = domain.harvestDate,
                                         commodityId = domain.commodityId,
                                         commodityName = domain.commodityName,
@@ -390,6 +392,7 @@ class ReportFormViewModel @Inject constructor(
             plantingDetails = s.plantingDetails.map {
                 val cleanAmount = it.amount.replace(".", "").toLongOrNull() ?: 0L
                 MasaTanam(
+                    id = it.id ?: java.util.UUID.randomUUID().toString(),
                     commodityId = it.commodityId,
                     commodityName = it.commodityName,
                     it.plantType,
@@ -402,6 +405,7 @@ class ReportFormViewModel @Inject constructor(
                 val cleanAmount = it.amount.replace(".", "").toLongOrNull() ?: 0L
 
                 MasaPanen(
+                    id = it.id ?: java.util.UUID.randomUUID().toString(),
                     harvestDate =  convertUiDateToApiDate(it.harvestDate),
                     commodityName = it.commodityName,
                     commodityId =  it.commodityId,

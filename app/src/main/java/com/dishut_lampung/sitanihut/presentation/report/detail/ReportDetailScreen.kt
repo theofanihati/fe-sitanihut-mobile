@@ -54,6 +54,7 @@ private fun ReportDetailScreenPreview() {
     SitanihutTheme {
         val dummyPlanting = listOf(
             MasaTanam(
+                id="1",
                 commodityId = "1",
                 commodityName = "Durian Monthong",
                 plantType = "Tahunan",
@@ -62,6 +63,7 @@ private fun ReportDetailScreenPreview() {
                 amount = "150"
             ),
             MasaTanam(
+                id="1",
                 commodityId = "2",
                 commodityName = "Alpukat Siger",
                 plantType = "Tahunan",
@@ -73,6 +75,7 @@ private fun ReportDetailScreenPreview() {
 
         val dummyHarvest = listOf(
             MasaPanen(
+                id="1",
                 harvestDate = "10-08-2024",
                 commodityId = "1",
                 commodityName = "Durian Monthong",
@@ -80,6 +83,7 @@ private fun ReportDetailScreenPreview() {
                 amount = "200",
             ),
             MasaPanen(
+                id="1",
                 harvestDate = "05-09-2024",
                 commodityId = "3",
                 commodityName = "Kopi Robusta",

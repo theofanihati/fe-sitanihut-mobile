@@ -331,7 +331,7 @@ object AppModule{
         return Room.databaseBuilder(
             context,
             SitanihutDatabase::class.java,
-            "sitanihut_database"
+            "sitanihut_database.db"
         ).fallbackToDestructiveMigration() // reset db kalau ada perubahan struktur
             .build()
     }

@@ -57,6 +57,43 @@ interface ReportDao {
         }
     }
 
+    @Query("""
+        UPDATE laporan SET 
+        period = :period,
+        month = :month,
+        date = :date,
+        nte = :nte,
+        status = :status,
+        syncStatus = CASE WHEN syncStatus = 'SYNCED' THEN 'SYNCED' ELSE syncStatus END 
+        WHERE id = :id
+    """)
+    suspend fun updatePartialFromList(
+        id: String,
+        period: Int,
+        month: String,
+        date: String,
+        nte: Double,
+        status: String
+    ): Int
+
+    @Transaction
+    suspend fun upsertPartialBatch(entities: List<ReportEntity>) {
+        entities.forEach { entity ->
+            val updatedRows = updatePartialFromList(
+                id = entity.id,
+                period = entity.period,
+                month = entity.month,
+                date = entity.date,
+                nte = entity.nte ?: 0.0,
+                status = entity.status ?: "belum diajukan"
+            )
+
+            if (updatedRows == 0) {
+                upsertReport(entity)
+            }
+        }
+    }
+
     @Query("SELECT * FROM laporan WHERE userId = :userId ORDER BY date DESC LIMIT 10")
     fun getLatestReports(userId: String): Flow<List<ReportEntity>>
 
