@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.presentation.user_management.list
 
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
+import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniEvent
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 
 data class UserListUiState(
@@ -25,6 +26,9 @@ sealed class UserEvent{
 
     data class OnMoreOptionClick(val id: String) : UserEvent()
     object OnBottomSheetDismiss : UserEvent()
+
+    object OnExportList : UserEvent()
+    data class OnExportDetail(val id: String) : UserEvent()
 
     object OnDeleteClick : UserEvent()
     object OnDeleteConfirm : UserEvent()

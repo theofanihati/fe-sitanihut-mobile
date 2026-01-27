@@ -10,6 +10,7 @@ import com.dishut_lampung.sitanihut.presentation.user_management.list.UserEvent
 import com.dishut_lampung.sitanihut.presentation.user_management.list.UserListViewModel
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
+import com.dishut_lampung.sitanihut.util.PdfService
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -24,6 +25,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -38,7 +40,16 @@ class UserListViewModelTest {
     private val deleteUserUseCase: DeleteUserUseCase = mockk(relaxed = true)
     private val userPreferences: UserPreferences = mockk(relaxed = true)
     private val connectivityObserver: ConnectivityObserver = mockk(relaxed = true)
+    private val pdfService: PdfService = mockk()
     private lateinit var viewModel: UserListViewModel
+
+    @Before
+    fun setUp() {
+    }
+
+    private fun createViewModel() {
+        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver, pdfService)
+    }
 
     @Test
     fun `init should load User list and observe connectivity`() = runTest {
@@ -57,8 +68,7 @@ class UserListViewModelTest {
         every { getUserListUseCase("penyuluh", "") } returns flowOf(Resource.Success(dummyUser))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
-
+        createViewModel()
         viewModel.uiState.test {
             val state = awaitItem()
             assertEquals(dummyUser, state.userList)
@@ -74,7 +84,7 @@ class UserListViewModelTest {
         every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
 
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         viewModel.uiState.test {
             val state = awaitItem()
             assertFalse(state.isOnline)
@@ -107,8 +117,7 @@ class UserListViewModelTest {
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getUserListUseCase("penyuluh", "") } returns flowOf(Resource.Success(listData))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
-
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         viewModel.uiState.test {
             awaitItem()
 
@@ -127,8 +136,7 @@ class UserListViewModelTest {
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getUserListUseCase("penyuluh", "") } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
-
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         viewModel.onEvent(UserEvent.OnRefresh)
 
         coVerify(exactly = 1) { getUserListUseCase("penyuluh", "") }
@@ -142,8 +150,7 @@ class UserListViewModelTest {
         coEvery { syncUserDataUseCase() } returns Resource.Success(Unit)
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
-
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         val job = launch { viewModel.uiState.collect{} }
 
         advanceUntilIdle()
@@ -162,8 +169,7 @@ class UserListViewModelTest {
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
-
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         val job = launch { viewModel.uiState.collect{} }
         advanceUntilIdle()
 
@@ -185,8 +191,7 @@ class UserListViewModelTest {
         coEvery { syncUserDataUseCase() } returns Resource.Error(errorMsg)
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
-
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         val job = launch { viewModel.uiState.collect{} }
 
         advanceUntilIdle()
@@ -205,8 +210,7 @@ class UserListViewModelTest {
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
-
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         viewModel.uiState.test {
             awaitItem()
             val selectedId = "123"
@@ -239,8 +243,7 @@ class UserListViewModelTest {
         every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(initialList))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
         coEvery { deleteUserUseCase("1") } returns Resource.Success(Unit)
-
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         viewModel.uiState.test {
             awaitItem()
             viewModel.onEvent(UserEvent.OnMoreOptionClick("1"))
@@ -277,8 +280,7 @@ class UserListViewModelTest {
         every { userPreferences.userRole } returns flowOf("penanggung jawab")
         every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
-
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         val job = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
 
@@ -314,8 +316,7 @@ class UserListViewModelTest {
 
         val errorMsg = "Gagal hapus bro"
         coEvery { deleteUserUseCase("1") } returns Resource.Error(errorMsg)
-
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         viewModel.uiState.test {
             awaitItem()
             viewModel.onEvent(UserEvent.OnMoreOptionClick("1"))
@@ -351,8 +352,7 @@ class UserListViewModelTest {
         every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(listOf(itemToDelete)))
 
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
-
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         viewModel.uiState.test {
             awaitItem()
 
@@ -384,8 +384,7 @@ class UserListViewModelTest {
         every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
         coEvery { deleteUserUseCase("1") } returns Resource.Error("Error Hapus")
-
-        viewModel = UserListViewModel(getUserListUseCase, syncUserDataUseCase, deleteUserUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         viewModel.uiState.test {
             awaitItem()
             viewModel.onEvent(UserEvent.OnMoreOptionClick("1"))
@@ -415,6 +414,188 @@ class UserListViewModelTest {
             viewModel.onEvent(UserEvent.OnDismissError)
             val errorDismissState = awaitItem()
             assertNull("Error message harus hilang", errorDismissState.errorMessage)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export List success should call pdfService with all data`() = runTest {
+        val dummyData = listOf(
+            UserDetail(
+                id = "1",
+                name = "Tepani Canz",
+                kphName = "KPH Tahura",
+                kthName = "KTH Sukses",
+                role = "penyuluh",
+                gender = "Laki-laki",
+            ),
+            UserDetail(
+                id = "2",
+                name = "Hati",
+                kphName = "KPH Tahura",
+                kthName = "KTH Sukses",
+                role = "penyuluh",
+                gender = "Laki-laki",
+            ),
+        )
+
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(dummyData))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        coEvery {
+            pdfService.generatePdf<UserDetail>(any(), any(), any(), any(), any())
+        } returns Resource.Success("/storage/emulated/0/Download/Data_Pengguna.pdf")
+
+        createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(UserEvent.OnExportList)
+
+            var state = awaitItem()
+            while (state.isLoading) {
+                state = awaitItem()
+            }
+
+            assertEquals("/storage/emulated/0/Download/Data_Pengguna.pdf", state.successMessage)
+            assertFalse(state.isBottomSheetVisible)
+
+            coVerify {
+                pdfService.generatePdf<UserDetail>(
+                    fileName = any(),
+                    reportTitle = "LAPORAN DATA AKUN PENGGUNA",
+                    headers = any(),
+                    data = dummyData,
+                    rowMapper = any()
+                )
+            }
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export Detail success should call pdfService with filtered data`() = runTest {
+        val targetId = "2"
+        val targetUser =
+            UserDetail(
+                id = targetId,
+                name = "Hati",
+                kphName = "KPH Tahura",
+                kthName = "KTH Sukses",
+                role = "penyuluh",
+                gender = "Laki-laki",
+            )
+        val dummyData = listOf(
+            UserDetail(
+                id = "1",
+                name = "Tepani Canz",
+                kphName = "KPH Tahura",
+                kthName = "KTH Sukses",
+                role = "penyuluh",
+                gender = "Laki-laki",
+            ),
+            targetUser,
+        )
+
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(dummyData))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        coEvery {
+            pdfService.generatePdf<UserDetail>(any(), any(), any(), any(), any())
+        } returns Resource.Success("File Saved")
+
+        createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(UserEvent.OnExportDetail(targetId))
+
+            var state = awaitItem()
+            while (state.isLoading) {
+                state = awaitItem()
+            }
+
+            assertEquals("File Saved", state.successMessage)
+
+            coVerify {
+                pdfService.generatePdf<UserDetail>(
+                    fileName = any(),
+                    reportTitle = "DETAIL AKUN PETANI",
+                    headers = any(),
+                    data = match { list ->
+                        list.size == 1 && list.first().id == targetId
+                    },
+                    rowMapper = any()
+                )
+            }
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export should show error message when PdfService fails`() = runTest {
+        val dummyData = listOf(UserDetail(
+            id = "1",
+            name = "Tepani Canz",
+            kphName = "KPH Tahura",
+            kthName = "KTH Sukses",
+            role = "penyuluh",
+            gender = "Laki-laki",
+            )
+        )
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(dummyData))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        val errorMsg = "Permission Denied"
+        coEvery {
+            pdfService.generatePdf<UserDetail>(any(), any(), any(), any(), any())
+        } returns Resource.Error(errorMsg)
+
+        createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(UserEvent.OnExportList)
+
+            var state = awaitItem()
+            while (state.isLoading) {
+                state = awaitItem()
+            }
+
+            assertEquals(errorMsg, state.errorMessage)
+            assertNull(state.successMessage)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export should show error when data is empty`() = runTest {
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getUserListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(UserEvent.OnExportList)
+            var state = awaitItem()
+            if(state.isLoading) state = awaitItem()
+
+            assertEquals("Tidak ada data untuk diekspor", state.errorMessage)
+
+            coVerify(exactly = 0) {
+                pdfService.generatePdf<UserDetail>(any(), any(), any(), any(), any())
+            }
+
             cancelAndIgnoreRemainingEvents()
         }
     }

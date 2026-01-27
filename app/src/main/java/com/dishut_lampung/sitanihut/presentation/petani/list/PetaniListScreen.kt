@@ -53,6 +53,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.domain.model.Petani
+import com.dishut_lampung.sitanihut.presentation.kth.list.KthEvent
 import com.dishut_lampung.sitanihut.presentation.shared.components.CustomCircularProgressIndicator
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.AnimatedMessage
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
@@ -268,7 +269,9 @@ fun PetaniListScreen(
                     state.selectedPetaniId?.let { onNavigateToEdit(it) }
                 },
                 onExportClick = {
-                    onEvent(PetaniEvent.OnExportDetail)
+                    state.selectedPetaniId?.let { id ->
+                        onEvent(PetaniEvent.OnExportDetail(id))
+                    }
                 },
                 onDeleteClick = {
                     if (state.isOnline && state.userRole != "penanggung jawab") {
@@ -291,7 +294,7 @@ fun PetaniListScreen(
             )
         }
 
-        if (state.userRole != "penanggung jawab") {
+        if (state.userRole != "penanggung jawab" && state.isOnline) {
             FloatingActionButton(
                 onClick = {
                     if (state.isOnline) {

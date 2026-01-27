@@ -8,7 +8,9 @@ import com.dishut_lampung.sitanihut.domain.usecase.kth.DeleteKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.SyncKthDataUseCase
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
+import com.dishut_lampung.sitanihut.presentation.user_management.list.UserEvent
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
+import com.dishut_lampung.sitanihut.util.PdfService
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +30,8 @@ class KthListViewModel @Inject constructor(
     private val syncKthDataUseCase: SyncKthDataUseCase,
     private val deleteKthUseCase: DeleteKthUseCase,
     private val userPreferences: UserPreferences,
-    private val connectivityObserver: ConnectivityObserver
+    private val connectivityObserver: ConnectivityObserver,
+    private val pdfService: PdfService,
 ) : ViewModel() {
 
     private val _baseState = MutableStateFlow(KthUiState(isLoading = true))
@@ -93,6 +96,12 @@ class KthListViewModel @Inject constructor(
                     )
                 }
             }
+            is KthEvent.OnExportList -> {
+                exportDataToPdf(userId = null)
+            }
+            is KthEvent.OnExportDetail -> {
+                exportDataToPdf(userId = event.id)
+            }
             KthEvent.OnDeleteClick -> {
                 if (_userRole.value == "penanggung jawab") return
                 _baseState.update {
@@ -137,6 +146,58 @@ class KthListViewModel @Inject constructor(
         }
     }
 
+    fun exportDataToPdf(userId: String? = null) {
+        viewModelScope.launch {
+            _baseState.update { it.copy(isLoading = true) }
+
+            val dataToExport = if (userId != null) {
+                _allKthData.value.filter { it.id == userId }
+            } else {
+                uiState.value.kthList
+            }
+
+            if (dataToExport.isEmpty()) {
+                _baseState.update {
+                    it.copy(isLoading = false, errorMessage = "Tidak ada data untuk diekspor")
+                }
+                return@launch
+            }
+
+            val headers = listOf("Nama", "Desa", "Kabupaten", "Asal KPH")
+            val result = pdfService.generatePdf(
+                fileName = "Data_Petani_${System.currentTimeMillis()}",
+                reportTitle = if (userId != null) "DETAIL DATA KTH" else "LAPORAN DATA KTH",
+                headers = headers,
+                data = dataToExport,
+                rowMapper = { user ->
+                    listOf(
+                        user.name,
+                        user.desa ?: "-",
+                        user.kabupaten?: "-",
+                        user.kphName ?: "-",
+                    )
+                }
+            )
+
+            when (result) {
+                is Resource.Success -> {
+                    _baseState.update {
+                        it.copy(
+                            isLoading = false,
+                            successMessage = result.data,
+                            isBottomSheetVisible = false
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _baseState.update {
+                        it.copy(isLoading = false, errorMessage = result.message)
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
     private fun deleteKth(id: String) {
         if (_userRole.value == "penanggung jawab") {
             _baseState.update { it.copy(errorMessage = "Anda tidak memiliki akses hapus") }

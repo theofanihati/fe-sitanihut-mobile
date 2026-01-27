@@ -52,10 +52,10 @@ sealed class Screen(val route: String) {
 
     object UserManagement : Screen("user-management")
     data class UserDetail(val id : String) : Screen("user_detail/{id}")
-    object UserForm : Screen("user_form?userId={id}"){
+    object UserForm : Screen("user_form?id={id}"){
         fun createRoute(id: String? =null): String{
             return if (id != null){
-                "user_form?userId=$id"
+                "user_form?id=$id"
             }else{
                 "user_form"
             }

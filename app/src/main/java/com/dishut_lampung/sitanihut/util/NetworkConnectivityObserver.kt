@@ -3,6 +3,7 @@ package com.dishut_lampung.sitanihut.data.util
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
+import android.net.NetworkCapabilities
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
@@ -44,8 +45,21 @@ class NetworkConnectivityObserver @Inject constructor(
             }
 
             connectivityManager.registerDefaultNetworkCallback(callback)
+            if (connectivityManager.activeNetwork == null) {
+                launch { send(ConnectivityObserver.Status.Unavailable) }
+            } else {
+                val actNw = connectivityManager.activeNetwork
+                val caps = connectivityManager.getNetworkCapabilities(actNw)
+                if (caps == null || !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                    launch { send(ConnectivityObserver.Status.Unavailable) }
+                }
+            }
+
             awaitClose {
-                connectivityManager.unregisterNetworkCallback(callback)
+                try {
+                    connectivityManager.unregisterNetworkCallback(callback)
+                } catch (e: IllegalArgumentException) {
+                    }
             }
         }.distinctUntilChanged()
     }

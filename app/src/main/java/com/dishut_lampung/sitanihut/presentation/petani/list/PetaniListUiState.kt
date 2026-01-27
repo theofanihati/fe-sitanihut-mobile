@@ -27,7 +27,7 @@ sealed class PetaniEvent{
     object OnBottomSheetDismiss : PetaniEvent()
 
     object OnExportList : PetaniEvent()
-    object OnExportDetail : PetaniEvent()
+    data class OnExportDetail(val id: String) : PetaniEvent()
 
     object OnDeleteClick : PetaniEvent()
     object OnDeleteConfirm : PetaniEvent()

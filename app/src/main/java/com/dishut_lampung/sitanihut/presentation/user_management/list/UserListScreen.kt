@@ -23,9 +23,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -49,6 +51,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dishut_lampung.sitanihut.R
 import com.dishut_lampung.sitanihut.domain.model.UserDetail
+import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniEvent
 import com.dishut_lampung.sitanihut.presentation.shared.components.CustomCircularProgressIndicator
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.AnimatedMessage
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
@@ -159,14 +162,28 @@ fun UserListScreen(
                     .fillMaxSize()
                     .padding(horizontal = ScreenPadding)
             ) {
-                Text(
-                    text = "Data Pengguna",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Kelola Pengguna",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(
+                        onClick = { onEvent(UserEvent.OnExportList) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = "Export Daftar Pengguna",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
 
                 AnimatedVisibility(visible = !state.isOnline) {
                     Text(
@@ -239,6 +256,11 @@ fun UserListScreen(
                     }
                 },
                 isEditable = state.isOnline && state.userRole != "penanggung jawab",
+                onExportClick = {
+                    state.selectedUserId?.let { id ->
+                        onEvent(UserEvent.OnExportDetail(id))
+                    }
+                }
             )
         }
 
@@ -254,7 +276,7 @@ fun UserListScreen(
             )
         }
 
-        if (state.userRole != "penanggung jawab") {
+        if (state.userRole != "penanggung jawab" && state.isOnline) {
             FloatingActionButton(
                 onClick = {
                     if (state.isOnline) {

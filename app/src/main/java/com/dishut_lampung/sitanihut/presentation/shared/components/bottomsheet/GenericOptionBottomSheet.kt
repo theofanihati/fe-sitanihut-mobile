@@ -64,7 +64,7 @@ fun GenericActionBottomSheet(
                     headlineContent = { Text("Export Data (PDF)", color = exportColor) },
                     modifier = Modifier
 //                        .clickable(enabled = isEditable) { onEditClick() }
-                        .clickable { onExportClick() }
+                        .clickable(enabled = isEditable) { onExportClick() }
                         .padding(horizontal = 24.dp),
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                 )

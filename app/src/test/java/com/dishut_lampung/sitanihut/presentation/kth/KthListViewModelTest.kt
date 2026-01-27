@@ -12,6 +12,7 @@ import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniEvent
 import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniListViewModel
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
+import com.dishut_lampung.sitanihut.util.PdfService
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -41,10 +42,22 @@ class KthListViewModelTest {
     private var syncKthDataUseCase: SyncKthDataUseCase = mockk(relaxed = true)
     private var userPreferences: UserPreferences = mockk()
     private var connectivityObserver: ConnectivityObserver = mockk()
+    private var pdfService: PdfService = mockk()
     private lateinit var viewModel: KthListViewModel
 
     @Before
     fun setUp() {
+    }
+
+    private fun createViewModel() {
+        viewModel = KthListViewModel(
+            getKthListUseCase,
+            syncKthDataUseCase,
+            deleteKthUseCase,
+            userPreferences,
+            connectivityObserver,
+            pdfService
+        )
     }
 
     @Test
@@ -55,7 +68,7 @@ class KthListViewModelTest {
         every { getKthListUseCase("penyuluh", "") } returns flowOf(Resource.Success(dummyKth))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        createViewModel()
 
         viewModel.uiState.test {
             val state = awaitItem()
@@ -72,8 +85,7 @@ class KthListViewModelTest {
         every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
-
+        createViewModel()
         viewModel.uiState.test {
             val state = awaitItem()
             assertFalse(state.isOnline)
@@ -93,8 +105,7 @@ class KthListViewModelTest {
         every { getKthListUseCase("penyuluh", "") } returns flowOf(Resource.Success(listData))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
-
+        createViewModel()
         viewModel.uiState.test {
             awaitItem()
 
@@ -114,7 +125,7 @@ class KthListViewModelTest {
         every { getKthListUseCase("penyuluh", "") } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         viewModel.onEvent(KthEvent.OnRefresh)
 
         coVerify(exactly = 1) { syncKthDataUseCase() }
@@ -129,7 +140,7 @@ class KthListViewModelTest {
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         val job = launch { viewModel.uiState.collect{} }
 
         advanceUntilIdle()
@@ -149,7 +160,7 @@ class KthListViewModelTest {
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         val job = launch { viewModel.uiState.collect{} }
         advanceUntilIdle()
 
@@ -172,7 +183,7 @@ class KthListViewModelTest {
         every { userPreferences.userRole } returns flowOf("penyuluh")
         every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         val job = launch { viewModel.uiState.collect{} }
 
         advanceUntilIdle()
@@ -192,8 +203,7 @@ class KthListViewModelTest {
         every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
-
+        createViewModel()
         viewModel.uiState.test {
             awaitItem()
             val selectedId = "123"
@@ -220,7 +230,7 @@ class KthListViewModelTest {
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
         coEvery { deleteKthUseCase("1") } returns Resource.Success(Unit)
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         viewModel.uiState.test {
             awaitItem()
             viewModel.onEvent(KthEvent.OnMoreOptionClick("1"))
@@ -258,7 +268,7 @@ class KthListViewModelTest {
         every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
+        createViewModel()
         val job = launch { viewModel.uiState.collect {} }
         advanceUntilIdle()
 
@@ -288,8 +298,7 @@ class KthListViewModelTest {
         val errorMsg = "Gagal hapus bro"
         coEvery { deleteKthUseCase("1") } returns Resource.Error(errorMsg)
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
-
+        createViewModel()
         viewModel.uiState.test {
             awaitItem()
             viewModel.onEvent(KthEvent.OnMoreOptionClick("1"))
@@ -319,8 +328,7 @@ class KthListViewModelTest {
 
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
-
+        createViewModel()
         viewModel.uiState.test {
             awaitItem()
 
@@ -353,8 +361,7 @@ class KthListViewModelTest {
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
         coEvery { deleteKthUseCase("1") } returns Resource.Error("Error Hapus")
 
-        viewModel = KthListViewModel(getKthListUseCase, syncKthDataUseCase, deleteKthUseCase, userPreferences, connectivityObserver)
-
+        createViewModel()
         viewModel.uiState.test {
             awaitItem()
             viewModel.onEvent(KthEvent.OnMoreOptionClick("1"))
@@ -384,6 +391,151 @@ class KthListViewModelTest {
             viewModel.onEvent(KthEvent.OnDismissError)
             val errorDismissState = awaitItem()
             assertNull("Error message harus hilang", errorDismissState.errorMessage)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export List success should call pdfService with all data`() = runTest {
+        val dummyData = listOf(
+            Kth("1", "KTH A", "Desa A", "Kec A", "Kab A", "LatLong", "081", "KPH 1"),
+            Kth("2", "KTH B", "Desa B", "Kec B", "Kab B", "LatLong", "082", "KPH 2")
+        )
+
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(dummyData))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        coEvery {
+            pdfService.generatePdf<Kth>(any(), any(), any(), any(), any())
+        } returns Resource.Success("/storage/emulated/0/Download/Data_Petani.pdf")
+
+        createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(KthEvent.OnExportList)
+
+            var state = awaitItem()
+            while (state.isLoading) {
+                state = awaitItem()
+            }
+
+            assertEquals("/storage/emulated/0/Download/Data_Petani.pdf", state.successMessage)
+            assertFalse(state.isBottomSheetVisible)
+
+            coVerify {
+                pdfService.generatePdf(
+                    fileName = any(),
+                    reportTitle = "LAPORAN DATA KTH",
+                    headers = any(),
+                    data = dummyData,
+                    rowMapper = any()
+                )
+            }
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export Detail success should call pdfService with filtered data`() = runTest {
+        val targetId = "2"
+        val targetKth = Kth(targetId, "KTH B", "Desa B", "Kec B", "Kab B", "LatLong", "082", "KPH 2")
+        val dummyData = listOf(
+            Kth("1", "KTH A", "Desa A", "Kec A", "Kab A", "LatLong", "081", "KPH 1"),
+            targetKth
+        )
+
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(dummyData))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        coEvery {
+            pdfService.generatePdf<Kth>(any(), any(), any(), any(), any())
+        } returns Resource.Success("File Saved")
+
+        createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(KthEvent.OnExportDetail(targetId))
+
+            var state = awaitItem()
+            while (state.isLoading) {
+                state = awaitItem()
+            }
+
+            assertEquals("File Saved", state.successMessage)
+
+            coVerify {
+                pdfService.generatePdf<Kth>(
+                    fileName = any(),
+                    reportTitle = "DETAIL DATA KTH",
+                    headers = any(),
+                    data = match { list ->
+                        list.size == 1 && list.first().id == targetId
+                    },
+                    rowMapper = any()
+                )
+            }
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export should show error message when PdfService fails`() = runTest {
+        val dummyData = listOf(Kth("1", "KTH A", "", "", "", "", "", ""))
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(dummyData))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        val errorMsg = "Permission Denied"
+        coEvery {
+            pdfService.generatePdf<Kth>(any(), any(), any(), any(), any())
+        } returns Resource.Error(errorMsg)
+
+        createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(KthEvent.OnExportList)
+
+            var state = awaitItem()
+            while (state.isLoading) {
+                state = awaitItem()
+            }
+
+            assertEquals(errorMsg, state.errorMessage)
+            assertNull(state.successMessage)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export should show error when data is empty`() = runTest {
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(KthEvent.OnExportList)
+            var state = awaitItem()
+            if(state.isLoading) state = awaitItem()
+
+            assertEquals("Tidak ada data untuk diekspor", state.errorMessage)
+
+            coVerify(exactly = 0) {
+                pdfService.generatePdf<Kth>(any(), any(), any(), any(), any())
+            }
+
             cancelAndIgnoreRemainingEvents()
         }
     }

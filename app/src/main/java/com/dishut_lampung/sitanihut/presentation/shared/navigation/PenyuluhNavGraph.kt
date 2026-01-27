@@ -155,7 +155,7 @@ fun NavGraphBuilder.penyuluhNavGraph(
             UserListRoute(
                 onNavigateToAddUser = {
                     navController.navigateSingleTop(
-                        Screen.KthForm.createRoute(id = null)
+                        Screen.UserForm.createRoute(id = null)
                     )
                 },
                 onNavigateToDetail = { id : String ->

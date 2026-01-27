@@ -12,6 +12,7 @@ import com.dishut_lampung.sitanihut.domain.repository.PetaniRepository
 import com.dishut_lampung.sitanihut.domain.usecase.petani.DeletePetaniUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.GetPetaniListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.SyncPetaniDataUseCase
+import com.dishut_lampung.sitanihut.presentation.kth.list.KthEvent
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.PdfService
@@ -104,65 +105,12 @@ class PetaniListViewModel @Inject constructor(
                 }
             }
             // ==================== klo generate client =====================
-            PetaniEvent.OnExportList -> {
-                val dataToExport = uiState.value.petaniList // Ambil data hasil filter search
-
-                if (dataToExport.isEmpty()) {
-                    _baseState.update { it.copy(errorMessage = "Tidak ada data untuk diexport") }
-                    return
-                }
-
-                viewModelScope.launch {
-                    _baseState.update { it.copy(isLoading = true) }
-
-                    val timestamp = System.currentTimeMillis()
-                    val result = pdfService.generatePdf(
-                        fileName = "Laporan_Petani_$timestamp",
-                        reportTitle = "DAFTAR DATA PETANI HUTAN",
-                        headers = listOf("Nama", "NIK", "KPH", "KTH"),
-                        data = dataToExport
-                    ) { petani ->
-                        // [3] MAPPER: Ubah Object Petani ke List String untuk baris tabel
-                        listOf(
-                            petani.name,
-                            petani.identityNumber,
-                            petani.kphName,
-                            petani.kthName
-                        )
-                    }
-
-                    handleExportResult(result)
-                }
+            is PetaniEvent.OnExportList -> {
+                exportDataToPdf(userId = null)
             }
-            PetaniEvent.OnExportDetail -> {
-                val selectedId = _baseState.value.selectedPetaniId
-                _baseState.update { it.copy(isBottomSheetVisible = false) } // Tutup sheet
-
-                val selectedPetani = _allPetaniData.value.find { it.id == selectedId }
-
-                if (selectedPetani != null) {
-                    viewModelScope.launch {
-                        _baseState.update { it.copy(isLoading = true) }
-
-                        val result = pdfService.generatePdf(
-                            fileName = "Detail_Petani_${selectedPetani.name}",
-                            reportTitle = "BIODATA PETANI",
-                            headers = listOf("Nama", "NIK", "KPH", "KTH"),
-                            data = listOf(selectedPetani) // List cuma isi 1 item
-                        ) { petani ->
-                            listOf(
-                                petani.name,
-                                petani.identityNumber,
-                                petani.kphName,
-                                petani.kthName
-                            )
-                        }
-
-                        handleExportResult(result)
-                    }
-                }
+            is PetaniEvent.OnExportDetail -> {
+                exportDataToPdf(userId = event.id)
             }
-
             // ==================== klo generate BACK END =====================
 //            PetaniEvent.OnExportList -> {
 //                if (!_isOnline.value) {
@@ -238,6 +186,58 @@ class PetaniListViewModel @Inject constructor(
         }
     }
 
+    fun exportDataToPdf(userId: String? = null) {
+        viewModelScope.launch {
+            _baseState.update { it.copy(isLoading = true) }
+
+            val dataToExport = if (userId != null) {
+                _allPetaniData.value.filter { it.id == userId }
+            } else {
+                uiState.value.petaniList
+            }
+
+            if (dataToExport.isEmpty()) {
+                _baseState.update {
+                    it.copy(isLoading = false, errorMessage = "Tidak ada data untuk diekspor")
+                }
+                return@launch
+            }
+
+            val headers = listOf("Nama", "NIK", "Asal KTH", "Asal KPH")
+            val result = pdfService.generatePdf(
+                fileName = "Data_Petani_${System.currentTimeMillis()}",
+                reportTitle = if (userId != null) "DETAIL DATA PETANI" else "LAPORAN DATA PETANI",
+                headers = headers,
+                data = dataToExport,
+                rowMapper = { user ->
+                    listOf(
+                        user.name,
+                        user.identityNumber ?: "-",
+                        user.kthName?: "-",
+                        user.kphName ?: "-",
+                    )
+                }
+            )
+
+            when (result) {
+                is Resource.Success -> {
+                    _baseState.update {
+                        it.copy(
+                            isLoading = false,
+                            successMessage = result.data,
+                            isBottomSheetVisible = false
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _baseState.update {
+                        it.copy(isLoading = false, errorMessage = result.message)
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
     private fun deletePetani(id: String) {
         if (_userRole.value == "penanggung jawab") {
             _baseState.update { it.copy(errorMessage = "Anda tidak memiliki akses hapus") }

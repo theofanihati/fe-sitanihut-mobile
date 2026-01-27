@@ -25,7 +25,7 @@ fun UserCard(
         onCardClick = onClick,
         actionIcon = Icons.Default.MoreVert,
         onActionClick = onActionClick,
-        isActionEnabled = isOnline,
+        isActionEnabled = true,
         content = {
             Text(
                 text = "Jenis kelamin: ${item.gender}",

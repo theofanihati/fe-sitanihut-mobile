@@ -3,12 +3,14 @@ package com.dishut_lampung.sitanihut.presentation.petani
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.Petani
+import com.dishut_lampung.sitanihut.domain.model.UserDetail
 import com.dishut_lampung.sitanihut.domain.repository.PetaniRepository
 import com.dishut_lampung.sitanihut.domain.usecase.petani.DeletePetaniUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.GetPetaniListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.petani.SyncPetaniDataUseCase
 import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniEvent
 import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniListViewModel
+import com.dishut_lampung.sitanihut.presentation.user_management.list.UserEvent
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.dishut_lampung.sitanihut.util.PdfService
@@ -44,6 +46,16 @@ class PetaniListViewModelTest{
     private val pdfService: PdfService = mockk()
     private lateinit var viewModel: PetaniListViewModel
 
+    private fun createViewModel() {
+        viewModel = PetaniListViewModel(
+            getPetaniListUseCase,
+            syncPetaniDataUseCase,
+            deletePetaniUseCase,
+            userPreferences,
+            connectivityObserver,
+            pdfService
+        )
+    }
     @Test
     fun `init should load Petani list and observe connectivity`() = runTest {
         val dummyPetani = listOf(
@@ -402,6 +414,184 @@ class PetaniListViewModelTest{
             viewModel.onEvent(PetaniEvent.OnDismissError)
             val errorDismissState = awaitItem()
             assertNull("Error message harus hilang", errorDismissState.errorMessage)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+
+    @Test
+    fun `Export List success should call pdfService with all data`() = runTest {
+        val dummyData = listOf(
+            Petani(
+                id = "1",
+                name = "Tepani Canz",
+                identityNumber = "1802045310040001",
+                kphName = "KPH Tahura",
+                kthName = "KTH Sukses",
+            ),
+            Petani(
+                id = "2",
+                name = "Mawar",
+                identityNumber = "1802045310040001",
+                kphName = "KPH Tahura",
+                kthName = "KTH Sukses",
+            ),
+        )
+
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(dummyData))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        coEvery {
+            pdfService.generatePdf<Petani>(any(), any(), any(), any(), any())
+        } returns Resource.Success("/storage/emulated/0/Download/Data_Pengguna.pdf")
+
+        createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(PetaniEvent.OnExportList)
+
+            var state = awaitItem()
+            while (state.isLoading) {
+                state = awaitItem()
+            }
+
+            assertEquals("/storage/emulated/0/Download/Data_Pengguna.pdf", state.successMessage)
+            assertFalse(state.isBottomSheetVisible)
+
+            coVerify {
+                pdfService.generatePdf<Petani>(
+                    fileName = any(),
+                    reportTitle = "LAPORAN DATA PETANI",
+                    headers = any(),
+                    data = dummyData,
+                    rowMapper = any()
+                )
+            }
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export Detail success should call pdfService with filtered data`() = runTest {
+        val targetId = "2"
+        val targetPetani = Petani(
+            id = targetId,
+            name = "Mawar",
+            identityNumber = "1802045310040002",
+            kphName = "KPH Tahura",
+            kthName = "KTH Sukses",
+        )
+        val dummyData = listOf(
+            Petani(
+                id = "1",
+                name = "Tepani Canz",
+                identityNumber = "1802045310040001",
+                kphName = "KPH Tahura",
+                kthName = "KTH Sukses",
+            ),
+            targetPetani,
+        )
+
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(dummyData))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        coEvery {
+            pdfService.generatePdf<Petani>(any(), any(), any(), any(), any())
+        } returns Resource.Success("File Saved")
+
+        createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(PetaniEvent.OnExportDetail(targetId))
+
+            var state = awaitItem()
+            while (state.isLoading) {
+                state = awaitItem()
+            }
+
+            assertEquals("File Saved", state.successMessage)
+
+            coVerify {
+                pdfService.generatePdf<Petani>(
+                    fileName = any(),
+                    reportTitle = "DETAIL DATA PETANI",
+                    headers = any(),
+                    data = match { list ->
+                        list.size == 1 && list.first().id == targetId
+                    },
+                    rowMapper = any()
+                )
+            }
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export should show error message when PdfService fails`() = runTest {
+        val dummyData = listOf(
+            Petani(
+                id = "1",
+                name = "Tepani Canz",
+                identityNumber = "1802045310040001",
+                kphName = "KPH Tahura",
+                kthName = "KTH Sukses",
+            )
+        )
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(dummyData))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        val errorMsg = "Permission Denied"
+        coEvery {
+            pdfService.generatePdf<UserDetail>(any(), any(), any(), any(), any())
+        } returns Resource.Error(errorMsg)
+
+        createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(PetaniEvent.OnExportList)
+
+            var state = awaitItem()
+            while (state.isLoading) {
+                state = awaitItem()
+            }
+
+            assertEquals(errorMsg, state.errorMessage)
+            assertNull(state.successMessage)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export should show error when data is empty`() = runTest {
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { getPetaniListUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        createViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(PetaniEvent.OnExportList)
+            var state = awaitItem()
+            if(state.isLoading) state = awaitItem()
+
+            assertEquals("Tidak ada data untuk diekspor", state.errorMessage)
+
+            coVerify(exactly = 0) {
+                pdfService.generatePdf<UserDetail>(any(), any(), any(), any(), any())
+            }
+
             cancelAndIgnoreRemainingEvents()
         }
     }

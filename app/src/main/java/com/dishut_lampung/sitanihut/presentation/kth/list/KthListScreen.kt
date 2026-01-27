@@ -45,7 +45,9 @@ import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.Lifecycle
@@ -59,6 +61,7 @@ import com.dishut_lampung.sitanihut.presentation.shared.components.bottomsheet.G
 import com.dishut_lampung.sitanihut.presentation.shared.components.card.KthCard
 import com.dishut_lampung.sitanihut.presentation.shared.components.dialog.CustomConfirmationDialog
 import com.dishut_lampung.sitanihut.presentation.shared.components.textfield.CustomSearchTextField
+import com.dishut_lampung.sitanihut.presentation.user_management.list.UserEvent
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -162,14 +165,28 @@ fun KthListScreen(
                     .fillMaxSize()
                     .padding(horizontal = ScreenPadding)
             ) {
-                Text(
-                    text = "Data KTH",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Data KTH",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(
+                        onClick = { onEvent(KthEvent.OnExportList) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = "Export Daftar Pengguna",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
 
                 AnimatedVisibility(visible = !state.isOnline) {
                     Text(
@@ -239,6 +256,11 @@ fun KthListScreen(
                     }
                 },
                 isEditable = state.isOnline,
+                onExportClick = {
+                    state.selectedKthId?.let { id ->
+                        onEvent(KthEvent.OnExportDetail(id))
+                    }
+                }
             )
         }
 
@@ -254,26 +276,28 @@ fun KthListScreen(
             )
         }
 
-        FloatingActionButton(
-            onClick = {
-                if (state.isOnline) {
-                    onNavigateToAddKth()
-                } else {
-                    onEvent(
-                        KthEvent.OnShowUserMessage(
-                            "Mode Offline: Tidak bisa menambah data",
-                            MessageType.Error
+        if (state.isOnline) {
+            FloatingActionButton(
+                onClick = {
+                    if (state.isOnline) {
+                        onNavigateToAddKth()
+                    } else {
+                        onEvent(
+                            KthEvent.OnShowUserMessage(
+                                "Mode Offline: Tidak bisa menambah data",
+                                MessageType.Error
+                            )
                         )
-                    )
-                }
-            },
-            containerColor = MaterialTheme.colorScheme.secondary,
-            contentColor = MaterialTheme.colorScheme.onSecondary,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Tambah KTH")
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Tambah KTH")
+            }
         }
 
         AnimatedVisibility(

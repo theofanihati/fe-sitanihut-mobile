@@ -7,8 +7,10 @@ import com.dishut_lampung.sitanihut.domain.model.UserDetail
 import com.dishut_lampung.sitanihut.domain.usecase.user_management.DeleteUserUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.user_management.GetUserListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.user_management.SyncUserDataUseCase
+import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniEvent
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
+import com.dishut_lampung.sitanihut.util.PdfService
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +31,7 @@ class UserListViewModel @Inject constructor(
     private val deleteUserUseCase: DeleteUserUseCase,
     private val userPreferences: UserPreferences,
     private val connectivityObserver: ConnectivityObserver,
+    private val pdfService: PdfService,
 ) : ViewModel() {
 
     private val _baseState = MutableStateFlow(UserListUiState(isLoading = true))
@@ -94,6 +97,12 @@ class UserListViewModel @Inject constructor(
                     )
                 }
             }
+            is UserEvent.OnExportList -> {
+                exportDataToPdf(userId = null)
+            }
+            is UserEvent.OnExportDetail -> {
+                exportDataToPdf(userId = event.id)
+            }
             UserEvent.OnDeleteClick -> {
                 if (_userRole.value == "penanggung jawab") return
                 _baseState.update {
@@ -134,6 +143,60 @@ class UserListViewModel @Inject constructor(
                         _baseState.update { it.copy(errorMessage = event.message) }
                     }
                 }
+            }
+        }
+    }
+
+    fun exportDataToPdf(userId: String? = null) {
+        viewModelScope.launch {
+            _baseState.update { it.copy(isLoading = true) }
+
+            val dataToExport = if (userId != null) {
+                _allPetaniData.value.filter { it.id == userId }
+            } else {
+                uiState.value.userList
+            }
+
+            if (dataToExport.isEmpty()) {
+                _baseState.update {
+                    it.copy(isLoading = false, errorMessage = "Tidak ada data untuk diekspor")
+                }
+                return@launch
+            }
+
+            val headers = listOf("Nama", "NIK/NIP", "Peran", "Alamat", "Luas Lahan")
+            val result = pdfService.generatePdf(
+                fileName = "Data_Petani_${System.currentTimeMillis()}",
+                reportTitle = if (userId != null) "DETAIL AKUN PETANI" else "LAPORAN DATA AKUN PENGGUNA",
+                headers = headers,
+                data = dataToExport,
+                rowMapper = { user ->
+                    listOf(
+                        user.name,
+                        user.identityNumber ?: "-",
+                        user.role.uppercase(),
+                        user.address ?: "-",
+                        "${user.landArea ?: 0} Ha"
+                    )
+                }
+            )
+
+            when (result) {
+                is Resource.Success -> {
+                    _baseState.update {
+                        it.copy(
+                            isLoading = false,
+                            successMessage = result.data,
+                            isBottomSheetVisible = false
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _baseState.update {
+                        it.copy(isLoading = false, errorMessage = result.message)
+                    }
+                }
+                else -> {}
             }
         }
     }
@@ -216,11 +279,12 @@ class UserListViewModel @Inject constructor(
                         }
                     }
                     is Resource.Error -> {
+                        val isOffline = !_isOnline.value
                         _baseState.update {
                             it.copy(
                                 isLoading = false,
                                 isRefreshing = false,
-                                errorMessage = result.message
+                                errorMessage = if (isOffline) null else result.message
                             )
                         }
                     }
