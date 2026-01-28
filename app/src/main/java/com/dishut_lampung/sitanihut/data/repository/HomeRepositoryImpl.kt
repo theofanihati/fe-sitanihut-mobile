@@ -87,7 +87,9 @@ class HomeRepositoryImpl @Inject constructor(
 
                 val remoteData = response.data.data
                 if (remoteData.isNotEmpty()) {
-                    reportDao.upsertAll(remoteData.map { it.toEntity() })
+//                    reportDao.upsertAll(remoteData.map { it.toEntity() })
+                    val skeletons = remoteData.map { it.toEntity() }
+                    reportDao.upsertPartialBatch(skeletons)
                 }
             }
         } catch (e: Exception) {
@@ -109,7 +111,9 @@ class HomeRepositoryImpl @Inject constructor(
                 val response = apiService.getReportsByStatus(status)
                 val remoteList = response.data.data ?: emptyList()
                 if (remoteList.isNotEmpty()) {
-                    reportDao.upsertAll(remoteList.map { it.toEntity() })
+//                    reportDao.upsertAll(remoteList.map { it.toEntity() })
+                    val skeletons = remoteList.map { it.toEntity() }
+                    reportDao.upsertPartialBatch(skeletons)
                 }
             }
         } catch (e: Exception) {
