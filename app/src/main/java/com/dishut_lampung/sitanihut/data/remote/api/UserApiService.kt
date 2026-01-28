@@ -42,7 +42,7 @@ interface UserApiService {
         @Body request: Map<String, @JvmSuppressWildcards Any?>
     ): ApiResponse<Unit>
 
-    @POST("v1/users/fcm-token")
+    @POST("v1/fcm/token")
     suspend fun updateFcmToken(
         @Body tokenMap: Map<String, String>
     ): ApiResponse<Unit>
