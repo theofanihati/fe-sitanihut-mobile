@@ -7,7 +7,9 @@ import com.dishut_lampung.sitanihut.domain.usecase.penyuluh.GetPenyuluhUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.penyuluh.SyncPenyuluhDataUseCase
 import com.dishut_lampung.sitanihut.presentation.penyuluh.PenyuluhEvent
 import com.dishut_lampung.sitanihut.presentation.penyuluh.PenyuluhUiState
+import com.dishut_lampung.sitanihut.presentation.user_management.list.UserEvent
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
+import com.dishut_lampung.sitanihut.util.PdfService
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -26,7 +28,8 @@ class PenyuluhViewModel @Inject constructor(
     private val getPenyuluhUseCase: GetPenyuluhUseCase,
     private val syncPenyuluhDataUseCase: SyncPenyuluhDataUseCase,
     private val userPreferences: UserPreferences,
-    private val connectivityObserver: ConnectivityObserver
+    private val connectivityObserver: ConnectivityObserver,
+    private val pdfService: PdfService,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PenyuluhUiState())
@@ -51,7 +54,57 @@ class PenyuluhViewModel @Inject constructor(
                 }
             }
             PenyuluhEvent.OnRefresh -> refreshData()
-            PenyuluhEvent.OnDismissError -> _uiState.update { it.copy(error = null) }
+            PenyuluhEvent.OnDismissError -> _uiState.update { it.copy(errorMessage = null) }
+            is PenyuluhEvent.OnExportList -> {
+                exportDataToPdf()
+            }
+        }
+    }
+
+    private fun exportDataToPdf() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+
+            val dataToExport = uiState.value.penyuluhList
+            if (dataToExport.isEmpty()) {
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = "Tidak ada data untuk diekspor")
+                }
+                return@launch
+            }
+
+            val headers = listOf("Nama", "NIP", "Jabatan", "Asal KPH")
+            val result = pdfService.generatePdf(
+                fileName = "Data_Penyuluh_${System.currentTimeMillis()}",
+                reportTitle = "LAPORAN DATA PENYULUH",
+                headers = headers,
+                data = dataToExport,
+                rowMapper = { penyuluh ->
+                    listOf(
+                        penyuluh.name,
+                        penyuluh.identityNumber ?: "-",
+                        penyuluh.position  ?: "-",
+                        penyuluh.kphName ?: "-",
+                    )
+                }
+            )
+
+            when (result) {
+                is Resource.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            successMessage = result.data,
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMessage = result.message)
+                    }
+                }
+                else -> {}
+            }
         }
     }
 
@@ -68,7 +121,7 @@ class PenyuluhViewModel @Inject constructor(
                 it.copy(
                     isLoading = !isRefresh,
                     isRefreshing = isRefresh,
-                    error = null
+                    errorMessage = null
                 )
             }
 
@@ -91,7 +144,7 @@ class PenyuluhViewModel @Inject constructor(
                             it.copy(
                                 isLoading = false,
                                 isRefreshing = false,
-                                error = result.message
+                                errorMessage = result.message
                             )
                         }
                     }
@@ -109,7 +162,7 @@ class PenyuluhViewModel @Inject constructor(
     private fun refreshData() {
         if (!_isOnline.value) {
             _uiState.update {
-                it.copy(isRefreshing = false, error = "Tidak ada koneksi internet")
+                it.copy(isRefreshing = false, errorMessage = "Tidak ada koneksi internet")
             }
             return
         }
@@ -124,7 +177,7 @@ class PenyuluhViewModel @Inject constructor(
                     }
                 is Resource.Error -> {
                     _uiState.update {
-                        it.copy(isRefreshing = false, error = result.message)
+                        it.copy(isRefreshing = false, errorMessage = result.message)
                     }
                 }
                 is Resource.Loading -> {}

@@ -19,4 +19,5 @@ sealed class CommodityEvent {
 
     object OnDismissError : CommodityEvent()
     object OnDismissSuccessMessage : CommodityEvent()
+    object OnExportList : CommodityEvent()
 }

@@ -45,7 +45,9 @@ import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPaddi
 import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniEvent
 import com.dishut_lampung.sitanihut.presentation.shared.components.CustomCircularProgressIndicator
@@ -53,6 +55,7 @@ import com.dishut_lampung.sitanihut.presentation.shared.components.animations.An
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import com.dishut_lampung.sitanihut.presentation.shared.components.card.CommodityCard
 import com.dishut_lampung.sitanihut.presentation.shared.components.textfield.CustomSearchTextField
+import com.dishut_lampung.sitanihut.presentation.user_management.list.UserEvent
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -149,16 +152,29 @@ fun CommodityScreen(
             ) {
 
                 Spacer(modifier = Modifier.height(100.dp))
-
-                Text(
-                    text = "Data Komoditas",
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                    ),
-                    color = MaterialTheme.colorScheme.tertiary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Data Komoditas",
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                        ),
+                        color = MaterialTheme.colorScheme.tertiary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(
+                        onClick = { onEvent(CommodityEvent.OnExportList) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = "Export Daftar Komoditas",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(

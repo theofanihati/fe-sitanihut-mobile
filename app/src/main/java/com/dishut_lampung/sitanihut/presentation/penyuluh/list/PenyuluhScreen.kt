@@ -22,9 +22,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -53,6 +55,7 @@ import com.dishut_lampung.sitanihut.presentation.shared.components.card.Penyuluh
 import com.dishut_lampung.sitanihut.presentation.shared.components.textfield.CustomSearchTextField
 import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.user_management.list.UserEvent
 import kotlinx.coroutines.launch
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -149,15 +152,29 @@ fun PenyuluhScreen(
 
                 Spacer(modifier = Modifier.height(100.dp))
 
-                Text(
-                    text = "Data Penyuluh",
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                    ),
-                    color = MaterialTheme.colorScheme.tertiary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Data Penyuluh",
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                        ),
+                        color = MaterialTheme.colorScheme.tertiary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(
+                        onClick = { onEvent(PenyuluhEvent.OnExportList) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = "Export Daftar Pengguna",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
@@ -234,10 +251,10 @@ fun PenyuluhScreen(
             }
         }
 
-        if (state.error != null) {
+        if (state.errorMessage != null) {
             AnimatedMessage(
-                isVisible = state.error != null,
-                message = state.error ?: "",
+                isVisible = state.errorMessage != null,
+                message = state.errorMessage ?: "",
                 messageType = MessageType.Error,
                 onDismiss = { onEvent(PenyuluhEvent.OnDismissError) },
                 modifier = Modifier

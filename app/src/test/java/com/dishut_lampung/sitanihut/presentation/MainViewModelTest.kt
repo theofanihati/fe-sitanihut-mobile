@@ -10,6 +10,7 @@ import androidx.work.WorkInfo
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.UserProfile
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
+import com.dishut_lampung.sitanihut.domain.repository.UserRepository
 import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import io.mockk.coVerify
@@ -37,12 +38,14 @@ class MainViewModelTest {
     private lateinit var userPreferences: UserPreferences
     private lateinit var viewModel: MainViewModel
     private lateinit var homeRepository: HomeRepository
+    private lateinit var userRepository: UserRepository
     private lateinit var workManager: WorkManager
 
     @Before
     fun setup() {
         userPreferences = mockk(relaxed = true)
         homeRepository = mockk(relaxed = true)
+        userRepository = mockk(relaxed = true)
         workManager = mockk(relaxed = true)
 
         mockkStatic(Log::class)
@@ -61,12 +64,15 @@ class MainViewModelTest {
         )
     }
 
+    private fun setupViewModel(){
+        viewModel = MainViewModel(userPreferences, homeRepository, workManager, userRepository)
+    }
+
     @Test
     fun `init when hasSeenOnboarding is false, startDestination should be landing screen`() {
         runTest {
             every { userPreferences.hasSeenOnboarding } returns flowOf(false)
-            viewModel = MainViewModel(userPreferences, homeRepository, workManager)
-
+            setupViewModel()
             val expectedDestination = Screen.LandingPage.route
             assertEquals(expectedDestination, viewModel.uiState.value.startDestination)
             assertEquals(false, viewModel.uiState.value.isLoading)
@@ -78,8 +84,7 @@ class MainViewModelTest {
         runTest {
             every { userPreferences.hasSeenOnboarding } returns flowOf(true)
 
-            viewModel = MainViewModel(userPreferences, homeRepository, workManager)
-
+            setupViewModel()
             val expectedDestination = "auth"
             assertEquals(expectedDestination, viewModel.uiState.value.startDestination)
             assertEquals(false, viewModel.uiState.value.isLoading)
@@ -88,7 +93,7 @@ class MainViewModelTest {
 
     @Test
     fun `logout calls clearAllSession`() = runTest {
-        viewModel = MainViewModel(userPreferences, homeRepository, workManager)
+        setupViewModel()
         viewModel.logout()
         advanceUntilIdle()
         coVerify { userPreferences.clearAllSession() }
@@ -100,7 +105,7 @@ class MainViewModelTest {
         every { userPreferences.userRole } returns flowOf("Petani") // Case insensitive check logic
         every { userPreferences.hasSeenOnboarding } returns flowOf(true)
 
-        viewModel = MainViewModel(userPreferences, homeRepository, workManager)
+        setupViewModel()
         advanceUntilIdle()
 
         assertEquals(Screen.HomePetani.route, viewModel.uiState.value.startDestination)
@@ -111,7 +116,7 @@ class MainViewModelTest {
         every { userPreferences.authToken } returns flowOf("valid_token")
         every { userPreferences.userRole } returns flowOf("Penyuluh")
 
-        viewModel = MainViewModel(userPreferences, homeRepository, workManager)
+        setupViewModel()
         advanceUntilIdle()
 
         assertEquals(Screen.HomePenyuluh.route, viewModel.uiState.value.startDestination)
@@ -122,7 +127,7 @@ class MainViewModelTest {
         every { userPreferences.authToken } returns flowOf("valid_token")
         every { userPreferences.userRole } returns flowOf("Penanggung Jawab")
 
-        viewModel = MainViewModel(userPreferences, homeRepository, workManager)
+        setupViewModel()
         advanceUntilIdle()
 
         assertEquals(Screen.HomeKkph.route, viewModel.uiState.value.startDestination)
@@ -149,7 +154,7 @@ class MainViewModelTest {
 
         every { workManager.getWorkInfoByIdLiveData(any()) } returns mockWorkInfoLiveData
 
-        viewModel = MainViewModel(userPreferences, homeRepository, workManager)
+        setupViewModel()
         advanceUntilIdle()
 
         verify {
@@ -173,7 +178,7 @@ class MainViewModelTest {
             workManager.enqueueUniquePeriodicWork("periodic_data_sync", any(), any())
         } returns mockOperation
 
-        viewModel = MainViewModel(userPreferences, homeRepository, workManager)
+        setupViewModel()
         advanceUntilIdle()
 
         verify {

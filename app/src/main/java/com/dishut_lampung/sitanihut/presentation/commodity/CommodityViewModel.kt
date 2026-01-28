@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.GetCommoditiesUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.commodity.SyncCommodityDataUseCase
+import com.dishut_lampung.sitanihut.presentation.penyuluh.PenyuluhEvent
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
+import com.dishut_lampung.sitanihut.util.PdfService
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -23,6 +25,7 @@ class CommodityViewModel @Inject constructor(
     private val getCommoditiesUseCase: GetCommoditiesUseCase,
     private val syncCommodityDataUseCase: SyncCommodityDataUseCase,
     private val connectivityObserver: ConnectivityObserver,
+    private val pdfService: PdfService,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CommodityUiState())
@@ -55,6 +58,55 @@ class CommodityViewModel @Inject constructor(
             }
             CommodityEvent.OnDismissSuccessMessage -> {
                 _uiState.update { it.copy(successMessage = null) }
+            }
+            is CommodityEvent.OnExportList -> {
+                exportDataToPdf()
+            }
+        }
+    }
+
+    private fun exportDataToPdf() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+
+            val dataToExport = uiState.value.items
+            if (dataToExport.isEmpty()) {
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = "Tidak ada data untuk diekspor")
+                }
+                return@launch
+            }
+
+            val headers = listOf("Nama", "Kode", "Kategori")
+            val result = pdfService.generatePdf(
+                fileName = "Data_Komoditas_${System.currentTimeMillis()}",
+                reportTitle = "LAPORAN DATA KOMODITAS",
+                headers = headers,
+                data = dataToExport,
+                rowMapper = { items ->
+                    listOf(
+                        items.name?: "-",
+                        items.code ?: "-",
+                        items.category  ?: "-",
+                    )
+                }
+            )
+
+            when (result) {
+                is Resource.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            successMessage = result.data,
+                        )
+                    }
+                }
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMessage = result.message)
+                    }
+                }
+                else -> {}
             }
         }
     }

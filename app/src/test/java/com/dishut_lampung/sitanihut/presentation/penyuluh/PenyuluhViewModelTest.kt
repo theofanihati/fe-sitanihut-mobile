@@ -1,5 +1,6 @@
 package com.dishut_lampung.sitanihut.presentation.penyuluh
 
+import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.Penyuluh
 import com.dishut_lampung.sitanihut.domain.usecase.penyuluh.GetPenyuluhUseCase
@@ -7,6 +8,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.penyuluh.SyncPenyuluhDataUseC
 import com.dishut_lampung.sitanihut.presentation.penyuluh.list.PenyuluhViewModel
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
+import com.dishut_lampung.sitanihut.util.PdfService
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -27,18 +29,26 @@ class PenyuluhViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainCoroutineRule()
 
-    private lateinit var getPenyuluhUseCase: GetPenyuluhUseCase
-    private lateinit var userPreferences: UserPreferences
+    private val getPenyuluhUseCase: GetPenyuluhUseCase = mockk(relaxed = true)
+    private val userPreferences: UserPreferences = mockk()
     private val syncUseCase: SyncPenyuluhDataUseCase = mockk(relaxed = true)
     private var connectivityObserver: ConnectivityObserver = mockk(relaxed = true)
+    private val pdfService: PdfService = mockk(relaxed = true)
     private lateinit var viewModel: PenyuluhViewModel
+    private val dummyPenyuluh = listOf(
+        Penyuluh("1", "Ahmad", "123", "Ahli", "Pria", "kph1", "KPH A"),
+        Penyuluh("2", "Budi", "456", "Terampil", "Pria", "kph1", "KPH A")
+    )
 
     @Before
     fun setUp() {
-        getPenyuluhUseCase = mockk(relaxed = true)
-        userPreferences = mockk()
-
         every { userPreferences.userRole } returns flowOf("penanggung jawab")
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+        coEvery { getPenyuluhUseCase(any(), any()) } returns flowOf(Resource.Success(dummyPenyuluh))
+    }
+
+    private fun setupViewModel() {
+        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences,  connectivityObserver, pdfService)
     }
 
     @Test
@@ -49,7 +59,7 @@ class PenyuluhViewModelTest {
         )
         every { getPenyuluhUseCase("penanggung jawab") } returns flowOf(Resource.Success(dummyList))
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences,  connectivityObserver)
+        setupViewModel()
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
@@ -63,13 +73,13 @@ class PenyuluhViewModelTest {
         val errorMessage = "Gagal memuat data"
         every { getPenyuluhUseCase("penanggung jawab") } returns flowOf(Resource.Error(errorMessage))
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences,  connectivityObserver)
+        setupViewModel()
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
         assertTrue(state.penyuluhList.isEmpty())
-        assertEquals(errorMessage, state.error)
+        assertEquals(errorMessage, state.errorMessage)
     }
 
     @Test
@@ -80,7 +90,7 @@ class PenyuluhViewModelTest {
         )
         every { getPenyuluhUseCase("penanggung jawab") } returns flowOf(Resource.Success(dummyList))
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences,  connectivityObserver)
+        setupViewModel()
         advanceUntilIdle()
 
         viewModel.onEvent(PenyuluhEvent.OnRefresh)
@@ -99,7 +109,7 @@ class PenyuluhViewModelTest {
     fun `onEvent OnRefresh should show error when offline`() = runTest {
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences, connectivityObserver)
+        setupViewModel()
         advanceUntilIdle()
 
         viewModel.onEvent(PenyuluhEvent.OnRefresh)
@@ -107,7 +117,7 @@ class PenyuluhViewModelTest {
 
         val state = viewModel.uiState.value
         assertFalse(state.isRefreshing)
-        assertEquals("Tidak ada koneksi internet", state.error)
+        assertEquals("Tidak ada koneksi internet", state.errorMessage)
 
         coVerify(exactly = 0) { syncUseCase() }
     }
@@ -118,7 +128,7 @@ class PenyuluhViewModelTest {
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
         coEvery { syncUseCase() } returns Resource.Error(errorMsg)
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences, connectivityObserver)
+        setupViewModel()
         advanceUntilIdle()
 
         viewModel.onEvent(PenyuluhEvent.OnRefresh)
@@ -126,7 +136,7 @@ class PenyuluhViewModelTest {
 
         val state = viewModel.uiState.value
         assertFalse(state.isRefreshing)
-        assertEquals(errorMsg, state.error)
+        assertEquals(errorMsg, state.errorMessage)
     }
 
     @Test
@@ -134,15 +144,15 @@ class PenyuluhViewModelTest {
         val errorMessage = "Error terjadi"
         every { getPenyuluhUseCase("penanggung jawab") } returns flowOf(Resource.Error(errorMessage))
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences,  connectivityObserver)
+        setupViewModel()
         advanceUntilIdle()
-        assertEquals(errorMessage, viewModel.uiState.value.error)
+        assertEquals(errorMessage, viewModel.uiState.value.errorMessage)
 
         viewModel.onEvent(PenyuluhEvent.OnDismissError)
         advanceUntilIdle()
 
         val state = viewModel.uiState.value
-        assertEquals(null, state.error)
+        assertEquals(null, state.errorMessage)
     }
 
     @Test
@@ -153,7 +163,7 @@ class PenyuluhViewModelTest {
             emit(Resource.Success(dummyList))
         }
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences,  connectivityObserver)
+        setupViewModel()
         advanceUntilIdle()
     }
 
@@ -163,7 +173,7 @@ class PenyuluhViewModelTest {
         every { getPenyuluhUseCase("penanggung jawab", "") } returns flowOf(Resource.Success(emptyList()))
         every { getPenyuluhUseCase("penanggung jawab", query) } returns flowOf(Resource.Success(emptyList()))
 
-        viewModel = PenyuluhViewModel(getPenyuluhUseCase, syncUseCase, userPreferences, connectivityObserver)
+        setupViewModel()
         advanceUntilIdle()
 
         viewModel.onEvent(PenyuluhEvent.OnSearchQueryChange(query))
@@ -171,5 +181,76 @@ class PenyuluhViewModelTest {
         advanceUntilIdle()
 
         coVerify { getPenyuluhUseCase("penanggung jawab", query) }
+    }
+
+    @Test
+    fun `exportDataToPdf should update state to success when successful`() = runTest {
+        setupViewModel()
+        advanceUntilIdle()
+        val successMsg = "PDF Saved to Downloads"
+
+        coEvery {
+            pdfService.generatePdf(
+                fileName = any(),
+                reportTitle = any(),
+                headers = any(),
+                data = any<List<Penyuluh>>(),
+                rowMapper = any()
+            )
+        } returns Resource.Success(successMsg)
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(PenyuluhEvent.OnExportList)
+
+            val successItem = expectMostRecentItem()
+            assertFalse("Harusnya sudah tidak loading", successItem.isLoading)
+            assertEquals(successMsg, successItem.successMessage)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        coVerify { pdfService.generatePdf<Penyuluh>(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `exportDataToPdf should show error when data is empty`() = runTest {
+        coEvery { getPenyuluhUseCase(any(), any()) } returns flowOf(Resource.Success(emptyList()))
+        every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
+
+        setupViewModel()
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(PenyuluhEvent.OnExportList)
+
+            val errorItem = awaitItem()
+            assertEquals("Tidak ada data untuk diekspor", errorItem.errorMessage)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        coVerify(exactly = 0) { pdfService.generatePdf<Penyuluh>(any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `exportDataToPdf should update error state when service fails`() = runTest {
+        setupViewModel()
+        advanceUntilIdle()
+        val errorMsg = "Tidak ada data untuk diekspor"
+
+        coEvery {
+            pdfService.generatePdf<Penyuluh>(any(), any(), any(), any(), any())
+        } returns Resource.Error(errorMsg)
+
+        viewModel.onEvent(PenyuluhEvent.OnExportList)
+        advanceUntilIdle()
+
+        viewModel.uiState.test {
+            val finalState = awaitItem()
+            assertFalse("Harusnya sudah tidak loading", finalState.isLoading)
+            assertEquals(errorMsg, finalState.errorMessage)
+
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 }
