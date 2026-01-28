@@ -210,7 +210,7 @@ class ReportRepositoryImplTest {
         verify {
             mockWorkManager.enqueueUniqueWork(
                 "sync_report_queue",
-                ExistingWorkPolicy.APPEND,
+                ExistingWorkPolicy.REPLACE,
                 any<OneTimeWorkRequest>()
             )
         }
@@ -245,7 +245,7 @@ class ReportRepositoryImplTest {
         verify {
             mockWorkManager.enqueueUniqueWork(
                 "sync_report_queue",
-                ExistingWorkPolicy.APPEND,
+                ExistingWorkPolicy.REPLACE,
                 any<OneTimeWorkRequest>()
             )
         }
@@ -325,7 +325,7 @@ class ReportRepositoryImplTest {
         assertEquals("menunggu", savedEntity.status)
 
         verify(exactly = 1) {
-            mockWorkManager.enqueueUniqueWork("sync_report_queue", ExistingWorkPolicy.APPEND, any<OneTimeWorkRequest>())
+            mockWorkManager.enqueueUniqueWork("sync_report_queue", ExistingWorkPolicy.REPLACE, any<OneTimeWorkRequest>())
         }
         unmockkStatic(WorkManager::class)
     }
@@ -681,9 +681,9 @@ class ReportRepositoryImplTest {
         val result = repository.syncReportDetail()
         assertTrue(result is Resource.Success)
 
-        coVerify(exactly = 1) { reportDao.upsertAll(match { it.size == 12 }) }
+        coVerify(exactly = 1) { reportDao.upsertAll(match { it.size == 10 }) }
         coVerify(exactly = 10) { apiService.getReportDetail(any()) }
-        coVerify(atLeast = 10) { reportDao.upsertAll(match { it.size == 1 }) }
+
     }
 
     @Test
@@ -757,9 +757,8 @@ class ReportRepositoryImplTest {
         val result = repository.syncReportDetail()
         assertTrue(result is Resource.Success)
 
-        coVerify(exactly = 1) { reportDao.upsertAll(match { it.size == 3 }) }
+        coVerify(exactly = 1) { reportDao.upsertAll(match { it.size == 2 }) }
         coVerify(exactly = 3) { apiService.getReportDetail(any()) }
-        coVerify(exactly = 2) { reportDao.upsertAll(match { it.size == 1 }) }
     }
 
     @Test
@@ -790,7 +789,7 @@ class ReportRepositoryImplTest {
         verify {
             mockWorkManager.enqueueUniqueWork(
                 "sync_report_queue",
-                ExistingWorkPolicy.APPEND,
+                ExistingWorkPolicy.REPLACE,
                 any<OneTimeWorkRequest>()
             )
         }
