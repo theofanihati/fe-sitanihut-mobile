@@ -13,10 +13,13 @@ import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.repository.UserRepository
 import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -47,6 +50,13 @@ class MainViewModelTest {
         homeRepository = mockk(relaxed = true)
         userRepository = mockk(relaxed = true)
         workManager = mockk(relaxed = true)
+
+        mockkStatic(FirebaseMessaging::class)
+        val mockFirebase = mockk<FirebaseMessaging>(relaxed = true)
+        every { FirebaseMessaging.getInstance() } returns mockFirebase
+
+        mockkStatic(android.os.Process::class)
+        every { android.os.Process.myPid() } returns 1234
 
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
@@ -187,5 +197,29 @@ class MainViewModelTest {
         verify(exactly = 0) {
             workManager.enqueueUniqueWork("initial_data_sync", any(), any<OneTimeWorkRequest>())
         }
+    }
+
+    @Test
+    fun `checkAndSyncFcmToken should call userRepository syncFcmToken when successful`() = runTest {
+        val mockToken = "fcm_token_123"
+        val mockFirebase = mockk<FirebaseMessaging>()
+        val mockTask = mockk<com.google.android.gms.tasks.Task<String>>()
+
+        every { FirebaseMessaging.getInstance() } returns mockFirebase
+        every { mockFirebase.token } returns mockTask
+
+        every { mockTask.isSuccessful } returns true
+        every { mockTask.result } returns mockToken
+
+        val slot = slot<OnCompleteListener<String>>()
+        every { mockTask.addOnCompleteListener(capture(slot)) } answers {
+            slot.captured.onComplete(mockTask)
+            mockTask
+        }
+
+        setupViewModel()
+        advanceUntilIdle()
+
+        coVerify { userRepository.syncFcmToken(mockToken) }
     }
 }

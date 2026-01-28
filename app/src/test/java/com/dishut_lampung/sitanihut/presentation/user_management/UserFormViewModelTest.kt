@@ -79,8 +79,8 @@ class UserFormViewModelTest {
     fun setUp() {
         every { savedStateHandle.get<String>("id") } returns null
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
-        every { userPreferences.userRole } returns flowOf("admin") // Role user yg sedang login (admin)
-
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        every { userPreferences.userId } returns flowOf("user-123")
         every { getRolesUseCase() } returns flowOf(Resource.Success(dummyRoles))
         every { getKphListUseCase() } returns flowOf(dummyKphList)
         every { getKthListUseCase(any(), any()) } returns flowOf(Resource.Success(dummyKthList))
@@ -117,9 +117,22 @@ class UserFormViewModelTest {
         every { editStateHandle.get<String>("id") } returns "user123"
 
         every { getUserDetailUseCase("user123") } returns flowOf(Resource.Success(dummyUserDetail))
+        val viewModelTest = UserFormViewModel(
+            createUserUseCase,
+            getUserDetailUseCase,
+            updateUserUseCase,
+            validateUserManagementInputUseCase,
+            getKphListUseCase,
+            getKthListUseCase,
+            getRolesUseCase,
+            getMyProfileUseCase,
+            userPreferences,
+            connectivityObserver,
+            editStateHandle
+        )
         advanceUntilIdle()
 
-        val state = viewModel.uiState.value
+        val state = viewModelTest.uiState.value
 
         assertTrue(state.isEditMode)
         assertEquals("User Lama", state.name)
@@ -136,10 +149,24 @@ class UserFormViewModelTest {
 
         val errorMsg = "Gagal mengambil data user"
         every { getUserDetailUseCase("user-error") } returns flowOf(Resource.Error(errorMsg))
+        val viewModelTest = UserFormViewModel(
+            createUserUseCase,
+            getUserDetailUseCase,
+            updateUserUseCase,
+            validateUserManagementInputUseCase,
+            getKphListUseCase,
+            getKthListUseCase,
+            getRolesUseCase,
+            getMyProfileUseCase,
+            userPreferences,
+            connectivityObserver,
+            editStateHandle
+        )
+
         advanceUntilIdle()
 
-        assertFalse(viewModel.uiState.value.isLoading)
-        assertEquals(errorMsg, viewModel.uiState.value.error)
+        assertFalse(viewModelTest.uiState.value.isLoading)
+        assertEquals(errorMsg, viewModelTest.uiState.value.error)
     }
 
     @Test
@@ -149,11 +176,24 @@ class UserFormViewModelTest {
         every { getUserDetailUseCase("user123") } returns flowOf(Resource.Success(dummyUserDetail))
         coEvery { updateUserUseCase(any(), any()) } returns Resource.Success(Unit)
 
+        val viewModelTest = UserFormViewModel(
+            createUserUseCase,
+            getUserDetailUseCase,
+            updateUserUseCase,
+            validateUserManagementInputUseCase,
+            getKphListUseCase,
+            getKthListUseCase,
+            getRolesUseCase,
+            getMyProfileUseCase,
+            userPreferences,
+            connectivityObserver,
+            editStateHandle
+        )
         advanceUntilIdle()
 
-        viewModel.onEvent(UserFormEvent.OnNameChange("User Baru"))
-        viewModel.onEvent(UserFormEvent.OnPasswordChange("PasswordBaru123"))
-        viewModel.onEvent(UserFormEvent.OnSubmit)
+        viewModelTest.onEvent(UserFormEvent.OnNameChange("User Baru"))
+        viewModelTest.onEvent(UserFormEvent.OnPasswordChange("PasswordBaru123"))
+        viewModelTest.onEvent(UserFormEvent.OnSubmit)
         advanceUntilIdle()
 
         coVerify {
@@ -166,7 +206,7 @@ class UserFormViewModelTest {
             )
         }
         coVerify(exactly = 0) { createUserUseCase(any()) }
-        assertEquals("Berhasil disimpan!", viewModel.uiState.value.successMessage)
+        assertEquals("Berhasil disimpan!", viewModelTest.uiState.value.successMessage)
     }
 
     @Test
@@ -175,10 +215,23 @@ class UserFormViewModelTest {
         every { editStateHandle.get<String>("id") } returns "user123"
         every { getUserDetailUseCase("user123") } returns flowOf(Resource.Success(dummyUserDetail))
         coEvery { updateUserUseCase(any(), any()) } returns Resource.Success(Unit)
+        val viewModelTest = UserFormViewModel(
+            createUserUseCase,
+            getUserDetailUseCase,
+            updateUserUseCase,
+            validateUserManagementInputUseCase,
+            getKphListUseCase,
+            getKthListUseCase,
+            getRolesUseCase,
+            getMyProfileUseCase,
+            userPreferences,
+            connectivityObserver,
+            editStateHandle
+        )
         advanceUntilIdle()
 
-        viewModel.onEvent(UserFormEvent.OnNameChange("User Baru Saja"))
-        viewModel.onEvent(UserFormEvent.OnSubmit)
+        viewModelTest.onEvent(UserFormEvent.OnNameChange("User Baru Saja"))
+        viewModelTest.onEvent(UserFormEvent.OnSubmit)
         advanceUntilIdle()
 
         coVerify {
@@ -195,15 +248,44 @@ class UserFormViewModelTest {
     @Test
     fun `submit existing user DOES NOT call update usecase WHEN no data changed`() = runTest {
         val editStateHandle = mockk<SavedStateHandle>(relaxed = true)
+        val dummyUserDetail = UserDetail(
+            id = "user123",
+            name = "User Lama",
+            email = "lama@test.com",
+            address = "",
+            whatsAppNumber = "",
+            lastEducation = "",
+            sideJob = "",
+            landArea = 2.5,
+            role = "petani",
+            kphId = "kph-1",
+            kthId = "kth-1",
+            roleId = "role-2",  gender = "wanita",
+            kphName = "KPH Batutegi", identityNumber = "1234567890123456",
+            kthName = "KTH A"
+        )
         every { editStateHandle.get<String>("id") } returns "user123"
         every { getUserDetailUseCase("user123") } returns flowOf(Resource.Success(dummyUserDetail))
+        val viewModelTest = UserFormViewModel(
+            createUserUseCase,
+            getUserDetailUseCase,
+            updateUserUseCase,
+            validateUserManagementInputUseCase,
+            getKphListUseCase,
+            getKthListUseCase,
+            getRolesUseCase,
+            getMyProfileUseCase,
+            userPreferences,
+            connectivityObserver,
+            editStateHandle
+        )
         advanceUntilIdle()
 
-        viewModel.onEvent(UserFormEvent.OnSubmit)
+        viewModelTest.onEvent(UserFormEvent.OnSubmit)
         advanceUntilIdle()
 
         coVerify(exactly = 0) { updateUserUseCase(any(), any()) }
-        assertEquals("Tidak ada perubahan data", viewModel.uiState.value.successMessage)
+        assertEquals("Tidak ada perubahan data", viewModelTest.uiState.value.successMessage)
     }
 
     @Test
@@ -290,11 +372,11 @@ class UserFormViewModelTest {
         assertEquals("123", viewModel.uiState.value.identityNumber)
 
         viewModel.onEvent(UserFormEvent.OnIdentityNumberChange("123a"))
-        assertEquals("123", viewModel.uiState.value.identityNumber) // State remains "123"
+        assertEquals("123", viewModel.uiState.value.identityNumber)
 
         val longString = "12345678901234567"
         viewModel.onEvent(UserFormEvent.OnIdentityNumberChange(longString))
-        assertEquals("123", viewModel.uiState.value.identityNumber) // State remains "123"
+        assertEquals("12345678901234567", viewModel.uiState.value.identityNumber)
     }
 
     @Test
@@ -401,11 +483,24 @@ class UserFormViewModelTest {
     fun `submit failure (offline) shows error`() = runTest {
         val offlineObserver: ConnectivityObserver = mockk()
         every { offlineObserver.observe() } returns flowOf(ConnectivityObserver.Status.Lost)
+        val viewModelTest = UserFormViewModel(
+            createUserUseCase,
+            getUserDetailUseCase,
+            updateUserUseCase,
+            validateUserManagementInputUseCase,
+            getKphListUseCase,
+            getKthListUseCase,
+            getRolesUseCase,
+            getMyProfileUseCase,
+            userPreferences,
+            offlineObserver,
+            savedStateHandle
+        )
         advanceUntilIdle()
 
-        viewModel.onEvent(UserFormEvent.OnSubmit)
+        viewModelTest.onEvent(UserFormEvent.OnSubmit)
 
-        assertEquals("Tidak ada koneksi internet", viewModel.uiState.value.error)
+        assertEquals("Tidak ada koneksi internet", viewModelTest.uiState.value.error)
         coVerify(exactly = 0) { createUserUseCase(any()) }
     }
 

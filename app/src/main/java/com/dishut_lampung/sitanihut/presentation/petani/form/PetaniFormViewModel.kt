@@ -99,6 +99,9 @@ class PetaniFormViewModel @Inject constructor(
                     }
                 }
             }.launchIn(this)
+            if (currentPetaniId != null) {
+                loadExistingPetaniData(currentPetaniId, role)
+            }
         }
     }
 
@@ -164,11 +167,11 @@ class PetaniFormViewModel @Inject constructor(
 
             is PetaniFormEvent.OnKphSearchTextChange -> {
                 _uiState.update { state ->
-                    if (state.kphOptions.size == 1 && state.selectedKphId.isNotEmpty()) {
+                    if (loggedInUserKphId != null && currentPetaniId == null) {
                         return@update state
                     }
                     val newText = event.text
-                    val matchingOption = state.kphOptions.find {
+                    val exactMatch = allKphOptions.find {
                         it.name.equals(newText, ignoreCase = true)
                     }
 
@@ -180,8 +183,8 @@ class PetaniFormViewModel @Inject constructor(
 
                     state.copy(
                         selectedKphName = newText,
-                        selectedKphId = matchingOption?.id ?: "",
-                        kphOptions = allKphOptions.filter { it.name.contains(newText, ignoreCase = true) }
+                        selectedKphId = exactMatch?.id ?: "",
+                        kphOptions = filteredOptions
                     )
                 }
             }

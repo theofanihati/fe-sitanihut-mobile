@@ -19,6 +19,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -139,6 +140,18 @@ class HomePagePetaniViewModelTest {
     }
 
     @Test
+    fun `onLogoutCancel should hide confirmation dialog`() = runTest {
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(HomeEvent.OnLogoutClick)
+            assertTrue(awaitItem().isLogoutConfirmationVisible)
+
+            viewModel.onEvent(HomeEvent.OnLogoutCancel)
+            assertFalse(awaitItem().isLogoutConfirmationVisible)
+        }
+    }
+
+    @Test
     fun `onProfileClick should emit NavigateToProfile with Petani role`() = runTest {
         viewModel.eventFlow.test {
             viewModel.onEvent(HomeEvent.OnProfileClick)
@@ -202,6 +215,38 @@ class HomePagePetaniViewModelTest {
     }
 
     @Test
+    fun `onDeleteConfirm error should show generalError message`() = runTest {
+        val reportId = "id-123"
+        val errorMessage = "Gagal menghapus data"
+        coEvery { homeRepository.deleteReport(reportId) } returns Resource.Error(errorMessage)
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(HomeEvent.OnDeleteClick(reportId))
+            awaitItem()
+            viewModel.onEvent(HomeEvent.OnDeleteConfirm)
+
+            var state = awaitItem()
+            while (state.generalError == null) { state = awaitItem() }
+
+            assertEquals(errorMessage, state.generalError)
+            assertFalse(state.isLoading)
+        }
+    }
+
+    @Test
+    fun `onDeleteCancel should clear reportIdToDelete`() = runTest {
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(HomeEvent.OnDeleteClick("id-123"))
+            assertEquals("id-123", awaitItem().reportIdToDelete)
+
+            viewModel.onEvent(HomeEvent.OnDeleteCancel)
+            assertNull(awaitItem().reportIdToDelete)
+        }
+    }
+
+    @Test
     fun `onSubmitClick success should call submitReport and show success message`() = runTest {
         val reportId = "id-to-submit"
         coEvery { homeRepository.submitReport(reportId) } returns Resource.Success(Unit)
@@ -220,6 +265,103 @@ class HomePagePetaniViewModelTest {
             assertEquals("Laporan berhasil diajukan", nextState.successMessage)
 
             coVerify(exactly = 1) { homeRepository.submitReport(reportId) }
+        }
+    }
+
+    @Test
+    fun `onSubmitCancel should clear reportIdToSubmit`() = runTest {
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(HomeEvent.OnSubmitClick("id-123"))
+            assertEquals("id-123", awaitItem().reportIdToSubmit)
+
+            viewModel.onEvent(HomeEvent.OnSubmitCancel)
+            assertNull(awaitItem().reportIdToSubmit)
+        }
+    }
+
+    @Test
+    fun `submitReport error should show generalError message`() = runTest {
+        val reportId = "id-submit"
+        val errorMessage = "Server Error"
+        coEvery { homeRepository.submitReport(reportId) } returns Resource.Error(errorMessage)
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(HomeEvent.OnSubmitClick(reportId))
+            awaitItem()
+            viewModel.onEvent(HomeEvent.OnSubmitConfirm(reportId))
+
+            var state = awaitItem()
+            while (state.generalError == null) { state = awaitItem() }
+
+            assertEquals(errorMessage, state.generalError)
+            assertFalse(state.isLoading)
+        }
+    }
+
+    @Test
+    fun `OnEditClick should emit NavigateToEditReport event`() = runTest {
+        viewModel.eventFlow.test {
+            val reportId = "report-abc"
+            viewModel.onEvent(HomeEvent.OnEditClick(reportId))
+
+            val event = awaitItem()
+            assertTrue(event is HomeUiEvent.NavigateToEditReport)
+            assertEquals(reportId, (event as HomeUiEvent.NavigateToEditReport).reportId)
+        }
+    }
+
+    @Test
+    fun `OnViewDetailClick should emit NavigateToReportDetail event`() = runTest {
+        viewModel.eventFlow.test {
+            val reportId = "report-123"
+            viewModel.onEvent(HomeEvent.OnViewDetailClick(reportId))
+
+            val event = awaitItem()
+            assertTrue(event is HomeUiEvent.NavigateToReportDetail)
+            assertEquals(reportId, (event as HomeUiEvent.NavigateToReportDetail).reportId)
+        }
+    }
+
+    @Test
+    fun `OnReportOptionSheetDismiss should clear reportIdForOptionSheet`() = runTest {
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(HomeEvent.OnReportMoreOptionClick("id-123"))
+            assertEquals("id-123", awaitItem().reportIdForOptionSheet)
+
+            viewModel.onEvent(HomeEvent.OnReportOptionSheetDismiss)
+            assertNull(awaitItem().reportIdForOptionSheet)
+        }
+    }
+
+    @Test
+    fun `OnDismissSuccessMessage should clear successMessage state`() = runTest {
+        coEvery { homeRepository.deleteReport(any()) } returns Resource.Success(Unit)
+        viewModel.onEvent(HomeEvent.OnDeleteClick("id"))
+        viewModel.onEvent(HomeEvent.OnDeleteConfirm)
+
+        viewModel.uiState.test {
+            var state = awaitItem()
+            while (state.successMessage == null) { state = awaitItem() }
+
+            viewModel.onEvent(HomeEvent.OnDismissSuccessMessage)
+            assertNull(awaitItem().successMessage)
+        }
+    }
+
+    @Test
+    fun `OnDismissError should clear generalError state`() = runTest {
+        coEvery { homeRepository.getLatestReports() } throws Exception("Error")
+        viewModel.onEvent(HomeEvent.OnRefreshData)
+
+        viewModel.uiState.test {
+            var state = awaitItem()
+            while (state.generalError == null) { state = awaitItem() }
+
+            viewModel.onEvent(HomeEvent.OnDismissError)
+            assertNull(awaitItem().generalError)
         }
     }
 }

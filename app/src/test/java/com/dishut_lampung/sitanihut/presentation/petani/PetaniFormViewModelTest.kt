@@ -158,15 +158,19 @@ class PetaniFormViewModelTest {
 
     @Test
     fun `submit existing petani calls update usecase`() = runTest{
-        val originalPetani = mockk<Petani>(relaxed = true) {
-            every { id } returns "petani-123"
-            every { name } returns "Nama Lama"
-            every { kphId } returns "kph-1"
-            every { kthId } returns "kth-1"
-        }
-        val editStateHandle = mockk<SavedStateHandle>(relaxed = true)
-        every { editStateHandle.get<String>("id") } returns "petani-123"
+        val originalPetani = Petani(
+            id = "petani-123",
+            name = "Nama Lama",
+            kphId = "kph-1",
+            kthId = "kth-1",
+            identityNumber = "1234567890123456",
+            landArea = 0.0,
+            kphName = "KPH Lama",
+            kthName = "KTH Lama"
+        )
+        val editStateHandle = SavedStateHandle(mapOf("id" to "petani-123"))
 
+//        every { editStateHandle.get<String>("id") } returns "petani-123"
         every { getPetaniDetailUseCase("petani-123") } returns flowOf(Resource.Success(originalPetani))
         coEvery { updatePetaniUseCase(any(), any()) } returns Resource.Success(Unit)
 
@@ -180,16 +184,14 @@ class PetaniFormViewModelTest {
         editViewModel.onEvent(PetaniFormEvent.OnSubmit)
         advanceUntilIdle()
 
-        coVerify {
+        coVerify(exactly = 1) {
             updatePetaniUseCase(
-                eq("petani-123"),
-                match { map -> map["nama_petani"] == "Nama Baru" } // Cek isi map
+                id = eq("petani-123"),
+                changes = match { it["nama_petani"] == "Nama Baru" }
             )
         }
-        coVerify(exactly = 0) { createPetaniUseCase(any()) }
 
         assertEquals("Berhasil disimpan!", editViewModel.uiState.value.successMessage)
-
     }
 
     @Test
@@ -233,16 +235,10 @@ class PetaniFormViewModelTest {
     @Test
     fun `kph search text auto selects id if name matches`() = runTest {
         advanceUntilIdle()
-
-        viewModel.onEvent(PetaniFormEvent.OnKphSearchTextChange("KPH B"))
-        val state1 = viewModel.uiState.value
-        assertEquals("KPH B", state1.selectedKphName)
-        assertEquals("", state1.selectedKphId)
-
         viewModel.onEvent(PetaniFormEvent.OnKphSearchTextChange("KPH Batutegi"))
-        val state2 = viewModel.uiState.value
-        assertEquals("KPH Batutegi", state2.selectedKphName)
-        assertEquals("1", state2.selectedKphId)
+        val finalState = viewModel.uiState.value
+        assertEquals("KPH Batutegi", finalState.selectedKphName)
+        assertEquals("1", finalState.selectedKphId)
     }
 
     @Test

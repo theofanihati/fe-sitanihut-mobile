@@ -243,15 +243,18 @@ class UserFormViewModel  @Inject constructor(
                 _uiState.update { it.copy(whatsAppNumber = event.value) }
                 var errorMsg: String? = null
 
-                if (event.value.isNotEmpty()) {
-                    if(event.value.isEmpty()){
-                        errorMsg = "Nomor telepon tidak boleh kosong"
-                    } else if (!event.value.matches(phoneRegex)) {
+                when {
+                    !event.value.matches(Regex("^[0-9+]*$")) -> {
                         errorMsg = "Masukkan nomor valid (08.. atau +628..) tanpa spasi"
-                    } else if (event.value.length > 14) {
-                        errorMsg = "Nomor telepon maksimal 14 digit"
-                    } else if (event.value.length < 10) {
+                    }
+                    event.value.length < 10 -> {
                         errorMsg = "Nomor telepon minimal 10 digit"
+                    }
+                    event.value.length > 14 -> {
+                        errorMsg = "Nomor telepon maksimal 14 digit"
+                    }
+                    !event.value.matches(phoneRegex) -> {
+                        errorMsg = "Masukkan nomor valid (08.. atau +628..) tanpa spasi"
                     }
                 }
                 _uiState.update { it.copy(whatsAppNumberError = errorMsg) }

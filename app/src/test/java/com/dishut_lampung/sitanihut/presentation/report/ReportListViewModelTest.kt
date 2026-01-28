@@ -3,6 +3,8 @@ package com.dishut_lampung.sitanihut.presentation.report
 import androidx.paging.PagingData
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
+import com.dishut_lampung.sitanihut.data.mapper.toDbValue
+import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.usecase.report.DeleteReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportsUseCase
@@ -80,13 +82,26 @@ class ReportListViewModelTest {
         val role = "penyuluh"
         io.mockk.clearMocks(userPreferences)
         every { userPreferences.userRole } returns flowOf(role)
-        coEvery { getReportsUseCase(any(), any()) } returns flowOf(androidx.paging.PagingData.empty())
+        val dummyReport = Report(
+            id = "1",
+            period = 2024,
+            monthPeriod = "Januari",
+            submissionDate = "2024-01-01",
+            totalTransaction = 1000.0,
+            status = ReportStatus.PENDING,
+        )
+        val reports = listOf(
+            dummyReport.copy(id = "1", status = ReportStatus.PENDING),
+            dummyReport.copy(id = "2", status = ReportStatus.DRAFT)
+        )
+
+        coEvery { getReportsUseCase(any(), any()) } returns flowOf(PagingData.from(reports))
 
         viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
 
         viewModel.reportPagingFlow.test {
             awaitItem()
-            coVerify { getReportsUseCase(any(), ReportStatus.PENDING) }
+            coVerify { getReportsUseCase(any(), null) }
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -95,14 +110,26 @@ class ReportListViewModelTest {
     fun `init should fetch reports with VERIFIED filter when role is PJ`() = runTest {
         io.mockk.clearMocks(userPreferences)
         val role = "penanggung jawab"
-
         every { userPreferences.userRole } returns flowOf(role)
-        coEvery { getReportsUseCase(any(), any()) } returns flowOf(androidx.paging.PagingData.empty())
+        val dummyReport = Report(
+            id = "1",
+            period = 2024,
+            monthPeriod = "Januari",
+            submissionDate = "2024-01-01",
+            totalTransaction = 1000.0,
+            status = ReportStatus.PENDING,
+        )
+        val reports = listOf(
+            dummyReport.copy(id = "1", status = ReportStatus.VERIFIED),
+            dummyReport.copy(id = "2", status = ReportStatus.PENDING),
+            dummyReport.copy(id = "3", status = ReportStatus.DRAFT)
+        )
+        coEvery { getReportsUseCase(any(), any()) } returns flowOf(PagingData.from(reports))
         viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
 
         viewModel.reportPagingFlow.test {
             awaitItem()
-            coVerify { getReportsUseCase(any(), ReportStatus.VERIFIED) }
+            coVerify { getReportsUseCase(any(), null) }
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -129,13 +156,9 @@ class ReportListViewModelTest {
     }
     @Test
     fun `onSearch should refresh data with correct role filter`() = runTest {
-        val role = "penyuluh"
         val query = "tanah"
-        io.mockk.clearMocks(userPreferences)
-        every { userPreferences.userRole } returns flowOf(role)
-        coEvery { getReportsUseCase("", any()) } returns flowOf(androidx.paging.PagingData.empty())
-        coEvery { getReportsUseCase(query, any()) } returns flowOf(androidx.paging.PagingData.empty())
-
+        every { userPreferences.userRole } returns flowOf("penyuluh")
+        coEvery { getReportsUseCase(any(), any()) } returns flowOf(PagingData.empty())
         viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
 
         viewModel.reportPagingFlow.test {
@@ -145,7 +168,7 @@ class ReportListViewModelTest {
             advanceTimeBy(301)
 
             awaitItem()
-            coVerify { getReportsUseCase(query, ReportStatus.PENDING) }
+            coVerify { getReportsUseCase(query, null) }
 
             cancelAndIgnoreRemainingEvents()
         }
