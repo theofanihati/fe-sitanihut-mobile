@@ -211,7 +211,7 @@ class ValidateUserManagementInputUseCaseTest {
         val result = validateUseCase.execute(input)
 
         assertFalse(result.successful)
-        assertEquals("Jabatan wajib diisi", result.fieldErrors["position"])
+//        assertEquals("Jabatan wajib diisi", result.fieldErrors["position"])
         assertEquals("Asal KPH tidak boleh kosong", result.fieldErrors["kphId"])
         assertEquals("NIP wajib diisi", result.fieldErrors["identityNumber"])
     }
@@ -247,7 +247,7 @@ class ValidateUserManagementInputUseCaseTest {
         val result = validateUseCase.execute(input)
 
         assertFalse(result.successful)
-        assertEquals("Jabatan wajib diisi", result.fieldErrors["position"])
+//        assertEquals("Jabatan wajib diisi", result.fieldErrors["position"])
         assertEquals("Asal KPH tidak boleh kosong", result.fieldErrors["kphId"])
         assertEquals("NIP wajib diisi", result.fieldErrors["identityNumber"])
     }

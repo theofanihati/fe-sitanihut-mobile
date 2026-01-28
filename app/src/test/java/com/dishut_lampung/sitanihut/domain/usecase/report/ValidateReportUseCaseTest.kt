@@ -19,6 +19,7 @@ class ValidateReportUseCaseTest {
         validateReportInput = ValidateReportInputUseCase()
     }
     private val validPlantingSemusim = MasaTanam(
+        id = "1",
         commodityId = "1",
         plantType = "semusim",
         plantDate = "2024-01-01",
@@ -26,6 +27,7 @@ class ValidateReportUseCaseTest {
         amount = "100"
     )
     private val validPlantingTahunan = MasaTanam(
+        id = "1",
         commodityId = "2",
         plantType = "tahunan",
         plantDate = "",
@@ -33,6 +35,7 @@ class ValidateReportUseCaseTest {
         amount = "50",
     )
     private val validHarvest = MasaPanen(
+        id = "1",
         harvestDate = "2024-05-01",
         commodityId = "1",
         unitPrice = "5000",
@@ -92,6 +95,7 @@ class ValidateReportUseCaseTest {
     @Test
     fun `execute should return error if harvest price contains invalid chars`() {
         val invalidHarvest = MasaPanen(
+            id = "1",
             harvestDate = "2024-01-01", commodityId = "1",
             unitPrice = "abc", amount = "10"
         )
