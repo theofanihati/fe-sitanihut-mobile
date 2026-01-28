@@ -41,8 +41,9 @@ class ReportListViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferences.userRole.collect { role ->
                 val isUserPetani = role.equals("petani", ignoreCase = true)
+                val isUserPj = role.equals("penanggung jawab", ignoreCase = true)
                 _uiState.update {
-                    it.copy(isPetani = isUserPetani)
+                    it.copy(isPetani = isUserPetani, isPj = isUserPj)
                 }
             }
         }
@@ -56,14 +57,15 @@ class ReportListViewModel @Inject constructor(
         val query = state.searchQuery
         val userSelectedStatus = state.selectedStatus
 
-        val statusFilter = userSelectedStatus ?: when {
-            role.equals("penyuluh", ignoreCase = true) -> ReportStatus.PENDING
-
-            role.equals("penanggung jawab", ignoreCase = true) ||
-                    role.equals("penanggung-jawab", ignoreCase = true) -> ReportStatus.VERIFIED
-
-            else -> null
-        }
+//        val statusFilter = userSelectedStatus ?: when {
+//            role.equals("penyuluh", ignoreCase = true) -> ReportStatus.PENDING
+//
+//            role.equals("penanggung jawab", ignoreCase = true) ||
+//                    role.equals("penanggung-jawab", ignoreCase = true) -> ReportStatus.VERIFIED
+//
+//            else -> null
+//        }
+        val statusFilter = userSelectedStatus
 
         Triple(query, statusFilter, role)
     }
@@ -72,7 +74,22 @@ class ReportListViewModel @Inject constructor(
         .flatMapLatest { (query, status, role) ->
             getReportsUseCase(query, status)
                 .map { pagingData ->
-                    pagingData.map { report -> report.toUiModel() }
+                    pagingData.filter { report ->
+                        val isPenyuluh = role.equals("penyuluh", ignoreCase = true)
+                        val isPj = role.equals("penanggung jawab", ignoreCase = true) ||
+                                role.equals("penanggung-jawab", ignoreCase = true)
+
+                        if (isPenyuluh) {
+                            report.status != ReportStatus.DRAFT
+                        } else if (isPj) {
+                            report.status != ReportStatus.DRAFT && report.status != ReportStatus.PENDING
+                        } else {
+                            true
+                        }
+                    }
+                }
+                .map { filteredPagingData ->
+                    filteredPagingData.map { report -> report.toUiModel() }
                 }
                 .cachedIn(viewModelScope)
         }

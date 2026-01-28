@@ -7,6 +7,7 @@ data class ReportListUiState(
     val searchQuery: String = "",
     val selectedStatus: ReportStatus? = null,
     val isPetani: Boolean = false,
+    val isPj: Boolean = false,
     val isFilterSheetVisible: Boolean = false,
     val isOptionSheetVisible: Boolean = false,
     val selectedReportId: String? = null,

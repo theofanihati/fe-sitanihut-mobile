@@ -60,8 +60,8 @@ fun NavGraph(
         composable(route = Screen.HomePenyuluh.route) {
             HomePagePenyuluhRoute(
                 modifier = modifier,
-                onNavigateToDetail = {
-                    navController.navigate("profile_penyuluh_screen")
+                onNavigateToDetail = { id : String ->
+                    navController.navigateSingleTop("report_detail/$id")
                 },
                 onNavigateToCommodity = {
                     navController.navigate("data_commodity")
@@ -86,8 +86,8 @@ fun NavGraph(
         composable(route = Screen.HomeKkph.route) {
             HomePagePenanggungJawabRoute(
                 modifier = modifier,
-                onNavigateToDetail = {
-                    navController.navigate("profile_kkph_screen")
+                onNavigateToDetail = { id : String ->
+                    navController.navigateSingleTop("report_detail/$id")
                 },
                 onNavigateToCommodity = {
                     navController.navigate("data_commodity")

@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,6 +46,7 @@ import com.dishut_lampung.sitanihut.presentation.shared.components.file_uploader
 import com.dishut_lampung.sitanihut.presentation.shared.components.message.ErrorMessage
 import com.dishut_lampung.sitanihut.presentation.shared.theme.Dimens.ScreenPadding
 import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
+import com.dishut_lampung.sitanihut.presentation.shared.theme.blue
 import com.dishut_lampung.sitanihut.util.formatRupiah
 import com.dishut_lampung.sitanihut.util.openFileOrUrl
 import kotlinx.coroutines.delay
@@ -387,7 +390,8 @@ fun ReportDetailContent(
             if (canVerify) {
                 Button(
                     onClick = { onEvent(ReportDetailEvent.OnVerifyClick) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = blue)
                 ) {
                     Text("Verifikasi")
                 }
@@ -396,7 +400,8 @@ fun ReportDetailContent(
             if (canApprove) {
                 Button(
                     onClick = { onEvent(ReportDetailEvent.OnApproveClick) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                 ) {
                     Text("Setujui")
                 }

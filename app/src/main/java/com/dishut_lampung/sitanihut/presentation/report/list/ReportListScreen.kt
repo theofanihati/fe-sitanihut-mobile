@@ -316,16 +316,17 @@ fun ReportListScreen(
                     }
                 }
             }
-
-            FloatingActionButton(
-                onClick = onNavigateToAddReport,
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Tambah Laporan")
+            if (state.isPetani) {
+                FloatingActionButton(
+                    onClick = onNavigateToAddReport,
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Tambah Laporan")
+                }
             }
 
             AnimatedVisibility(
@@ -390,7 +391,9 @@ fun ReportListScreen(
             onDismissRequest = { onEvent(ReportListEvent.OnReportOptionSheetDismiss) },
             onFilterSelected = { status ->
                 onEvent(ReportListEvent.OnFilterChange(status))
-            }
+            },
+            isPetani = state.isPetani,
+            isPj = state.isPj
         )
     }
 

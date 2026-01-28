@@ -20,6 +20,7 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -29,14 +30,28 @@ import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportFilterPengajuanBottomSheet(
+    isPetani: Boolean,
+    isPj: Boolean,
     currentFilter: ReportStatus?, // null = Semua
     onDismissRequest: () -> Unit,
     onFilterSelected: (ReportStatus?) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
 
-    val filterOptions = listOf<ReportStatus?>(null) + ReportStatus.values()
+    val filterOptions = remember(isPetani) {
+        val allStatuses = listOf<ReportStatus?>(null) + ReportStatus.values()
+        when {
+            isPetani -> allStatuses
 
+            isPj -> allStatuses.filter {
+                it != ReportStatus.DRAFT && it != ReportStatus.PENDING
+            }
+
+            else -> allStatuses.filter {
+                it != ReportStatus.DRAFT
+            }
+        }
+    }
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
