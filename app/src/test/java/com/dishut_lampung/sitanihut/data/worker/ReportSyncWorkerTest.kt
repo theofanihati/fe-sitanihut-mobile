@@ -107,10 +107,11 @@ class ReportSyncWorkerTest {
             |"nte": 0.0,
             |"catatan_petani":"",
             |"status": "menunggu",
-            | "masa_tanam":[],
-            | "masa_panen":[],
+            |"masa_tanam": [{"tanggal": "2024-01-01", "id_komoditas": "K01", "jumlah": "100", "usia_tanam": "10"}],
+            |"masa_panen": [{"tanggal": "2024-03-01", "id_komoditas": "K01", "jumlah": "500", "harga_satuan": "15000"}],
             |"updated_at": ""}""".trimMargin()
-        val pendingReport = createReportEntity(oldId, SyncStatus.PENDING_CREATE, oldPayload)
+        val attachmentsJson = """[{"id": null, "filePath": "/sdcard/photo.jpg", "isLocal": true}]"""
+        val pendingReport = createReportEntity(oldId, SyncStatus.PENDING_CREATE, oldPayload, attachmentsJson)
 
         coEvery { reportDao.getAllUnsyncedReports() } returns listOf(pendingReport)
         coEvery { reportDao.upsertAll(any()) } just Runs
@@ -165,6 +166,28 @@ class ReportSyncWorkerTest {
                             list.first().jsonPayload == null
                 }
             )
+        }
+    }
+
+    @Test
+    fun `syncReview success should update status to SYNCED`() = runTest {
+        val reportId = "review-123"
+        val reviewReport = createReportEntity(reportId, SyncStatus.PENDING_REVIEW, jsonPayload = null).copy(
+            status = "disetujui"
+        )
+
+        coEvery { reportDao.getAllUnsyncedReports() } returns listOf(reviewReport)
+        coEvery { reportDao.upsertAll(any()) } just Runs
+
+        val apiResponse = ApiResponse<Any?>(statusCode = 200, message = "Updated", data = Any())
+        coEvery { apiService.submitReport(any(), any(), any()) } returns apiResponse
+
+        val worker = buildWorker()
+        val result = worker.doWork()
+
+        assertEquals(ListenableWorker.Result.success(), result)
+        coVerify(exactly = 1) {
+            apiService.submitReport(eq(reportId), any(), any())
         }
     }
 
