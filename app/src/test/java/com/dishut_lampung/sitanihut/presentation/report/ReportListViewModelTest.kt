@@ -3,7 +3,6 @@ package com.dishut_lampung.sitanihut.presentation.report
 import androidx.paging.PagingData
 import app.cash.turbine.test
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
-import com.dishut_lampung.sitanihut.data.mapper.toDbValue
 import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.usecase.report.DeleteReportUseCase
@@ -12,6 +11,7 @@ import com.dishut_lampung.sitanihut.domain.usecase.report.SubmitReportUseCase
 import com.dishut_lampung.sitanihut.presentation.report.list.ReportListEvent
 import com.dishut_lampung.sitanihut.presentation.report.list.ReportListViewModel
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
+import com.dishut_lampung.sitanihut.util.PdfService
 import com.dishut_lampung.sitanihut.util.Resource
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -43,7 +43,7 @@ class ReportListViewModelTest {
     private val deleteReportUseCase: DeleteReportUseCase = mockk()
     private val submitReportUseCase: SubmitReportUseCase = mockk()
     private val userPreferences: UserPreferences = mockk()
-
+    private val pdfService: PdfService = mockk()
     private lateinit var viewModel: ReportListViewModel
 
     @Before
@@ -52,12 +52,14 @@ class ReportListViewModelTest {
         every { getReportsUseCase(any(), any()) } returns flowOf(PagingData.from(emptyList()))
         coEvery { deleteReportUseCase(any()) } returns Resource.Success(Unit)
         coEvery { submitReportUseCase(any()) } returns Resource.Success(Unit)
+        coEvery { pdfService.generatePlaceholderPdf(any(), any()) } returns Resource.Success("/path/dummy.pdf")
 
         viewModel = ReportListViewModel(
             getReportsUseCase,
             deleteReportUseCase,
             submitReportUseCase,
-            userPreferences
+            userPreferences,
+            pdfService
         )
     }
 
@@ -67,8 +69,6 @@ class ReportListViewModelTest {
         io.mockk.clearMocks(userPreferences)
         every { userPreferences.userRole } returns flowOf(role)
         coEvery { getReportsUseCase(any(), any()) } returns flowOf(androidx.paging.PagingData.empty())
-
-        viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
 
         viewModel.reportPagingFlow.test {
             awaitItem()
@@ -97,8 +97,6 @@ class ReportListViewModelTest {
 
         coEvery { getReportsUseCase(any(), any()) } returns flowOf(PagingData.from(reports))
 
-        viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
-
         viewModel.reportPagingFlow.test {
             awaitItem()
             coVerify { getReportsUseCase(any(), null) }
@@ -125,8 +123,6 @@ class ReportListViewModelTest {
             dummyReport.copy(id = "3", status = ReportStatus.DRAFT)
         )
         coEvery { getReportsUseCase(any(), any()) } returns flowOf(PagingData.from(reports))
-        viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
-
         viewModel.reportPagingFlow.test {
             awaitItem()
             coVerify { getReportsUseCase(any(), null) }
@@ -139,27 +135,30 @@ class ReportListViewModelTest {
         io.mockk.clearMocks(userPreferences)
         every { userPreferences.userRole } returns flowOf("petani")
 
-        viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
-
         advanceUntilIdle()
         assertTrue(viewModel.uiState.value.isPetani)
     }
 
     @Test
     fun `when role is Penyuluh, isPetani state should be false`() = runTest {
-        io.mockk.clearMocks(userPreferences)
         every { userPreferences.userRole } returns flowOf("penyuluh")
-        viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
+        viewModel = ReportListViewModel(
+            getReportsUseCase,
+            deleteReportUseCase,
+            submitReportUseCase,
+            userPreferences,
+            pdfService
+        )
         advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.isPetani)
     }
+
     @Test
     fun `onSearch should refresh data with correct role filter`() = runTest {
         val query = "tanah"
         every { userPreferences.userRole } returns flowOf("penyuluh")
         coEvery { getReportsUseCase(any(), any()) } returns flowOf(PagingData.empty())
-        viewModel = ReportListViewModel(getReportsUseCase, deleteReportUseCase, submitReportUseCase, userPreferences)
 
         viewModel.reportPagingFlow.test {
             awaitItem()
@@ -303,5 +302,85 @@ class ReportListViewModelTest {
 
         coVerify { submitReportUseCase(reportId) }
         assertNotNull(viewModel.uiState.value.successMessage)
+    }
+
+    @Test
+    fun `Export List success should call pdfService and show success message`() = runTest {
+        val expectedPath = "/storage/emulated/0/Documents/Laporan.pdf"
+        viewModel.onEvent(ReportListEvent.OnSearchQueryChange("Jagung"))
+        coEvery {
+            pdfService.generatePlaceholderPdf(any(), any())
+        } coAnswers {
+            delay(100)
+            Resource.Success(expectedPath)
+        }
+
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(ReportListEvent.OnExportList)
+
+            var state = awaitItem()
+            while (!state.isLoading) {
+                state = awaitItem()
+            }
+            assertTrue(state.isLoading)
+
+            state = awaitItem()
+            assertFalse(state.isLoading)
+            assertEquals(expectedPath, state.successMessage)
+
+            coVerify {
+                pdfService.generatePlaceholderPdf(
+                    fileName = match { it.startsWith("Data_Laporan") },
+                    reportTitle = "DAFTAR LAPORAN"
+                )
+            }
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export Detail success should call pdfService same as List`() = runTest {
+        val expectedPath = "/path/detail.pdf"
+        coEvery {
+            pdfService.generatePlaceholderPdf(any(), any())
+        } returns Resource.Success(expectedPath)
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(ReportListEvent.OnExportDetail("any-id"))
+
+            var state = awaitItem()
+            if (state.isLoading) state = awaitItem()
+
+            assertEquals(expectedPath, state.successMessage)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `Export failure should show error message`() = runTest {
+        val errorMsg = "Gagal membuat PDF"
+
+        coEvery {
+            pdfService.generatePlaceholderPdf(any(), any())
+        } returns Resource.Error(errorMsg)
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onEvent(ReportListEvent.OnExportList)
+
+            var state = awaitItem()
+            if (state.isLoading) state = awaitItem()
+
+            assertFalse(state.isLoading)
+            assertEquals(errorMsg, state.errorMessage)
+            assertNull(state.successMessage)
+
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 }

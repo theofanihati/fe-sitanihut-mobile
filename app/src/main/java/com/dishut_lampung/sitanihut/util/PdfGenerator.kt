@@ -21,6 +21,11 @@ interface PdfService {
         data: List<T>,
         rowMapper: (T) -> List<String>
     ): Resource<String>
+
+    suspend fun generatePlaceholderPdf(
+        fileName: String,
+        reportTitle: String
+    ): Resource<String>
 }
 
 class PdfServiceImpl @Inject constructor(
@@ -111,6 +116,70 @@ class PdfServiceImpl @Inject constructor(
             // ===== SIMPAN FILE =====
             val dir =
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val file = File(dir, "$fileName.pdf")
+
+            pdfDocument.writeTo(FileOutputStream(file))
+            pdfDocument.close()
+
+            Resource.Success("PDF tersimpan di: ${file.absolutePath}")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Error("Gagal membuat PDF: ${e.localizedMessage}")
+        }
+    }
+
+    override suspend fun generatePlaceholderPdf(
+        fileName: String,
+        reportTitle: String
+    ): Resource<String> = withContext(Dispatchers.IO) {
+        try {
+            val pdfDocument = PdfDocument()
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+            val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create()
+            val page = pdfDocument.startPage(pageInfo)
+            val canvas = page.canvas
+
+            var yPosition = drawKopSurat(canvas, paint) + 40f
+
+            paint.textAlign = Paint.Align.CENTER
+            paint.textSize = 14f
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            paint.color = Color.BLACK
+
+            canvas.drawText("REKAPITULASI DATA", (pageWidth / 2).toFloat(), yPosition, paint)
+            yPosition += 20f
+            canvas.drawText(reportTitle.uppercase(), (pageWidth / 2).toFloat(), yPosition, paint)
+
+            yPosition += 15f
+            paint.textSize = 10f
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
+            val dateStr = SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID")).format(Date())
+            canvas.drawText("Dicetak pada: $dateStr", (pageWidth / 2).toFloat(), yPosition, paint)
+
+            yPosition += 150f
+            paint.textSize = 12f
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+            paint.color = Color.DKGRAY
+
+            val messages = listOf(
+                "Mohon Maaf,",
+                "Fitur export data laporan lengkap sedang",
+                "dalam proses integrasi dengan server",
+                "",
+                "Pantau terus pada update berikutnya ya!"
+            )
+
+            for (line in messages) {
+                canvas.drawText(line, (pageWidth / 2).toFloat(), yPosition, paint)
+                yPosition += 20f
+            }
+
+
+            drawFooter(canvas, paint)
+            pdfDocument.finishPage(page)
+
+            val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             val file = File(dir, "$fileName.pdf")
 
             pdfDocument.writeTo(FileOutputStream(file))

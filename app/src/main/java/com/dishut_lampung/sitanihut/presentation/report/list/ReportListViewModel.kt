@@ -11,6 +11,8 @@ import com.dishut_lampung.sitanihut.domain.usecase.report.DeleteReportUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.GetReportsUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.report.SubmitReportUseCase
 import com.dishut_lampung.sitanihut.presentation.home_page.petani.toUiModel
+import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniEvent
+import com.dishut_lampung.sitanihut.util.PdfService
 import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,7 +32,8 @@ class ReportListViewModel @Inject constructor(
     private val getReportsUseCase: GetReportsUseCase,
     private val deleteReportUseCase: DeleteReportUseCase,
     private val submitReportUseCase: SubmitReportUseCase,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val pdfService: PdfService,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ReportListUiState())
@@ -112,7 +115,10 @@ class ReportListViewModel @Inject constructor(
                 _uiState.update { it.copy(isDeleteDialogVisible = false) }
             }
             ReportListEvent.OnDeleteConfirm -> deleteReport()
-
+            ReportListEvent.OnExportList -> exportReportList()
+            is ReportListEvent.OnExportDetail -> {
+                exportReportList()
+            }
             ReportListEvent.OnSubmitClick -> {
                 _uiState.update { it.copy(isOptionSheetVisible = false, isSubmitDialogVisible = true) }
             }
@@ -140,6 +146,28 @@ class ReportListViewModel @Inject constructor(
             }
             ReportListEvent.OnDismissFilterSheet -> {
                 _uiState.update { it.copy(isFilterSheetVisible = false) }
+            }
+        }
+    }
+    private fun exportReportList() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+
+            val result = pdfService.generatePlaceholderPdf(
+                fileName = "Data_Laporan${System.currentTimeMillis()}",
+                reportTitle = "DAFTAR LAPORAN"
+            )
+
+            _uiState.update { it.copy(isLoading = false) }
+
+            when(result) {
+                is Resource.Success -> {
+                    _uiState.update { it.copy(successMessage = result.data) }
+                }
+                is Resource.Error -> {
+                    _uiState.update { it.copy(errorMessage = result.message) }
+                }
+                else -> {}
             }
         }
     }

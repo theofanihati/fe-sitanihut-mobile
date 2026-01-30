@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.presentation.report.list
 
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
+import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniEvent
 
 data class ReportListUiState(
     val isLoading: Boolean = false,
@@ -30,6 +31,8 @@ sealed class ReportListEvent {
 
 //    data class OnViewDetailClick(val reportId: String) : PengajuanLaporanEvent()
 //    data class OnEditClick(val reportId: String) : PengajuanLaporanEvent()
+    object OnExportList : ReportListEvent()
+    data class OnExportDetail(val id: String) : ReportListEvent()
 
     object OnSubmitClick : ReportListEvent()
     object OnSubmitConfirm : ReportListEvent()

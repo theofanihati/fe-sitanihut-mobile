@@ -23,10 +23,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -54,6 +56,7 @@ import com.dishut_lampung.sitanihut.domain.model.Report
 import com.dishut_lampung.sitanihut.domain.model.ReportStatus
 import com.dishut_lampung.sitanihut.domain.model.ReportUiModel
 import com.dishut_lampung.sitanihut.presentation.home_page.petani.toUiModel
+import com.dishut_lampung.sitanihut.presentation.petani.list.PetaniEvent
 import com.dishut_lampung.sitanihut.presentation.shared.components.CustomCircularProgressIndicator
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.AnimatedMessage
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
@@ -210,20 +213,33 @@ fun ReportListScreen(
             ) {
 
                 Spacer(modifier = Modifier.height(100.dp))
-
-                Text(
-                    text = if (state.isPetani) {
-                        "Pengajuan Laporan"
-                    } else {
-                        "Periksa Laporan"
-                    },
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                    ),
-                    color = MaterialTheme.colorScheme.tertiary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (state.isPetani) {
+                            "Pengajuan Laporan"
+                        } else {
+                            "Periksa Laporan"
+                        },
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                        ),
+                        color = MaterialTheme.colorScheme.tertiary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(
+                        onClick = { onEvent(ReportListEvent.OnExportList) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Download,
+                            contentDescription = "Export Laporan",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
@@ -418,7 +434,12 @@ fun ReportListScreen(
             onSubmitClick = {
                 onEvent(ReportListEvent.OnSubmitClick)
             },
-            isEditable = isEditable
+            isEditable = isEditable,
+            onExportClick = {
+                state.selectedReportId?.let { id ->
+                    onEvent(ReportListEvent.OnExportDetail(id))
+                }
+            },
         )
     }
 
