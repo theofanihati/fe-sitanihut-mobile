@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,6 +29,9 @@ class ProfileRepositoryImpl @Inject constructor(
     override fun getUserDetail(userId: String): Flow<Resource<UserDetail>> {
         return userDao.getUserById(userId)
             .distinctUntilChanged()
+            .onStart {
+                syncUserDetail()
+            }
             .map { userEntity ->
             if (userEntity != null) {
                 Resource.Success(userEntity.toDomain())

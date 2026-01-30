@@ -22,11 +22,13 @@ import com.dishut_lampung.sitanihut.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 
 @HiltViewModel
@@ -59,46 +61,39 @@ class PetaniFormViewModel @Inject constructor(
 
     private fun loadInitialData() {
         viewModelScope.launch {
-            val loggedInUserId = userPreferences.userId.first() ?: ""
-            val role = userPreferences.userRole.first() ?: ""
+            _uiState.update { it.copy(isLoading = true) }
 
-            if (loggedInUserId.isNotEmpty()) {
-                getMyProfileUseCase(loggedInUserId).onEach { result ->
-                    if (result is Resource.Success) {
-                        val myProfile = result.data
+            val (userId, role) = getUserSession()
+            val kphList = getKphListUseCase().first()
+            allKphOptions = kphList
 
-                        if (myProfile != null && !myProfile.kphId.isNullOrBlank()) {
-                            loggedInUserKphId = myProfile.kphId
-                            if (currentPetaniId == null) {
-                                _uiState.update {
-                                    it.copy(
-                                        selectedKphId = myProfile.kphId,
-                                        selectedKphName = myProfile.kphName ?: "", // Isi nama agar dropdown terisi
-                                    )
-                                }
-                                loadKthOptions(role, myProfile.kphId)
-                            }
-                        }
-                    }
-                }.launchIn(this)
+            val lockResult = determineKphLockState(userId, kphList)
+            loggedInUserKphId = lockResult.kphId
+
+            _uiState.update { state ->
+                val finalOptions = if (lockResult.isLocked) {
+                    kphList.filter { it.id == lockResult.kphId }
+                } else {
+                    kphList
+                }
+
+                if (currentPetaniId == null) {
+                    state.copy(
+                        kphOptions = finalOptions,
+                        selectedKphId = lockResult.kphId ?: "",
+                        selectedKphName = lockResult.kphName,
+                        isKphLocked = lockResult.isLocked,
+                        isLoading = false
+                    )
+                } else {
+                    state.copy(kphOptions = kphList, isLoading = false)
+                }
             }
 
-            getKphListUseCase().onEach { kphList ->
-                allKphOptions = kphList
-                _uiState.update { state ->
-                    if (loggedInUserKphId != null && currentPetaniId == null) {
-                        val myKph = kphList.find { it.id == loggedInUserKphId }
-                        val lockedOptions = if (myKph != null) listOf(myKph) else kphList
+            if (lockResult.isLocked && lockResult.kphId != null) {
+                loadKthOptions(role, lockResult.kphId)
+            }
 
-                        state.copy(
-                            kphOptions = lockedOptions,
-                            selectedKphName = myKph?.name ?: state.selectedKphName
-                        )
-                    } else {
-                        state.copy(kphOptions = kphList)
-                    }
-                }
-            }.launchIn(this)
             if (currentPetaniId != null) {
                 loadExistingPetaniData(currentPetaniId, role)
             }
@@ -190,6 +185,9 @@ class PetaniFormViewModel @Inject constructor(
             }
 
             is PetaniFormEvent.OnKphSelected -> {
+                if (loggedInUserKphId != null && event.kph.id != loggedInUserKphId && currentPetaniId == null) {
+                    return
+                }
                 _uiState.update {
                     it.copy(
                         selectedKphId = event.kph.id,
@@ -265,6 +263,41 @@ class PetaniFormViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    private suspend fun getUserSession(): Pair<String, String> {
+        val userId = userPreferences.userId.first() ?: ""
+        val role = userPreferences.userRole.first() ?: ""
+        return Pair(userId, role)
+    }
+
+    private data class KphLockResult(val kphId: String?, val kphName: String, val isLocked: Boolean)
+
+    private suspend fun determineKphLockState(userId: String, kphList: List<Kph>): KphLockResult {
+        if (userId.isEmpty()) return KphLockResult(null, "", false)
+
+        try {
+            return withTimeout(3000L) {
+                val profileResult = getMyProfileUseCase(userId)
+                    .filter { it is Resource.Success || it is Resource.Error }
+                    .first()
+
+                if (profileResult is Resource.Success) {
+                    val profile = profileResult.data
+                    val myKphId = profile?.kphId
+
+                    if (!myKphId.isNullOrBlank()) {
+                        val matchingKph = kphList.find { it.id == myKphId }
+                        if (matchingKph != null) {
+                            return@withTimeout KphLockResult(myKphId, matchingKph.name, true)
+                        }
+                    }
+                }
+                KphLockResult(null, "", false)
+            }
+        } catch (e: Exception) {
+            return KphLockResult(null, "", false)
         }
     }
 

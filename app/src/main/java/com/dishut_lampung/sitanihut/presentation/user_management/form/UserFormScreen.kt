@@ -320,7 +320,7 @@ fun UserFormScreen(
                     onEvent(UserFormEvent.OnKphSearchTextChange(newText))
                 },
                 errorMessage = uiState.kphError,
-                enabled = isFormEnabled
+                enabled = isFormEnabled && !uiState.isKphLocked
             )
 
             Spacer(modifier = Modifier.height(4.dp))

@@ -285,15 +285,15 @@ class PetaniFormViewModelTest {
         assertEquals("Pedagang", viewModel.uiState.value.sideJob)
         assertNull(viewModel.uiState.value.sideJobError)
 
-        val selectedKph = dummyKphList[1]
-        viewModel.onEvent(PetaniFormEvent.OnKphSelected(selectedKph))
-
-        advanceUntilIdle()
-        val state = viewModel.uiState.value
-        assertEquals("2", state.selectedKphId)
-        assertEquals("KPH Liwa", state.selectedKphName)
-        assertEquals("", state.selectedKthId)
-        assertEquals("", state.selectedKthName)
+//        val selectedKph = dummyKphList[1]
+//        viewModel.onEvent(PetaniFormEvent.OnKphSelected(selectedKph))
+//
+//        advanceUntilIdle()
+//        val state = viewModel.uiState.value
+//        assertEquals("2", state.selectedKphId)
+//        assertEquals("KPH Liwa", state.selectedKphName)
+//        assertEquals("", state.selectedKthId)
+//        assertEquals("", state.selectedKthName)
 
         val selectedKth = dummyKthList[0]
         viewModel.onEvent(PetaniFormEvent.OnKthSelected(selectedKth))

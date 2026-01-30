@@ -247,7 +247,7 @@ fun PetaniFormScreen(
                     onEvent(PetaniFormEvent.OnKphSearchTextChange(newText))
                 },
                 errorMessage = uiState.kphError,
-                enabled = !uiState.isKphLocked
+                enabled = isFormEnabled && !uiState.isKphLocked
             )
 
             Spacer(modifier = Modifier.height(4.dp))
