@@ -544,6 +544,7 @@ fun InfoItem(label: String, value: String?) {
         Text(
             text = ": ${valueString}",
             style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(0.6f),
             textAlign = TextAlign.Start
         )
