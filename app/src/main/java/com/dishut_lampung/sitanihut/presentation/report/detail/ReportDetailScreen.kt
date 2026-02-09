@@ -202,7 +202,7 @@ fun ReportDetailScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.3f))
+                            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
                             .clickable(enabled = false) {},
                         contentAlignment = Alignment.Center
                     ) {

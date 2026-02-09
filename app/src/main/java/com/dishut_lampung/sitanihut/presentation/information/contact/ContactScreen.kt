@@ -165,7 +165,7 @@ private fun ContactItem(
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onSurface,
             lineHeight = 20.sp
         )
     }
@@ -198,7 +198,7 @@ private fun SocialMediaItem(
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.SemiBold
                 ),
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = handle,

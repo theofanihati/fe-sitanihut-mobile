@@ -45,7 +45,7 @@ fun <T> CustomSearchableOutlinedDropdown(
     rounded: Int = 40,
     enabled: Boolean = true,
     borderColor: Color = MaterialTheme.colorScheme.tertiary,
-    bgColor: Color = Color.White,
+    bgColor: Color = MaterialTheme.colorScheme.background,
     debounceTime: Long = 500L
 ) {
     var expanded by remember { mutableStateOf(false) }

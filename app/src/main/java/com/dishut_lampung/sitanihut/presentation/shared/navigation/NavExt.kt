@@ -1,17 +1,27 @@
 package com.dishut_lampung.sitanihut.presentation.shared.navigation
 
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavOptionsBuilder
 
 
 fun NavController.navigateSingleTop(route : String) {
     navigate(route) {
-        popUpTo(route) { inclusive = true }
+//        popUpTo(route) { inclusive = true }
+        launchSingleTop = true
+//        restoreState = true
+    }
+}
+
+fun NavController.navigateToMenu(route : String) {
+    navigate(route) {
+        popUpTo(graph.findStartDestination().id) {
+            saveState = true
+        }
         launchSingleTop = true
         restoreState = true
     }
 }
-
 
 fun NavController.navigateAndClearStack(route : String) {
     this.navigate(route) {

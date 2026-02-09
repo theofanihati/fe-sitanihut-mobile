@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.presentation.user_management.detail
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -103,7 +104,11 @@ fun UserDetailScreen(
     user: UserDetail?,
     errorMessage: String?,
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         val isPreview = LocalInspectionMode.current
         if (isPreview) {
             Image(

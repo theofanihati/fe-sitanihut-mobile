@@ -59,7 +59,7 @@ val landingPages = listOf(
     ),
     LandingPage(
         title = "Pantau Status Ajuanmu",
-        subtitle = "Laporan akan diperiksa, cek berkala status pengajuan laporan anda, anda tetap bisa melakukan perubahan laporan yang ditolak dan mengajukannya kembali",
+        subtitle = "Laporan akan diperiksa, cek berkala status pengajuan laporan anda",
         imageResId = R.drawable.onboarding_img3,
         contentDescriptionResId = R.string.auth_image_5
     )

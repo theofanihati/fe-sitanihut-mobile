@@ -41,13 +41,13 @@ fun NavGraph(
                     navController.navigateSingleTop("report_detail/$id")
                 },
                 onNavigateToInfo = {
-                    navController.navigate("information")
+                    navController.navigateToMenu("information")
                 },
                 onNavigateToCommodity = {
-                    navController.navigate("data_commodity")
+                    navController.navigateToMenu("data_commodity")
                 },
                 onNavigateToReportSubmission = {
-                    navController.navigate("report_list")
+                    navController.navigateToMenu("report_list")
                 },
                 onNavigateToEdit = { id: String ->
                     navController.navigateSingleTop(
@@ -64,22 +64,22 @@ fun NavGraph(
                     navController.navigateSingleTop("report_detail/$id")
                 },
                 onNavigateToCommodity = {
-                    navController.navigate("data_commodity")
+                    navController.navigateToMenu("data_commodity")
                 },
                 onNavigateToKTH = {
-                    navController.navigate("data_kth")
+                    navController.navigateToMenu("data_kth")
                 },
                 onNavigateToPetani = {
-                    navController.navigate("data_petani")
+                    navController.navigateToMenu("data_petani")
                 },
                 onNavigateToReportVerification = {
-                    navController.navigate("report_list")
+                    navController.navigateToMenu("report_list")
                 },
                 onNavigateToUserManagement = {
-                    navController.navigate("user-management")
+                    navController.navigateToMenu("user-management")
                 },
                 onNavigateToInfo = {
-                    navController.navigate("information")
+                    navController.navigateToMenu("information")
                 },
             )
         }
@@ -90,25 +90,25 @@ fun NavGraph(
                     navController.navigateSingleTop("report_detail/$id")
                 },
                 onNavigateToCommodity = {
-                    navController.navigate("data_commodity")
+                    navController.navigateToMenu("data_commodity")
                 },
                 onNavigateToKTH = {
-                    navController.navigate("data_kth")
+                    navController.navigateToMenu("data_kth")
                 },
                 onNavigateToPetani = {
-                    navController.navigate("data_petani")
+                    navController.navigateToMenu("data_petani")
                 },
                 onNavigateToPenyuluh = {
-                    navController.navigate("data_penyuluh")
+                    navController.navigateToMenu("data_penyuluh")
                 },
                 onNavigateToReportVerification = {
-                    navController.navigate("report_list")
+                    navController.navigateToMenu("report_list")
                 },
                 onNavigateToUserManagement = {
-                    navController.navigate("user-management")
+                    navController.navigateToMenu("user-management")
                 },
                 onNavigateToInfo = {
-                    navController.navigate("information")
+                    navController.navigateToMenu("information")
                 },
             )
         }

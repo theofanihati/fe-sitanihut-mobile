@@ -55,7 +55,7 @@ fun InformationScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .padding(top = 80.dp)
     ) {
         InformationMenuItem(

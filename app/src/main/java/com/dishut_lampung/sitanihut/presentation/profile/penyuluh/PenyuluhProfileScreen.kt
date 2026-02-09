@@ -1,6 +1,7 @@
 package com.dishut_lampung.sitanihut.presentation.profile.penyuluh
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -110,7 +111,11 @@ fun PenyuluhProfileScreen(
     user: UserDetail?,
     errorMessage: String?,
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         val isPreview = LocalInspectionMode.current
         if (isPreview) {
             Image(

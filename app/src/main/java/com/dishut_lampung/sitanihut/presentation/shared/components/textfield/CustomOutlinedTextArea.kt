@@ -33,7 +33,7 @@ fun CustomOutlinedTextArea(
     maxLines: Int = 5,
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     borderColor: Color = MaterialTheme.colorScheme.tertiary,
-    bgColor: Color = Color.White,
+    bgColor: Color = MaterialTheme.colorScheme.background,
     focusedBorderColor: Color = MaterialTheme.colorScheme.tertiary,
     focusedLabelColor: Color = MaterialTheme.colorScheme.tertiary,
     labelDefaultColor: Color = MaterialTheme.colorScheme.onSurface,
