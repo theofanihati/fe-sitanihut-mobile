@@ -75,7 +75,6 @@ class MainViewModel @Inject constructor(
     init {
         checkAuthStatus()
         observeSessionForSync()
-        checkAndSyncFcmToken()
     }
 
     private fun observeSessionForSync() {
@@ -98,6 +97,7 @@ class MainViewModel @Inject constructor(
                     }
 
                     setupPeriodicSync()
+                    syncCurrentFcmToken()
                 }
             }
         }
@@ -145,6 +145,27 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private fun syncCurrentFcmToken() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM", "Gagal ambil token lokal", task.exception)
+                return@addOnCompleteListener
+            }
+
+            val token = task.result
+            Log.d("FCM", "Token FCM didapat: $token")
+
+            viewModelScope.launch {
+                try {
+                    userRepository.syncFcmToken(token)
+                    Log.d("FCM", "Sukses kirim token ke Backend!")
+                } catch (e: Exception) {
+                    Log.e("FCM", "Gagal kirim token ke Backend: ${e.message}")
+                }
+            }
+        }
+    }
+
     private fun startBackgroundSync() {
         val syncRequest = OneTimeWorkRequestBuilder<DataSyncWorker>()
             .setConstraints(
@@ -167,22 +188,6 @@ class MainViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             userPreferences.clearAllSession()
-        }
-    }
-
-    private fun checkAndSyncFcmToken() {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
-                return@addOnCompleteListener
-            }
-
-            val token = task.result
-            Log.d("FCM", "Current Token: $token")
-
-            viewModelScope.launch {
-                userRepository.syncFcmToken(token)
-            }
         }
     }
 }

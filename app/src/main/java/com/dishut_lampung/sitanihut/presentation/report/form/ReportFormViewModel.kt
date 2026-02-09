@@ -174,6 +174,8 @@ class ReportFormViewModel @Inject constructor(
             }
             is ReportFormEvent.OnSubmit -> {
 //                _uiState.update { it.copy(showConfirmDialog = false) }
+                if (_uiState.value.isLoading) return
+                _uiState.update { it.copy(showConfirmDialog = false) }
                 submitReport(event.isAjukan)
             }
             ReportFormEvent.OnDismissMessage -> _uiState.update { it.copy(error = null, successMessage = null) }

@@ -33,7 +33,7 @@ android {
     buildTypes {
         debug {
             enableUnitTestCoverage = true
-            buildConfigField("String", "BASE_URL", "\"https://api-sipetahut.palum.id/api/\"")
+            buildConfigField("String", "BASE_URL", "\"https://api-sitanihut.palum.id/api/\"")
         }
 
         release {
