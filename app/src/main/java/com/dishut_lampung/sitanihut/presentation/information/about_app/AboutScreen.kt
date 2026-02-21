@@ -84,7 +84,7 @@ fun AboutScreen() {
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Versi 1.0.0 (Beta)",
+                text = "Versi 1.0.0",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 textAlign = TextAlign.Center
@@ -93,7 +93,7 @@ fun AboutScreen() {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "© 2025 Dinas Kehutanan Provinsi Lampung",
+                text = "© 2026 Dinas Kehutanan Provinsi Lampung",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 textAlign = TextAlign.Center,

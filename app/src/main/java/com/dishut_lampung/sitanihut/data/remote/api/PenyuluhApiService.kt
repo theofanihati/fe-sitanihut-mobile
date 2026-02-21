@@ -9,14 +9,14 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface PenyuluhApiService {
-    @GET("v1/penyuluh")
+    @GET("v1/user-penyuluh")
     suspend fun getPenyuluhList(
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 50,
         @Query("search") search: String? = null
     ): ApiResponse<PaginatedData<PenyuluhListItemDto>>
 
-    @GET("v1/penyuluh/{id}")
+    @GET("v1/user-penyuluh/{id}")
     suspend fun getPenyuluhDetail(
         @Path("id") id: String
     ): ApiResponse<PenyuluhDetailDto>

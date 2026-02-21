@@ -439,14 +439,17 @@ fun PlantingItemRow(item: MasaTanam) {
             Text(
                 text = item.plantDate?: "-",
                 style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 text = "${item.plantAge} tahun",
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 text = "${item.amount}",
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
     }
@@ -487,17 +490,20 @@ fun HarvestItemRow(item: MasaPanen) {
             Text(
                 text = formatRupiah(item.unitPrice.toDoubleOrNull() ?: 0.0),
                 style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Text(
                 text = "${item.amount} kg",
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Text(
                 text = formatRupiah(totalPrice),
                 fontWeight = FontWeight.SemiBold,
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
     }

@@ -17,30 +17,30 @@ import retrofit2.http.Query
 import retrofit2.http.Streaming
 
 interface PetaniApiService {
-    @GET("v1/petani")
+    @GET("v1/user-petani")
     suspend fun getPetaniList(
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 50,
         @Query("search") search: String? = null
     ): ApiResponse<PaginatedData<PetaniListItemDto>>
 
-    @GET("v1/petani/{id}")
+    @GET("v1/user-petani/{id}")
     suspend fun getPetaniDetail(
         @Path("id") id: String
     ): ApiResponse<PetaniDetailDto>
 
-    @POST("v1/petani")
+    @POST("v1/user-petani")
     suspend fun createPetani(
         @Body request: CreatePetaniRequestDto
     ): ApiResponse<PetaniDetailDto>
 
-    @PATCH("v1/petani/{id}")
+    @PATCH("v1/user-petani/{id}")
     suspend fun updatePetani(
         @Path("id") id: String,
         @Body request: Map<String, @JvmSuppressWildcards Any?>
     ): ApiResponse<Unit>
 
-    @DELETE("v1/petani/{id}")
+    @DELETE("v1/user-petani/{id}")
     suspend fun deletePetani(
         @Path("id") id: String
     ): ApiResponse<Unit>
