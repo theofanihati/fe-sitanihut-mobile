@@ -237,6 +237,16 @@ class ReportFormViewModel @Inject constructor(
                                 attachments = data.attachments,
                                 plantingDetails = data.plantingDetails.map { domain ->
                                     val loadedUnit = if (domain.plantType.equals("semusim", true)) "kg" else "batang"
+                                    val loadedAge = if (domain.plantType.equals("semusim", true)) {
+                                        calculatePlantAge(changeDateFormat(domain.plantDate))
+                                    } else {
+                                        val age = domain.plantAge
+                                        if (age % 1.0 == 0.0) {
+                                            age.toInt().toString()
+                                        } else {
+                                            age.toString()
+                                        }
+                                    }
                                     PlantingDetailUiState(
                                         id = domain.id,
                                         commodityId = domain.commodityId,
@@ -244,7 +254,7 @@ class ReportFormViewModel @Inject constructor(
                                         plantType = domain.plantType,
                                         unit = loadedUnit,
                                         plantDate = changeDateFormat(domain.plantDate),
-                                        plantAge = calculatePlantAge(changeDateFormat(domain.plantDate)),
+                                        plantAge = loadedAge,
                                         amount = domain.amount.formatApiToUiString()
                                     )
                                 },
@@ -288,6 +298,7 @@ class ReportFormViewModel @Inject constructor(
     }
 
     private fun calculatePlantAge(dateString: String): String {
+        if (dateString.isBlank()) return "0"
         return try {
             val format = SimpleDateFormat("dd/MM/yyyy", Locale("id", "ID"))
             val date = format.parse(dateString) ?: return "0"
@@ -347,28 +358,42 @@ class ReportFormViewModel @Inject constructor(
                 return@launch
             }
 
-            val result = if (currentReportId == null) {
-                createReportUseCase(input)
-            } else {
-                updateReportUseCase(currentReportId!!, input)
-            }
-
-            when (result) {
-                is Resource.Success -> {
-                    val message = if (currentReportId == null) "Berhasil disimpan!" else "Perubahan disimpan!"
-                    _uiState.update { it.copy(
-                        isLoading = false,
-                        successMessage = message,
-                        showConfirmDialog = false,
+            if (currentReportId == null) {
+                val createResult = createReportUseCase(input)
+                when (createResult) {
+                    is Resource.Success -> {
+                        _uiState.update { it.copy(
+                            isLoading = false,
+                            successMessage = "Berhasil disimpan!",
+                            showConfirmDialog = false
                         ) }
+                    }
+                    is Resource.Error -> {
+                        _uiState.update { it.copy(
+                            isLoading = false,
+                            error = createResult.message
+                        ) }
+                    }
+                    else -> {}
                 }
-                is Resource.Error -> {
-                    _uiState.update { it.copy(
-                        isLoading = false,
-                        error = result.message
-                    ) }
+            } else {
+                val updateResult = updateReportUseCase(currentReportId!!, input)
+                when (updateResult) {
+                    is Resource.Success -> {
+                        _uiState.update { it.copy(
+                            isLoading = false,
+                            successMessage = "Perubahan disimpan!",
+                            showConfirmDialog = false
+                        ) }
+                    }
+                    is Resource.Error -> {
+                        _uiState.update { it.copy(
+                            isLoading = false,
+                            error = updateResult.message
+                        ) }
+                    }
+                    else -> {}
                 }
-                else -> {}
             }
         }
     }

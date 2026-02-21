@@ -352,6 +352,15 @@ class ReportRepositoryImpl @Inject constructor(
                     val localData = reportDao.getReportById(item.id)
 
                     val finalEntity = if (localData != null) {
+                        val isPending = localData.syncStatus != SyncStatus.SYNCED
+                        if (isPending) {
+                            localData
+                        } else {
+                            networkEntity.copy(
+                                syncStatus = SyncStatus.SYNCED,
+                                jsonPayload = localData.jsonPayload
+                            )
+                        }
                         networkEntity.copy(
                             syncStatus = if (localData.syncStatus != SyncStatus.SYNCED) localData.syncStatus else SyncStatus.SYNCED,
                             jsonPayload = localData.jsonPayload
