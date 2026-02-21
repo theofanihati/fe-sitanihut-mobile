@@ -79,10 +79,7 @@ class UserRepositoryImpl @Inject constructor(
             val payload = mapOf("fcm_token" to token)
 
              apiService.updateFcmToken(payload)
-            // ATAU gunakan updateUser jika token adalah field user
             // apiService.updateUser("current_user_id", payload)
-
-            // Simulasi sukses (Ganti dengan call API asli)
             apiService.updateUser("me", payload)
             Resource.Success(Unit)
         } catch (e: Exception) {
