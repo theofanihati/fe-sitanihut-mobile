@@ -84,7 +84,9 @@ class UserFormViewModel  @Inject constructor(
             val kphList = getKphListUseCase().first()
             allKphOptions = kphList
 
-            val rolesResult = getRolesUseCase().first()
+            val rolesResult = getRolesUseCase()
+                .filter { it !is Resource.Loading }
+                .first()
             if (rolesResult is Resource.Success) {
                 availableRoles = rolesResult.data ?: emptyList()
             }
@@ -101,7 +103,6 @@ class UserFormViewModel  @Inject constructor(
 
                 val petaniRole = availableRoles.find { it.name.equals("petani", ignoreCase = true) }
                 val defaultRoleId = petaniRole?.id ?: ""
-
                 if (currentUserId == null) {
                     state.copy(
                         kphOptions = finalKphOptions,
@@ -421,12 +422,8 @@ class UserFormViewModel  @Inject constructor(
                     val fullList = result.data ?: emptyList()
                     if (fullList.isNotEmpty()) {
                         val sample = fullList[0]
-//                        android.util.Log.d("DEBUG_KTH", "--- CEK DATA ---")
-//                        android.util.Log.d("DEBUG_KTH", "1. User KPH ID (Target): '$kphId'")
-//                        android.util.Log.d("DEBUG_KTH", "2. Data API KPH ID: '${sample.kphId}'")
-//                        android.util.Log.d("DEBUG_KTH", "3. Data API Nama: '${sample.name}'")
                     } else {
-//                        android.util.Log.d("DEBUG_KTH", "List DB Kosong!")
+//                        Log.d("DEBUG_KTH", "List DB Kosong!")
                     }
                     val filteredKth = fullList.filter { it.kphId == kphId }
 
@@ -444,10 +441,6 @@ class UserFormViewModel  @Inject constructor(
                 }
                 is Resource.Success -> {
                     val data = result.data
-//                    android.util.Log.d("DEBUG_USER", "=== CEK DATA MASUK VIEWMODEL ===")
-//                    android.util.Log.d("DEBUG_USER", "Nama: ${data?.name}")
-//                    android.util.Log.d("DEBUG_USER", "KPH ID: '${data?.kphId}' (Harus ada isinya)")
-//                    android.util.Log.d("DEBUG_USER", "KTH ID: '${data?.kthId}' (Harus ada isinya)")
                     originalData = data
                     if (data != null) {
                         val roleId = availableRoles.find { it.name.equals(data.role, ignoreCase = true) }?.id ?: ""
