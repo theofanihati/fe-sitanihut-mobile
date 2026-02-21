@@ -226,10 +226,29 @@ class AuthRepositoryImplTest {
         coVerify(exactly = 0) { mockUserPreferences.saveAuthToken(any()) }
     }
 
-    // LOGOUT
     @Test
-    fun `logout, should clear preferences AND clear report database`() = runTest {
-        authRepository.logout()
+    fun `logout success, should call api and clear local data`() = runTest {
+        val fcmToken = "sample-fcm-token"
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setBody("""{"message": "Logged out successfully"}""")
+        )
+
+        authRepository.logout(fcmToken)
+
+        val recordedRequest = mockWebServer.takeRequest()
+        assertEquals("/api/v1/logout", recordedRequest.path)
+
+        coVerify(exactly = 1) { mockUserPreferences.clearAllSession() }
+        coVerify(exactly = 1) { mockReportDao.clearAllLaporan() }
+    }
+
+    @Test
+    fun `logout fails on API, should STILL clear local data (finally block)`() = runTest {
+        val fcmToken = "sample-fcm-token"
+        mockWebServer.enqueue(MockResponse().setResponseCode(500))
+        authRepository.logout(fcmToken)
         coVerify(exactly = 1) { mockUserPreferences.clearAllSession() }
         coVerify(exactly = 1) { mockReportDao.clearAllLaporan() }
     }

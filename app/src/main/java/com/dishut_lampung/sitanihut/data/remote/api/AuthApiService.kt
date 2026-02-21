@@ -12,4 +12,7 @@ interface AuthApiService {
 
     @POST("v1/forgot-password")
     suspend fun requestPasswordReset(@Body request: AuthDto.ForgotPasswordRequest): Response<Unit>
+
+    @POST("v1/logout")
+    suspend fun logoutApi(@Body request: AuthDto.LogoutRequest): Response<Unit>
 }

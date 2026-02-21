@@ -16,9 +16,11 @@ import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.UserRepository
+import com.dishut_lampung.sitanihut.domain.usecase.auth.LogoutUseCase
 import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -49,6 +51,7 @@ class MainViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
     private val workManager: WorkManager,
     private val userRepository: UserRepository,
+    private val logoutUseCase: LogoutUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -148,19 +151,19 @@ class MainViewModel @Inject constructor(
     private fun syncCurrentFcmToken() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
-                Log.w("FCM", "Gagal ambil token lokal", task.exception)
+//                Log.w("FCM", "Gagal ambil token lokal", task.exception)
                 return@addOnCompleteListener
             }
 
             val token = task.result
-            Log.d("FCM", "Token FCM didapat: $token")
+//            Log.d("FCM", "Token FCM didapat: $token")
 
             viewModelScope.launch {
                 try {
                     userRepository.syncFcmToken(token)
-                    Log.d("FCM", "Sukses kirim token ke Backend!")
+//                    Log.d("FCM", "Sukses kirim token ke Backend!")
                 } catch (e: Exception) {
-                    Log.e("FCM", "Gagal kirim token ke Backend: ${e.message}")
+//                    Log.e("FCM", "Gagal kirim token ke Backend: ${e.message}")
                 }
             }
         }
@@ -186,8 +189,8 @@ class MainViewModel @Inject constructor(
     }
 
     fun logout() {
-        viewModelScope.launch {
-            userPreferences.clearAllSession()
+        viewModelScope.launch(Dispatchers.IO) {
+            logoutUseCase()
         }
     }
 }

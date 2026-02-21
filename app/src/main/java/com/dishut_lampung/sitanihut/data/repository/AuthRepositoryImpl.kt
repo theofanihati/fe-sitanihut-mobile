@@ -11,7 +11,12 @@ import com.dishut_lampung.sitanihut.data.remote.dto.AuthDto
 import com.dishut_lampung.sitanihut.domain.model.AuthResult
 import com.dishut_lampung.sitanihut.domain.model.User
 import com.dishut_lampung.sitanihut.domain.repository.AuthRepository
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.io.IOException
 import javax.inject.Inject
 
@@ -84,9 +89,18 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun logout() {
-        userPreferences.clearAllSession()
-        reportDao.clearAllLaporan()
+    override suspend fun logout(fcmToken: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val request = AuthDto.LogoutRequest(fcmToken)
+                apiService.logoutApi(request)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                userPreferences.clearAllSession()
+                reportDao.clearAllLaporan()
+            }
+        }
     }
 
     override suspend fun isLoggedIn(): Boolean {

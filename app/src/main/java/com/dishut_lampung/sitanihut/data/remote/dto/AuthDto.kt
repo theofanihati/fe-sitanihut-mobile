@@ -38,4 +38,8 @@ class AuthDto {
         @SerializedName("message")
         val message: String?
     )
+    data class LogoutRequest(
+        @SerializedName("fcm_token")
+        val token: String
+    )
 }

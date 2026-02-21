@@ -11,10 +11,12 @@ import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.UserProfile
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.repository.UserRepository
+import com.dishut_lampung.sitanihut.domain.usecase.auth.LogoutUseCase
 import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -38,19 +40,15 @@ class MainViewModelTest {
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
 
-    private lateinit var userPreferences: UserPreferences
+    private val userPreferences: UserPreferences = mockk(relaxed = true)
     private lateinit var viewModel: MainViewModel
-    private lateinit var homeRepository: HomeRepository
-    private lateinit var userRepository: UserRepository
-    private lateinit var workManager: WorkManager
+    private val homeRepository: HomeRepository = mockk(relaxed = true)
+    private val userRepository: UserRepository = mockk(relaxed = true)
+    private val workManager: WorkManager = mockk(relaxed = true)
+    private val logoutUseCase: LogoutUseCase = mockk(relaxed = true)
 
     @Before
     fun setup() {
-        userPreferences = mockk(relaxed = true)
-        homeRepository = mockk(relaxed = true)
-        userRepository = mockk(relaxed = true)
-        workManager = mockk(relaxed = true)
-
         mockkStatic(FirebaseMessaging::class)
         val mockFirebase = mockk<FirebaseMessaging>(relaxed = true)
         every { FirebaseMessaging.getInstance() } returns mockFirebase
@@ -75,7 +73,7 @@ class MainViewModelTest {
     }
 
     private fun setupViewModel(){
-        viewModel = MainViewModel(userPreferences, homeRepository, workManager, userRepository)
+        viewModel = MainViewModel(userPreferences, homeRepository, workManager, userRepository, logoutUseCase)
     }
 
     @Test
@@ -102,11 +100,12 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `logout calls clearAllSession`() = runTest {
+    fun `logout calls logoutUseCase`() = runTest {
         setupViewModel()
+        coEvery { logoutUseCase.invoke() } returns Unit
         viewModel.logout()
         advanceUntilIdle()
-        coVerify { userPreferences.clearAllSession() }
+        coVerify(exactly = 1) { logoutUseCase.invoke() }
     }
 
     @Test
@@ -202,12 +201,62 @@ class MainViewModelTest {
     @Test
     fun `checkAndSyncFcmToken should call userRepository syncFcmToken when successful`() = runTest {
         val mockToken = "fcm_token_123"
-        val mockFirebase = mockk<FirebaseMessaging>()
+        val mockFirebase = mockk<FirebaseMessaging>(relaxed = true)
+        mockkStatic(FirebaseMessaging::class)
+        every { FirebaseMessaging.getInstance() } returns mockFirebase
+
         val mockTask = mockk<com.google.android.gms.tasks.Task<String>>()
 
-        every { FirebaseMessaging.getInstance() } returns mockFirebase
         every { mockFirebase.token } returns mockTask
+        every { mockTask.isSuccessful } returns true
+        every { mockTask.result } returns mockToken
+        every { mockTask.exception } returns null
 
+        val slot = slot<OnCompleteListener<String>>()
+        every { mockTask.addOnCompleteListener(capture(slot)) } answers {
+            slot.captured.onComplete(mockTask)
+            mockTask
+        }
+        every { userPreferences.authToken } returns flowOf("valid_token")
+
+        setupViewModel()
+        advanceUntilIdle()
+
+        coVerify(timeout = 2000) { userRepository.syncFcmToken(mockToken) }
+    }
+
+    @Test
+    fun `syncCurrentFcmToken when firebase fails, should not call repository`() = runTest {
+        val mockFirebase = mockk<FirebaseMessaging>(relaxed = true)
+        mockkStatic(FirebaseMessaging::class)
+        every { FirebaseMessaging.getInstance() } returns mockFirebase
+
+        val mockTask = mockk<com.google.android.gms.tasks.Task<String>>()
+        every { mockFirebase.token } returns mockTask
+        every { mockTask.isSuccessful } returns false
+
+        val slot = slot<OnCompleteListener<String>>()
+        every { mockTask.addOnCompleteListener(capture(slot)) } answers {
+            slot.captured.onComplete(mockTask)
+            mockTask
+        }
+
+        every { userPreferences.authToken } returns flowOf("valid_token")
+        setupViewModel()
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { userRepository.syncFcmToken(any()) }
+    }
+
+    @Test
+    fun `syncCurrentFcmToken when exception repository handle`() = runTest {
+        val mockToken = "fcm_token_123"
+        val mockFirebase = mockk<FirebaseMessaging>(relaxed = true)
+        mockkStatic(FirebaseMessaging::class)
+        every { FirebaseMessaging.getInstance() } returns mockFirebase
+        val mockTask = mockk<com.google.android.gms.tasks.Task<String>>()
+
+        every { mockFirebase.token } returns mockTask
         every { mockTask.isSuccessful } returns true
         every { mockTask.result } returns mockToken
 
@@ -217,9 +266,11 @@ class MainViewModelTest {
             mockTask
         }
 
+        every { userPreferences.authToken } returns flowOf("valid_token")
+        coEvery { userRepository.syncFcmToken(mockToken) } throws Exception("Network Error")
+
         setupViewModel()
         advanceUntilIdle()
-
         coVerify { userRepository.syncFcmToken(mockToken) }
     }
 }
