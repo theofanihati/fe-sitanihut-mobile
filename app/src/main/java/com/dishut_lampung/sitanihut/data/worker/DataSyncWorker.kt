@@ -54,7 +54,7 @@ class DataSyncWorker @AssistedInject constructor(
             petaniRepository.syncPetaniData()
             Log.d("SYNC_WORKER_DATA", "Mulai sync reports...")
             reportRepository.syncReportDetail()
-            Log.d("SYNC_WORKER", "Sync selesai. Update timestamp.")
+            Log.d("SYNC_WORKER_DATA", "Sync selesai. Update timestamp.")
             userPreferences.updateLastSyncTime()
 
             Result.success()

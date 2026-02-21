@@ -4,12 +4,14 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.CreateKthInput
 import com.dishut_lampung.sitanihut.domain.usecase.kph.GetKphListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.CreateKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.UpdateKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.ValidateKthInputUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.profile.GetMyProfileUseCase
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
 import com.dishut_lampung.sitanihut.util.Resource
@@ -17,6 +19,7 @@ import com.dishut_lampung.sitanihut.util.WilayahLampungData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -31,7 +34,9 @@ class KthFormViewModel @Inject constructor(
     private val validateKthInputUseCase: ValidateKthInputUseCase,
     private val getKphListUseCase: GetKphListUseCase,
     private val connectivityObserver: ConnectivityObserver,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val userPreferences: UserPreferences,
+    private val getMyProfileUseCase: GetMyProfileUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(KthFormUiState())
@@ -46,6 +51,8 @@ class KthFormViewModel @Inject constructor(
 
         if (currentKthId != null) {
             loadExistingKthData(currentKthId)
+        }else {
+            setDefaultKphFromUser()
         }
     }
 
@@ -299,6 +306,27 @@ class KthFormViewModel @Inject constructor(
                     }
                 }
                 else -> {}
+            }
+        }
+    }
+
+    private fun setDefaultKphFromUser() {
+        viewModelScope.launch {
+            val currentUserId = userPreferences.userId.first()
+            if (!currentUserId.isNullOrEmpty()) {
+                getMyProfileUseCase(currentUserId).onEach { result ->
+                    if (result is Resource.Success) {
+                        val user = result.data
+                        if (user != null && user.kphId != null && user.kphName != null) {
+                            _uiState.update {
+                                it.copy(
+                                    selectedKphId = user.kphId,
+                                    selectedKphName = user.kphName
+                                )
+                            }
+                        }
+                    }
+                }.launchIn(this)
             }
         }
     }

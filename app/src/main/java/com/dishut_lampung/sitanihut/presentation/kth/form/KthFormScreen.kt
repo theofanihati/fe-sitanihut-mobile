@@ -248,7 +248,7 @@ fun KthFormScreen(
                         onEvent(KthFormUiEvent.OnKphSearchTextChange(newText))
                     },
                     errorMessage = uiState.kphError,
-                    enabled = isFormEnabled
+                    enabled = false
                 )
 
             Spacer(modifier = Modifier.height(16.dp))

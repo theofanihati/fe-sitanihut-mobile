@@ -1,13 +1,16 @@
 package com.dishut_lampung.sitanihut.presentation.kth.form
 
 import androidx.lifecycle.SavedStateHandle
+import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.domain.model.Kph
 import com.dishut_lampung.sitanihut.domain.model.Kth
+import com.dishut_lampung.sitanihut.domain.model.UserDetail
 import com.dishut_lampung.sitanihut.domain.usecase.kph.GetKphListUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.CreateKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.GetKthDetailUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.UpdateKthUseCase
 import com.dishut_lampung.sitanihut.domain.usecase.kth.ValidateKthInputUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.profile.GetMyProfileUseCase
 import com.dishut_lampung.sitanihut.domain.validator.ListValidationResult
 import com.dishut_lampung.sitanihut.presentation.shared.components.animations.MessageType
 import com.dishut_lampung.sitanihut.util.ConnectivityObserver
@@ -43,6 +46,8 @@ class KthFormViewModelTest {
     private val updateKthUseCase: UpdateKthUseCase = mockk()
     private val connectivityObserver: ConnectivityObserver = mockk()
     private val savedStateHandle: SavedStateHandle = mockk(relaxed = true)
+    private val userPreferences: UserPreferences = mockk(relaxed = true)
+    private val getMyProfileUseCase: GetMyProfileUseCase = mockk(relaxed = true)
 
     @Before
     fun setUp() {
@@ -54,6 +59,7 @@ class KthFormViewModelTest {
         every { getKphListUseCase() } returns flowOf(dummyKphList)
         every { connectivityObserver.observe() } returns flowOf(ConnectivityObserver.Status.Available)
         every { validateKthInputUseCase.execute(any()) } returns ListValidationResult(true)
+        every { userPreferences.userId } returns flowOf(null)
 
         viewModel = KthFormViewModel(
             createKthUseCase,
@@ -62,7 +68,9 @@ class KthFormViewModelTest {
             validateKthInputUseCase,
             getKphListUseCase,
             connectivityObserver,
-            savedStateHandle
+            savedStateHandle,
+            userPreferences,
+            getMyProfileUseCase
         )
     }
 
@@ -99,7 +107,9 @@ class KthFormViewModelTest {
             validateKthInputUseCase,
             getKphListUseCase,
             connectivityObserver,
-            editStateHandle
+            editStateHandle,
+            userPreferences,
+            getMyProfileUseCase
         )
 
         advanceUntilIdle()
@@ -129,7 +139,9 @@ class KthFormViewModelTest {
             validateKthInputUseCase,
             getKphListUseCase,
             connectivityObserver,
-            editStateHandle
+            editStateHandle,
+            userPreferences,
+            getMyProfileUseCase
         )
 
         advanceUntilIdle()
@@ -306,7 +318,9 @@ class KthFormViewModelTest {
             validateKthInputUseCase,
             getKphListUseCase,
             offlineObserver,
-            savedStateHandle
+            savedStateHandle,
+            userPreferences,
+            getMyProfileUseCase
         )
         advanceUntilIdle()
 
@@ -318,5 +332,51 @@ class KthFormViewModelTest {
         coVerify(exactly = 0) { createKthUseCase(any()) }
         coVerify(exactly = 0) { updateKthUseCase(any(), any()) }
         assertEquals("Tidak ada koneksi internet", state.error)
+    }
+
+    @Test
+    fun `init in create mode automatically sets kph from logged in user profile`() = runTest {
+
+        every { savedStateHandle.get<String>("id") } returns null
+
+        val dummyUserId = "user-123"
+        every { userPreferences.userId } returns flowOf(dummyUserId)
+
+        val mockUserProfile = UserDetail(
+            id = dummyUserId,
+            name = "Penyuluh A",
+            email = "penyuluh@example.com",
+            kphId = "kph-999",
+            kphName = "KPH Way Kanan",
+            role = "penyuluh",
+            identityNumber = "123",
+            gender = "pria",
+            address = "Alamat",
+            whatsAppNumber = "0812",
+            lastEducation = "SMA",
+            sideJob = "-",
+            landArea = 0.0,
+            kthId = "",
+            kthName = ""
+        )
+        every { getMyProfileUseCase(dummyUserId) } returns flowOf(Resource.Success(mockUserProfile))
+
+        val newViewModel = KthFormViewModel(
+            createKthUseCase,
+            getKthDetailUseCase,
+            updateKthUseCase,
+            validateKthInputUseCase,
+            getKphListUseCase,
+            connectivityObserver,
+            savedStateHandle,
+            userPreferences,
+            getMyProfileUseCase
+        )
+
+        advanceUntilIdle()
+
+        val state = newViewModel.uiState.value
+        assertEquals("kph-999", state.selectedKphId)
+        assertEquals("KPH Way Kanan", state.selectedKphName)
     }
 }
