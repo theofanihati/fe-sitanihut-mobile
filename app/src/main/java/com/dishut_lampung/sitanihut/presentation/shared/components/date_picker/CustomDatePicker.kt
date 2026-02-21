@@ -52,7 +52,7 @@ fun CustomDatePicker(
     isEnabled: Boolean = true,
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     borderColor: Color = MaterialTheme.colorScheme.tertiary,
-    bgColor: Color = Color.White,
+    bgColor: Color = MaterialTheme.colorScheme.background,
     focusedBorderColor: Color = MaterialTheme.colorScheme.tertiary,
     focusedLabelColor: Color = MaterialTheme.colorScheme.tertiary,
     labelDefaultColor: Color = MaterialTheme.colorScheme.onSurface

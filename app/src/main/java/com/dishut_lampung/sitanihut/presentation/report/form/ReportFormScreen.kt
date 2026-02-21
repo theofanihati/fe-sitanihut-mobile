@@ -263,7 +263,7 @@ fun ReportFormScreen(
             CustomOutlinedTextArea(
                 value = state.farmerNotes,
                 onValueChange = { onEvent(ReportFormEvent.OnFarmerNotesChange(it)) },
-                label = "Catatan Penyuluh",
+                label = "Catatan Petani",
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = "Beri catatan untuk penyuluh",
             )

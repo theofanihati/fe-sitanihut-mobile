@@ -426,7 +426,8 @@ fun PlantingItemRow(item: MasaTanam) {
             Text(
                 text = item.commodityName,
                 fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
 
@@ -473,7 +474,8 @@ fun HarvestItemRow(item: MasaPanen) {
             Text(
                 text = item.commodityName,
                 fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 text = item.harvestDate,
@@ -569,7 +571,8 @@ fun NoteItem(label: String, content: String) {
         Text(
             text = content,
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(top = 2.dp)
+            modifier = Modifier.padding(top = 2.dp),
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
