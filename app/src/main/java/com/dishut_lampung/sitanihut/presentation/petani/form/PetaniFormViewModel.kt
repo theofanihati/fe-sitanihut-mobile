@@ -433,7 +433,7 @@ class PetaniFormViewModel @Inject constructor(
                 val old = originalData
 
                 if (old != null) {
-                    if (current.name != old.name) changes["nama_petani"] = current.name
+                    if (current.name != old.name) changes["nama_user"] = current.name
 
                     if (current.identityNumber != old.identityNumber) changes["nik"] = current.identityNumber
 

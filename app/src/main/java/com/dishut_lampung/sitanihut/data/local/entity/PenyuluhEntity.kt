@@ -8,7 +8,7 @@ data class PenyuluhEntity(
     @PrimaryKey val id: String,
     val name: String,
     val identityNumber: String,
-    val position: String,
+    val position: String? = null,
     val gender: String,
     val kphId: String,
     val kphName: String,

@@ -466,7 +466,7 @@ fun PenyuluhEntity.toDomain(): Penyuluh {
         id = id,
         name = name,
         identityNumber = identityNumber,
-        position = position,
+        position = position?: "-",
         gender = gender,
         kphId = kphId,
         kphName = kphName,

@@ -187,7 +187,7 @@ class PetaniFormViewModelTest {
         coVerify(exactly = 1) {
             updatePetaniUseCase(
                 id = eq("petani-123"),
-                changes = match { it["nama_petani"] == "Nama Baru" }
+                changes = match { it["nama_user"] == "Nama Baru" }
             )
         }
 

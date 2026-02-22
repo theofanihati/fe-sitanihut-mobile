@@ -3,7 +3,7 @@ package com.dishut_lampung.sitanihut.data.remote.dto
 import com.google.gson.annotations.SerializedName
 
 data class CreatePetaniRequestDto (
-    @SerializedName("nama_petani") val name: String,
+    @SerializedName("nama_user") val name: String,
     @SerializedName("nik") val identityNumber: String,
     @SerializedName("jenis_kelamin") val gender: String,
     @SerializedName("alamat") val address: String,

@@ -409,10 +409,10 @@ class PetaniRepositoryImplTest {
     }
 
     @Test
-    fun `updateKth should call api service and return Success when status is 200`() = runTest {
+    fun `updatePetani should call api service and return Success when status is 200`() = runTest {
         val id = "123"
         val changes = mapOf(
-            "nama_petani" to "Petani Update",
+            "nama_user" to "Petani Update",
             "nomor_wa" to "08199"
         )
 
@@ -428,16 +428,16 @@ class PetaniRepositoryImplTest {
 
         coVerify {
             apiService.updatePetani(eq(id), match { map ->
-                map["nama_petani"] == "Petani Update" && map["nomor_wa"] == "08199"
+                map["nama_user"] == "Petani Update" && map["nomor_wa"] == "08199"
             })
         }
     }
 
     @Test
-    fun `updateKth should return Error when API returns non-200 status`() = runTest {
+    fun `updatePetani should return Error when API returns non-200 status`() = runTest {
         val id = "123"
         val changes = mapOf(
-            "nama_petani" to "KTH Update"
+            "nama_user" to "petani Update"
         )
         val apiResponse = ApiResponse<Unit>(
             statusCode = 400,
@@ -454,7 +454,7 @@ class PetaniRepositoryImplTest {
     }
 
     @Test
-    fun `updateKth should return Error when Exception occurs`() = runTest {
+    fun `updatePetani should return Error when Exception occurs`() = runTest {
         val id = "123"
         val changes = mapOf<String, Any?>()
         coEvery { apiService.updatePetani(id, any()) } throws RuntimeException("No Internet Connection")

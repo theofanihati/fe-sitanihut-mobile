@@ -4,8 +4,8 @@ import com.google.gson.annotations.SerializedName
 
 data class PetaniDetailDto(
     @SerializedName("id") val id: String,
-    @SerializedName("nama_petani") val name: String,
-    @SerializedName("nik") val identityNumber: String,
+    @SerializedName("nama_user") val name: String,
+    @SerializedName("nomor_induk") val identityNumber: String,
     @SerializedName("jenis_kelamin") val gender: String?,
     @SerializedName("alamat") val address: String?,
     @SerializedName("nomor_wa") val whatsAppNumber: String?,

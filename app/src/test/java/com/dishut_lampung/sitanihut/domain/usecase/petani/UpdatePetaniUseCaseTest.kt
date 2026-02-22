@@ -25,7 +25,7 @@ class UpdatePetaniUseCaseTest {
     @Test
     fun `invoke should return Success when repository update is successful`() = runTest {
         val id = "123"
-        val changes = mapOf<String, Any?>("nama_petani" to "Fani Update")
+        val changes = mapOf<String, Any?>("nama_user" to "Fani Update")
         val expectedResult = Resource.Success(Unit)
 
         coEvery { repository.updatePetani(id, changes) } returns expectedResult
@@ -39,7 +39,7 @@ class UpdatePetaniUseCaseTest {
     @Test
     fun `invoke should return Error when repository update fails`() = runTest {
         val id = "123"
-        val changes = mapOf<String, Any?>("nama_petani" to "Fani Update")
+        val changes = mapOf<String, Any?>("nama_user" to "Fani Update")
         val errorMessage = "Gagal update data"
         val expectedResult = Resource.Error<Unit>(errorMessage)
 
