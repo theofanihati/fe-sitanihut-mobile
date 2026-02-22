@@ -78,6 +78,6 @@ sealed class Screen(val route: String) {
     sealed class  PenanggungJawab(route: String) : Screen(route) {
         data object ProfilePenanggungJawab : PenanggungJawab("profile_penanggung_jawab_screen")
         object DataPenyuluh: PenanggungJawab("data_penyuluh")
-        data class PenyuluhDetail(val id : String): PenanggungJawab("data_penyuluh/{id}")
+        data class PenyuluhDetail(val id : String): PenanggungJawab("penyuluh_detail/{id}")
     }
 }

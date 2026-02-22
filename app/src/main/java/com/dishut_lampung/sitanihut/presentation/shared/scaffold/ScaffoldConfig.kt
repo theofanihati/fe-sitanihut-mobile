@@ -32,7 +32,7 @@ fun scaffoldConfig(currentRoute: String?): ScaffoldConfig {
         Screen.Petani.ProfilePetani.route,
         Screen.Penyuluh.ProfilePenyuluh.route,
         Screen.PenanggungJawab.ProfilePenanggungJawab.route,
-        "data_penyuluh/{id}",
+        "penyuluh_detail/{id}",
         "kth_detail/{kthId}",
         "petani_detail/{id}",
         "user_detail/{id}" -> ScaffoldConfig(

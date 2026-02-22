@@ -28,7 +28,7 @@ class PenyuluhDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(PenyuluhDetailUiState())
     val uiState = _uiState.asStateFlow()
 
-    private val penyuluhId: String = checkNotNull(savedStateHandle["penyuluhId"])
+    private val penyuluhId: String = checkNotNull(savedStateHandle["id"])
 
     init {
         getDetail()

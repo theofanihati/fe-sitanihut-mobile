@@ -67,13 +67,12 @@ fun NavGraphBuilder.kkphNavGraph(
             CommodityRoute()
         }
         composable(route = Screen.PenanggungJawab.DataPenyuluh.route){
-            val onNavigateToDetail = {id : String ->
-                navController.navigateSingleTop("data_penyuluh/$id")
-            }
-            PenyuluhRoute(onNavigateToDetail=onNavigateToDetail)
+            PenyuluhRoute(
+                onNavigateToDetail = { id : String -> navController.navigateSingleTop("penyuluh_detail/$id") },
+                )
         }
         composable(
-            route = "data_penyuluh/{id}",
+            route = "penyuluh_detail/{id}",
             arguments = listOf(
                 navArgument("id") {
                     type = NavType.StringType
