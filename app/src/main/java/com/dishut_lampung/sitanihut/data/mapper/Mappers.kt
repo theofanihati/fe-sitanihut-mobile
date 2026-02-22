@@ -552,30 +552,30 @@ fun KphDto.toEntity(): KphEntity {
 fun PetaniEntity.toDomain(): Petani {
     return Petani(
         id = id,
-        name = name,
-        identityNumber = identityNumber,
-        gender = gender,
-        address = address,
-        whatsAppNumber = whatsAppNumber,
-        lastEducation = lastEducation,
-        sideJob = sideJob,
-        landArea = landArea,
-        kphId = kphId,
-        kphName = kphName,
-        kthId = kthId,
-        kthName = kthName
+        name = name?: "-",
+        identityNumber = identityNumber?: "-",
+        gender = gender?: "-",
+        address = address?: "-",
+        whatsAppNumber = whatsAppNumber?: "-",
+        lastEducation = lastEducation?: "-",
+        sideJob = sideJob?: "-",
+        landArea = landArea?: 0.0,
+        kphId = kphId?: "-",
+        kphName = kphName?: "-",
+        kthId = kthId?: "-",
+        kthName = kthName?: "-"
     )
 }
 
 fun PetaniListItemDto.toEntity(): PetaniEntity{
     return PetaniEntity(
         id = id,
-        name = name,
-        identityNumber = identityNumber,
-        kthName = kthName,
-        kthId = kthId,
-        kphName = kphName,
-        kphId = kphId,
+        name = name ?: "-",
+        identityNumber = identityNumber ?: "-",
+        kthName = kthName ?: "-",
+        kthId = kthId ?: "-",
+        kphName = kphName ?: "-",
+        kphId = kphId ?: "-",
     )
 }
 
