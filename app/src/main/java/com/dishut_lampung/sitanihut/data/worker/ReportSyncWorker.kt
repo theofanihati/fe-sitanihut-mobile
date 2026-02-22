@@ -63,7 +63,7 @@ class ReportSyncWorker @AssistedInject constructor(
                     parts.add(MultipartBody.Part.createFormData(key, null, body))
                 }
             }
-
+            addText("id", dto.id)
             addText("periode", dto.period)
             addText("bulan", dto.month?.lowercase())
             addText("modal", dto.modal?.toLong())

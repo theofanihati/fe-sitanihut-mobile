@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BasicAlertDialog
@@ -87,10 +88,14 @@ fun CustomConfirmationDialog(
                     ),
                     modifier = Modifier.defaultMinSize(minWidth = 100.dp),
                 ) {
-                    Text(
-                        text = dismissButtonText,
-                        style = MaterialTheme.typography.labelLarge,
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    } else {
+                        Text(
+                            text = dismissButtonText,
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                    }
                 }
 
                 Button(
