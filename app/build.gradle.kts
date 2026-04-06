@@ -7,6 +7,7 @@ plugins {
     id("jacoco")
     id("io.gitlab.arturbosch.detekt") version "1.23.6"
     id("com.google.gms.google-services")
+    id ("org.sonarqube") version "5.0.0.4638"
 }
 jacoco {
     toolVersion = "0.8.11"
@@ -173,6 +174,19 @@ dependencies {
     implementation(libs.firebase.messaging)
 }
 
+sonarqube {
+    properties {
+        property("sonar.projectKey", "sitanihut")
+        property("sonar.projectName", "Sitanihut")
+        property("sonar.host.url", "http://localhost:9000")
+        property("sonar.token", "sqa_67ac6dfc396cf3042a6971900c220772446c8be2")
+        property("sonar.coverage.jacoco.xmlReportPaths", "app/build/reports/jacoco/testDebugUnitTestReport/jacocoTestReport.xml")
+        property("sonar.sources", listOf("src/main"))
+        property("sonar.tests", listOf("src/test"))
+
+//        property("sonar.gradle.skipCompile", "true")
+    }
+}
 
 detekt {
     toolVersion = "1.23.6"
