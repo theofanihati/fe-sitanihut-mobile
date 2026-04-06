@@ -8,10 +8,12 @@ import androidx.work.WorkManager
 import androidx.work.Operation
 import androidx.work.WorkInfo
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
+import com.dishut_lampung.sitanihut.domain.model.SyncNetworkType
 import com.dishut_lampung.sitanihut.domain.model.UserProfile
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.repository.UserRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LogoutUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.settings.GetSyncNetworkTypeUseCase
 import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
 import com.dishut_lampung.sitanihut.util.MainCoroutineRule
 import com.google.android.gms.tasks.OnCompleteListener
@@ -46,6 +48,7 @@ class MainViewModelTest {
     private val userRepository: UserRepository = mockk(relaxed = true)
     private val workManager: WorkManager = mockk(relaxed = true)
     private val logoutUseCase: LogoutUseCase = mockk(relaxed = true)
+    private val getSyncNetworkTypeUseCase: GetSyncNetworkTypeUseCase = mockk(relaxed = true)
 
     @Before
     fun setup() {
@@ -73,7 +76,7 @@ class MainViewModelTest {
     }
 
     private fun setupViewModel(){
-        viewModel = MainViewModel(userPreferences, homeRepository, workManager, userRepository, logoutUseCase)
+        viewModel = MainViewModel(userPreferences, homeRepository, workManager, userRepository, logoutUseCase, getSyncNetworkTypeUseCase)
     }
 
     @Test
@@ -149,6 +152,7 @@ class MainViewModelTest {
 
         every { userPreferences.authToken } returns flowOf(mockToken)
         every { userPreferences.lastSyncTime } returns flowOf(oldSyncTime)
+        every { getSyncNetworkTypeUseCase() } returns flowOf(SyncNetworkType.ANY_NETWORK)
 
         val mockOperation = mockk<Operation>()
         val mockWorkInfoLiveData = MutableLiveData<WorkInfo>()
@@ -181,6 +185,7 @@ class MainViewModelTest {
 
         every { userPreferences.authToken } returns flowOf(mockToken)
         every { userPreferences.lastSyncTime } returns flowOf(freshSyncTime)
+        every { getSyncNetworkTypeUseCase() } returns flowOf(SyncNetworkType.ANY_NETWORK)
 
         val mockOperation = mockk<Operation>()
         every {
@@ -218,6 +223,8 @@ class MainViewModelTest {
             mockTask
         }
         every { userPreferences.authToken } returns flowOf("valid_token")
+        every { userPreferences.lastSyncTime } returns flowOf(0L)
+        every { getSyncNetworkTypeUseCase() } returns flowOf(SyncNetworkType.ANY_NETWORK)
 
         setupViewModel()
         advanceUntilIdle()
@@ -267,6 +274,8 @@ class MainViewModelTest {
         }
 
         every { userPreferences.authToken } returns flowOf("valid_token")
+        every { userPreferences.lastSyncTime } returns flowOf(0L)
+        every { getSyncNetworkTypeUseCase() } returns flowOf(SyncNetworkType.ANY_NETWORK)
         coEvery { userRepository.syncFcmToken(mockToken) } throws Exception("Network Error")
 
         setupViewModel()
