@@ -50,6 +50,7 @@ class PenyuluhDetailViewModelTest {
 
     @Test
     fun `init should load detail successfully`() = runTest {
+        val savedStateHandle = SavedStateHandle(mapOf("id" to dummyId))
         every { getPenyuluhDetailUseCase(dummyId) } returns flowOf(
             Resource.Loading(),
             Resource.Success(dummyPenyuluh)
@@ -72,6 +73,7 @@ class PenyuluhDetailViewModelTest {
 
     @Test
     fun `init should handle error correctly`() = runTest {
+        val savedStateHandle = SavedStateHandle(mapOf("id" to dummyId))
         val errorMessage = "Terjadi kesalahan jaringan"
         every { getPenyuluhDetailUseCase(dummyId) } returns flowOf(
             Resource.Loading(),
@@ -93,6 +95,7 @@ class PenyuluhDetailViewModelTest {
 
     @Test
     fun `onRetry should re-trigger use case`() = runTest {
+        val savedStateHandle = SavedStateHandle(mapOf("id" to dummyId))
         every { getPenyuluhDetailUseCase(dummyId) } returnsMany listOf(
             flowOf(Resource.Error("Error Awal")),
             flowOf(Resource.Success(dummyPenyuluh))
