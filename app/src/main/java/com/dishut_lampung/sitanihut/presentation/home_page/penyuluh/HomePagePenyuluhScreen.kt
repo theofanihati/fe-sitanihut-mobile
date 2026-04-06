@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.Diversity3
 import androidx.compose.material.icons.outlined.Eco
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Task
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -80,6 +81,7 @@ fun HomePagePenyuluhScreenPreview() {
             onNavigateToReportVerification = {},
             onNavigateToUserManagement = {},
             onNavigateToInfo = {},
+            onNavigateToSettings = {}
         )
     }
 }
@@ -94,6 +96,7 @@ fun HomePagePenyuluhRoute(
     onNavigateToReportVerification: () -> Unit,
     onNavigateToUserManagement: () -> Unit = {},
     onNavigateToInfo: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     viewModel: HomePagePenyuluhViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -119,6 +122,7 @@ fun HomePagePenyuluhRoute(
         onNavigateToReportVerification = onNavigateToReportVerification,
         onNavigateToUserManagement = onNavigateToUserManagement,
         onNavigateToInfo = onNavigateToInfo,
+        onNavigateToSettings = onNavigateToSettings,
         onRefresh = {
             viewModel.onEvent(HomeEvent.OnRefreshData)
         }
@@ -137,6 +141,7 @@ fun HomePagePenyuluhScreen(
     onNavigateToReportVerification: () -> Unit,
     onNavigateToUserManagement: () -> Unit = {},
     onNavigateToInfo: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     onRefresh: () -> Unit
 ) {
     val isRefreshing = state.isRefreshing
@@ -181,6 +186,12 @@ fun HomePagePenyuluhScreen(
                 icon = Icons.Outlined.Info,
                 color = green,
                 onClick = onNavigateToInfo
+            ),
+            HomeMenuItem(
+                labelTop = "Pengaturan",
+                icon = Icons.Outlined.Settings,
+                color = lightPink,
+                onClick = onNavigateToSettings
             )
         )
     }

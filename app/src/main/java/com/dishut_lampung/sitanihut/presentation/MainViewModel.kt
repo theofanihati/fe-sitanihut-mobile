@@ -12,11 +12,13 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.dishut_lampung.sitanihut.data.local.UserPreferences
 import com.dishut_lampung.sitanihut.data.worker.DataSyncWorker
+import com.dishut_lampung.sitanihut.domain.model.SyncNetworkType
 import com.dishut_lampung.sitanihut.domain.repository.CommodityRepository
 import com.dishut_lampung.sitanihut.domain.repository.HomeRepository
 import com.dishut_lampung.sitanihut.domain.repository.ProfileRepository
 import com.dishut_lampung.sitanihut.domain.repository.UserRepository
 import com.dishut_lampung.sitanihut.domain.usecase.auth.LogoutUseCase
+import com.dishut_lampung.sitanihut.domain.usecase.settings.GetSyncNetworkTypeUseCase
 import com.dishut_lampung.sitanihut.presentation.shared.navigation.Screen
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -51,7 +53,8 @@ class MainViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
     private val workManager: WorkManager,
     private val userRepository: UserRepository,
-    private val logoutUseCase: LogoutUseCase
+    private val logoutUseCase: LogoutUseCase,
+    private val getSyncNetworkTypeUseCase: GetSyncNetworkTypeUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -84,42 +87,49 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 userPreferences.authToken,
-                userPreferences.lastSyncTime
-            ) { token, lastSync ->
-                Pair(token, lastSync)
-            }.collect { (token, lastSync) ->
+                userPreferences.lastSyncTime,
+                getSyncNetworkTypeUseCase()
+            ) { token, lastSync, networkType ->
+                Triple(token, lastSync, networkType)
+            }.collect { (token, lastSync, networkType) ->
                 if (!token.isNullOrEmpty()) {
                     val currentTime = System.currentTimeMillis()
                     val timeDiff = currentTime - lastSync
 
                     if (timeDiff > SYNC_COOLDOWN_MS) {
                         Log.d("SYNC", "Data sudah basi (${timeDiff/60000} menit lalu). Mulai Sync...")
-                        startBackgroundSync()
+                        startBackgroundSync(networkType)
                     } else {
                         Log.d("SYNC", "Data masih segar. Skip Sync. Tunggu ${(SYNC_COOLDOWN_MS - timeDiff)/60000} menit lagi.")
                     }
 
-                    setupPeriodicSync()
+                    setupPeriodicSync(networkType)
                     syncCurrentFcmToken()
                 }
             }
         }
     }
 
-    private fun setupPeriodicSync() {
+    private fun setupPeriodicSync(networkType: SyncNetworkType) {
+        val requiredNetwork = if (networkType == SyncNetworkType.WIFI_ONLY) {
+            NetworkType.UNMETERED
+        } else {
+            NetworkType.CONNECTED
+        }
+
         val periodicRequest = PeriodicWorkRequestBuilder<DataSyncWorker>(
             12, TimeUnit.HOURS
         )
             .setConstraints(
                 Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .setRequiredNetworkType(requiredNetwork)
                     .build()
             )
             .build()
 
         workManager.enqueueUniquePeriodicWork(
             SYNC_TAG_PERIODIC,
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             periodicRequest
         )
     }
@@ -169,11 +179,17 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun startBackgroundSync() {
+    private fun startBackgroundSync(networkType: SyncNetworkType) {
+        val requiredNetwork = if (networkType == SyncNetworkType.WIFI_ONLY) {
+            NetworkType.UNMETERED
+        } else {
+            NetworkType.CONNECTED
+        }
+
         val syncRequest = OneTimeWorkRequestBuilder<DataSyncWorker>()
             .setConstraints(
                 Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .setRequiredNetworkType(requiredNetwork)
                     .build()
             )
             .addTag("SYNC_WORKER_INITIAL")

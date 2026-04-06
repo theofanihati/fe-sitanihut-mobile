@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Eco
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -57,6 +58,7 @@ import com.dishut_lampung.sitanihut.presentation.shared.theme.SitanihutTheme
 import com.dishut_lampung.sitanihut.presentation.shared.theme.lightGreen
 import com.dishut_lampung.sitanihut.presentation.shared.theme.lightOrange
 import com.dishut_lampung.sitanihut.presentation.shared.theme.lightPink
+import com.dishut_lampung.sitanihut.presentation.shared.theme.tosca
 
 @Preview(showBackground = true)
 @Composable
@@ -68,6 +70,7 @@ fun HomePagePetaniScreenPreview() {
             onNavigateToCommodity = { },
             onNavigateToReportSubmission = { },
             onNavigateToInfo = { },
+            onNavigateToSettings = {},
             onOptionDismiss = {},
             onDeleteReportClick = {},
             onEditReportClick = {},
@@ -91,6 +94,7 @@ fun HomePagePetaniRoute(
     onNavigateToCommodity: () -> Unit,
     onNavigateToInfo: () -> Unit,
     onNavigateToEdit: (String) -> Unit,
+    onNavigateToSettings: () -> Unit,
     viewModel: HomePagePetaniViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -120,6 +124,7 @@ fun HomePagePetaniRoute(
         onNavigateToCommodity = onNavigateToCommodity,
         onNavigateToReportSubmission = onNavigateToReportSubmission,
         onNavigateToInfo = onNavigateToInfo,
+        onNavigateToSettings = onNavigateToSettings,
         onOptionDismiss = {
             viewModel.onEvent(HomeEvent.OnReportOptionSheetDismiss)
         },
@@ -149,6 +154,7 @@ fun HomePagePetaniScreen(
     onNavigateToCommodity: () -> Unit = {},
     onNavigateToReportSubmission: () -> Unit,
     onNavigateToInfo: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     onOptionDismiss: () -> Unit,
     onDeleteReportClick: (String) -> Unit,
     onEditReportClick: (String) -> Unit,
@@ -177,6 +183,12 @@ fun HomePagePetaniScreen(
                 icon = Icons.Outlined.Info,
                 color = lightPink,
                 onClick = onNavigateToInfo
+            ),
+            HomeMenuItem(
+                labelTop = "Pengaturan",
+                icon = Icons.Outlined.Settings,
+                color = tosca,
+                onClick = onNavigateToSettings
             )
         )
     }

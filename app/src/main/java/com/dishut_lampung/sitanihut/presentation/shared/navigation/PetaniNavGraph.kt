@@ -41,6 +41,9 @@ fun NavGraphBuilder.petaniNavGraph(
                     Screen.ReportForm.createRoute(reportId = id)
                 )
             }
+            val onNavigateToSettings = {
+                navController.navigateToMenu("settings")
+            }
 
             HomePagePetaniRoute(
                 modifier = modifier,
@@ -49,6 +52,7 @@ fun NavGraphBuilder.petaniNavGraph(
                 onNavigateToReportSubmission = onNavigateToReportSubmission,
                 onNavigateToInfo = onNavigateInfo,
                 onNavigateToEdit = onNavigateToEdit,
+                onNavigateToSettings = onNavigateToSettings
             )
         }
 

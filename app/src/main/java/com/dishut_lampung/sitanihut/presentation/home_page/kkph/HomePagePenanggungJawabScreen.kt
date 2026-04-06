@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.Eco
 import androidx.compose.material.icons.outlined.Forest
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Task
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -82,6 +83,7 @@ fun HomePagePenanggungJawabScreenPreview() {
             onNavigateToReportVerification = {},
             onNavigateToUserManagement = {},
             onNavigateToInfo = {},
+            onNavigateToSettings = {}
         )
     }
 }
@@ -97,6 +99,7 @@ fun HomePagePenanggungJawabRoute(
     onNavigateToReportVerification: () -> Unit,
     onNavigateToUserManagement: () -> Unit = {},
     onNavigateToInfo: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     viewModel: HomePagePenanggungJawabViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -123,6 +126,7 @@ fun HomePagePenanggungJawabRoute(
         onNavigateToReportVerification = onNavigateToReportVerification,
         onNavigateToUserManagement = onNavigateToUserManagement,
         onNavigateToInfo = onNavigateToInfo,
+        onNavigateToSettings = onNavigateToSettings,
         onRefresh = {
             viewModel.onEvent(HomeEvent.OnRefreshData)
         }
@@ -142,6 +146,7 @@ fun HomePagePenanggungJawabScreen(
     onNavigateToReportVerification: () -> Unit,
     onNavigateToUserManagement: () -> Unit = {},
     onNavigateToInfo: () -> Unit,
+    onNavigateToSettings: () -> Unit = {},
     onRefresh: () -> Unit
 ) {
     val isRefreshing = state.isRefreshing
@@ -193,6 +198,12 @@ fun HomePagePenanggungJawabScreen(
                 icon = Icons.Outlined.Info,
                 color = lightPink,
                 onClick = onNavigateToInfo
+            ),
+            HomeMenuItem(
+                labelTop = "Pengaturan",
+                icon = Icons.Outlined.Settings,
+                color = lightOrange,
+                onClick = onNavigateToSettings
             )
         )
     }

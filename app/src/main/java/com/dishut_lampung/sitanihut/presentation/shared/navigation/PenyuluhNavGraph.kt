@@ -51,6 +51,9 @@ fun NavGraphBuilder.penyuluhNavGraph(
             val onNavigateToInfo = {
                 navController.navigate("information")
             }
+            val onNavigateToSettings = {
+                navController.navigateToMenu("settings")
+            }
             HomePagePenyuluhRoute(
                 modifier = Modifier,
                 onNavigateToDetail = onNavigateToDetail,
@@ -59,7 +62,8 @@ fun NavGraphBuilder.penyuluhNavGraph(
                 onNavigateToPetani = onNavigateToPetani,
                 onNavigateToReportVerification = onNavigateToReportVerification,
                 onNavigateToUserManagement = onNavigateToUserManagement,
-                onNavigateToInfo = onNavigateToInfo
+                onNavigateToInfo = onNavigateToInfo,
+                onNavigateToSettings = onNavigateToSettings
                 )
         }
         composable(route = Screen.Penyuluh.ProfilePenyuluh.route){

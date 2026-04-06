@@ -14,6 +14,7 @@ import com.dishut_lampung.sitanihut.presentation.home_page.penyuluh.HomePagePeny
 import com.dishut_lampung.sitanihut.presentation.home_page.petani.HomePagePetaniRoute
 import com.dishut_lampung.sitanihut.presentation.home_page.petani.HomePagePetaniScreen
 import com.dishut_lampung.sitanihut.presentation.landing_page.LandingPageRoute
+import com.dishut_lampung.sitanihut.presentation.settings.SettingsRoute
 
 @Composable
 fun NavGraph(
@@ -42,6 +43,9 @@ fun NavGraph(
                 },
                 onNavigateToInfo = {
                     navController.navigateToMenu("information")
+                },
+                onNavigateToSettings = {
+                    navController.navigateToMenu("settings")
                 },
                 onNavigateToCommodity = {
                     navController.navigateToMenu("data_commodity")
@@ -81,6 +85,9 @@ fun NavGraph(
                 onNavigateToInfo = {
                     navController.navigateToMenu("information")
                 },
+                onNavigateToSettings = {
+                    navController.navigateToMenu("settings")
+                },
             )
         }
         composable(route = Screen.HomeKkph.route) {
@@ -110,7 +117,14 @@ fun NavGraph(
                 onNavigateToInfo = {
                     navController.navigateToMenu("information")
                 },
+                onNavigateToSettings = {
+                    navController.navigateToMenu("settings")
+                },
             )
+        }
+
+        composable(route = Screen.Settings.route) {
+            SettingsRoute()
         }
 
         authNavGraph(

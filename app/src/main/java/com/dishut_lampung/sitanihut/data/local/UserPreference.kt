@@ -29,6 +29,7 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
         val USER_ID = stringPreferencesKey("user_id")
         val USER_AVATAR = stringPreferencesKey("user_avatar")
         val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
+        val SYNC_WIFI_ONLY = booleanPreferencesKey("sync_wifi_only")
     }
 
     // token
@@ -128,5 +129,14 @@ class UserPreferences @Inject constructor(@ApplicationContext context: Context) 
         dataStore.edit { preferences ->
             preferences[HAS_SEEN_ONBOARDING] = true
         }
+    }
+
+    val isSyncWifiOnly: Flow<Boolean> = dataStore.data
+        .map {
+            it[SYNC_WIFI_ONLY] ?: false
+        }
+
+    suspend fun setSyncWifiOnly(isWifiOnly: Boolean) {
+        dataStore.edit { it[SYNC_WIFI_ONLY] = isWifiOnly }
     }
 }

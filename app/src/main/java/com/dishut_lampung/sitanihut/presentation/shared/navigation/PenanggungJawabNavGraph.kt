@@ -48,6 +48,9 @@ fun NavGraphBuilder.kkphNavGraph(
             val onNavigateToInfo = {
                 navController.navigate("information")
             }
+            val onNavigateToSettings = {
+                navController.navigateToMenu("settings")
+            }
             HomePagePenanggungJawabRoute(
                 modifier = Modifier,
                 onNavigateToDetail = onNavigateToDetail,
@@ -57,7 +60,8 @@ fun NavGraphBuilder.kkphNavGraph(
                 onNavigateToPenyuluh = onNavigateToPenyuluh,
                 onNavigateToReportVerification = onNavigateToReportVerification,
                 onNavigateToUserManagement = onNavigateToUserManagement,
-                onNavigateToInfo = onNavigateToInfo
+                onNavigateToInfo = onNavigateToInfo,
+                onNavigateToSettings = onNavigateToSettings
             )
         }
         composable(route = Screen.PenanggungJawab.ProfilePenanggungJawab.route){
